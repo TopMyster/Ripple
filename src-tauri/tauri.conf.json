@@ -12,9 +12,12 @@
   "app": {
     "windows": [
       {
-        "title": "ripple",
-        "width": 800,
-        "height": 600
+        "title": "Ripple",
+        "transparent": true,
+        "decorations": false,
+        "width": 200,
+        "height": 50,
+        "resizable": false
       }
     ],
     "security": {
