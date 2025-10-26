@@ -1,9 +1,10 @@
 import { useState } from "react";
 import "./App.css";
+import Island from "./Island";
 
 export default function App() {
   return (
-    <h1>Testing</h1>
+    <Island/>
   )
 }
 
