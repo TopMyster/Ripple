@@ -1,3 +1,74 @@
 body {
-  background-color: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: rgba(0,0,0,0)
+  
+}
+
+#app {
+  background-color: transparent; 
+}
+
+#Island {
+  position: relative;
+  width: 40vw;
+  height: 20vh;
+  border-radius: 15px;
+  background-color: black;
+  transition: .4s;
+}
+
+#Island:hover {
+  width: 60vw;
+}
+
+@keyframes enlarge {
+  100% {
+     width: 90vw;
+     height: 90vh;
+  }
+}
+
+@keyframes shrink {
+   100% {
+     width: 40vw;
+     height: 20vh;
+  }
+}
+
+@keyframes appear {
+  0% {
+    opacity: 0;
+  } 100% {
+    opacity: 1;
+  }
+}
+
+.island-enlarge {
+  border-radius: 50px;
+  transition: .3s;
+  animation: enlarge 0.3s forwards;
+}
+
+.island-shrink {
+  transition: .3s;
+  animation: shrink 0.6s forwards;
+}
+
+.island-wide {
+  transition: .2s;
+  width: 60vw;
+}
+
+#time {
+  position: absolute;            
+  top: 20%;
+  left: 12%;
+  transform: translate(-50%, -50%);
+  font-family: Arial, Helvetica, sans-serif;
+  color: white;
+  font-size: 18px;
+  pointer-events: none;  
+  animation: appear 1s forwards;    
 }
