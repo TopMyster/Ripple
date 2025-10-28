@@ -1,14 +1,6 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 
-useEffect(() => {
-  const saved = localStorage.getItem("API_KEY");
-  if (!saved) {
-    const key = prompt("Enter API KEY");
-    if (key) localStorage.setItem("API_KEY", key);
-  }
-}, []);
-
 function formatTime(date = new Date()) {
   const hours = String(date.getHours()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
@@ -76,8 +68,15 @@ export default function Island() {
 
        {mode === "large" && tab === 2 && asked === false ? 
        <>
-        <div>
-            <input id="userinput" type="text"/>
+        <div style={{
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexWrap: "wrap"
+
+        }}>
+            <textarea id="userinput" type="text" placeholder="Ask Anything"/>
             <button id="chatsubmit" onClick={() => {setAsked(true); askAI()}} >Ask</button>
         </div>
        </>: null}
