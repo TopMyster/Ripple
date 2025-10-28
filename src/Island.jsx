@@ -1,47 +1,47 @@
 import { useState, useEffect } from "react";
 import "./App.css";
+let width = mode === "large" ? 90 : mode === "wide" ? 55 : 35;
+let height = mode === "large" ? 90 : mode === "wide" ? 20 : 20;
 
 
-function getTime() {
-  const date = new Date();
+useEffect(() => {
+  const saved = localStorage.getItem("API_KEY");
+  if (!saved) {
+    const key = prompt("Enter API KEY");
+    if (key) localStorage.setItem("API_KEY", key);
+  }
+}, []);
+
+function formatTime(date = new Date()) {
   const hours = String(date.getHours()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
-
-
-  const timeEl = document.getElementById("time");
-  if (timeEl) {
-    timeEl.textContent = `${hours}:${minutes}`;
-  }
+  return `${hours}:${minutes}`;
 }
-export default function Island() {
-  useEffect(() => {
-    const id = setInterval(getTime, 1000);
-    getTime();
-    return () => clearInterval(id);
-  }, []);
 
+function askAI() {
+    let API_KEY = localStorage.getItem('API_KEY')
+}
+
+export default function Island() {
+  const [time, setTime] = useState(formatTime());
   const [mode, setMode] = useState("shrink");
   const [tab, setTab] = useState(1);
-  let width = mode === "large" ? 90 : mode === "wide" ? 55 : 35;
-  let height = mode === "large" ? 90 : mode === "wide" ? 20 : 20;
-  let switchTabs = 1;
-  
-document.addEventListener('keydown', (e) => {
+  const [asked, setAsked] = useState(false);
 
-  if (e.key === "ArrowRight") {
-    switchTabs+=1
-  } else if (e.key === "ArrowLeft") {
-    switchTabs-=1
-  }
+  useEffect(() => {
+  const handleKeyDown = (e) => {
+    if (e.key === "ArrowRight") {
+      setTab((prev) => Math.min(2, prev + 1));
+    } else if (e.key === "ArrowLeft") {
+        setTab((prev) => Math.max(1, prev - 1));
+    }
+  };
 
-  if (switchTabs > 2) {
-    switchTabs = 2
-  } else if(switchTabs < 1) {
-    switchTabs = 1
-  }
-
-  setTab(switchTabs)
-})
+  document.addEventListener("keydown", handleKeyDown);
+  return () => {
+    document.removeEventListener("keydown", handleKeyDown);
+  };
+  }, []);
 
   return (
      <div
@@ -60,20 +60,38 @@ document.addEventListener('keydown', (e) => {
 
       }}
     >
-      {mode === "wide" ? <h1 id="time" className="text" style={{
+      {mode === "wide" ? <h1 className="text" style={{
         position: 'absolute',
         top: '20%',
         left: '12%',
         transform: 'translate(-50%, -50%)',
         fontSize: 18
-      }}></h1> : null}
+      }}>{time}</h1> : null}
       {mode === "large" && tab === 1 ? 
       <>
-      <div>
-        <h1 id="time" className="text" style={{fontSize:50}}></h1>
-      </div>
+        <div>
+            <h1 className="text" style={{fontSize:50}}>{time}</h1>
+        </div>
       </>
        : null}
+
+       {mode === "large" && tab === 2 && asked === false ? 
+       <>
+        <div>
+            <input id="userinput" type="text"/>
+            <button id="chatsubmit" onClick={() => {setAsked(true); askAI()}} >Ask</button>
+        </div>
+       </>: null}
+        
+       {mode === "large" && tab === 2 && asked === true ? 
+       <>
+        <div>
+            <div id="result">
+                
+            </div>
+            <button onClick={() => {setAsked(false); askAI()}}>Ask another</button>
+        </div>
+       </>: null}
     </div>
   );
 }

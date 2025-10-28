@@ -72,5 +72,14 @@ body {
   color: #FAFAFA;
   pointer-events: none; 
   user-select: none; 
+  transition: .2s;
   animation: appear 1s forwards;    
+}
+
+#userinput {
+  animation: appear 1s forwards;
+}
+
+#chatsubmit {
+  animation: appear 1s forwards;
 }
