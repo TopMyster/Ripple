@@ -1,8 +1,5 @@
 import { useState, useEffect } from "react";
 import "./App.css";
-let width = mode === "large" ? 90 : mode === "wide" ? 55 : 35;
-let height = mode === "large" ? 90 : mode === "wide" ? 20 : 20;
-
 
 useEffect(() => {
   const saved = localStorage.getItem("API_KEY");
@@ -27,6 +24,8 @@ export default function Island() {
   const [mode, setMode] = useState("shrink");
   const [tab, setTab] = useState(1);
   const [asked, setAsked] = useState(false);
+  let width = mode === "large" ? 90 : mode === "wide" ? 55 : 35;
+  let height = mode === "large" ? 90 : mode === "wide" ? 20 : 20;
 
   useEffect(() => {
   const handleKeyDown = (e) => {

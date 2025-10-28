@@ -18,7 +18,8 @@
         "width": 500,
         "height": 200,
         "resizable": false,
-        "backgroundColor": "#00000000"
+        "backgroundColor": "#00000000",
+        "alwaysOnTop": true
       }
     ],
     "security": {
