@@ -23,46 +23,21 @@ body {
   width: 60vw;
 }
 
-@keyframes enlarge {
-  100% {
-     width: 90vw;
-     height: 90vh;
-  }
-}
-
 @keyframes appear {
   0% {
+    -webkit-filter: blur(5px);
+    filter: blur(5px);
     opacity: 0;
   } 100% {
+    -webkit-filter: blur(0px);
+    filter: blur(0px);
     opacity: 1;
   }
 }
 
-.island-enlarge {
-  border-radius: 50px;
-  transition: .3s;
-  animation: enlarge 0.3s forwards;
-}
-
-.island-shrink {
-  transition: .3s;
-  width: 40vw;
-  height: 20vh;
-}
-
-.island-wide {
-  transition: .2s;
-  width: 70vw;
-}
-
-#time {
-  position: absolute;            
-  top: 20%;
-  left: 12%;
-  transform: translate(-50%, -50%);
+.text {
   font-family: Arial, Helvetica, sans-serif;
-  color: white;
-  font-size: 18px;
+  color: #FAFAFA;
   pointer-events: none; 
   user-select: none; 
   animation: appear 1s forwards;    
