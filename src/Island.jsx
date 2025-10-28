@@ -21,9 +21,27 @@ export default function Island() {
   }, []);
 
   const [mode, setMode] = useState("shrink");
-  const [tab, setTab] = useState("1");
-  const width = mode === "large" ? 90 : mode === "wide" ? 55 : 35;
-  const height = mode === "large" ? 90 : mode === "wide" ? 20 : 20;
+  const [tab, setTab] = useState(1);
+  let width = mode === "large" ? 90 : mode === "wide" ? 55 : 35;
+  let height = mode === "large" ? 90 : mode === "wide" ? 20 : 20;
+  let switchTabs = 1;
+  
+document.addEventListener('keydown', (e) => {
+
+  if (e.key === "ArrowRight") {
+    switchTabs+=1
+  } else if (e.key === "ArrowLeft") {
+    switchTabs-=1
+  }
+
+  if (switchTabs > 2) {
+    switchTabs = 2
+  } else if(switchTabs < 1) {
+    switchTabs = 1
+  }
+
+  setTab(switchTabs)
+})
 
   return (
      <div
@@ -49,7 +67,7 @@ export default function Island() {
         transform: 'translate(-50%, -50%)',
         fontSize: 18
       }}></h1> : null}
-      {mode === "large" && tab === "1" ? 
+      {mode === "large" && tab === 1 ? 
       <>
       <div>
         <h1 id="time" className="text" style={{fontSize:50}}></h1>
