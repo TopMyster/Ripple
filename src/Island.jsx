@@ -16,8 +16,16 @@ export default function Island() {
   const [mode, setMode] = useState("shrink");
   const [tab, setTab] = useState(1);
   const [asked, setAsked] = useState(false);
+  // const [test, setTest] = useState("")
   let width = mode === "large" ? 90 : mode === "wide" ? 55 : 35;
   let height = mode === "large" ? 90 : mode === "wide" ? 20 : 20;
+
+
+  // async function loadSettings() {
+  //   let response = await fetch('settings.json')
+  //   let data = await response.json()
+  //   setTest(data)
+  // }
 
   useEffect(() => {
   const handleKeyDown = (e) => {
@@ -27,6 +35,8 @@ export default function Island() {
         setTab((prev) => Math.max(1, prev - 1));
     }
   };
+
+  // loadSettings()
 
   document.addEventListener("keydown", handleKeyDown);
   return () => {
@@ -51,13 +61,18 @@ export default function Island() {
 
       }}
     >
-      {mode === "wide" ? <h1 className="text" style={{
-        position: 'absolute',
-        top: '20%',
-        left: '12%',
-        transform: 'translate(-50%, -50%)',
-        fontSize: 18
-      }}>{time}</h1> : null}
+      
+      {mode === "wide" ? 
+      <>
+        <h1 className="text" style={{
+          position: 'absolute',
+          top: '20%',
+          left: '12%',
+          transform: 'translate(-50%, -50%)',
+          fontSize: 18
+        }}>{time}</h1>
+      </>
+      : null}
       {mode === "large" && tab === 1 ? 
       <>
         <div>
