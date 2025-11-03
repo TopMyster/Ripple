@@ -6,7 +6,7 @@ function formatTime(date = new Date()) {
   const minutes = String(date.getMinutes()).padStart(2, "0");
   return `${hours}:${minutes}`;
 }
-
+  
 function askAI() {
     let API_KEY = localStorage.getItem('API_KEY')
 }
