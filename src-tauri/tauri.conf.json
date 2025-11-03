@@ -19,7 +19,8 @@
         "height": 200,
         "resizable": false,
         "backgroundColor": "#00000000",
-        "alwaysOnTop": true
+        "alwaysOnTop": true,
+        "visibleOnAllWorkspaces": true
       }
     ],
     "security": {
