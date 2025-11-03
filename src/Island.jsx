@@ -69,7 +69,8 @@ export default function Island() {
           top: '20%',
           left: '12%',
           transform: 'translate(-50%, -50%)',
-          fontSize: 17
+          fontSize: 17,
+          fontWeight: 600
         }}>{time}</h1>
       </>
       : null}
