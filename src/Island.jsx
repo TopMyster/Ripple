@@ -17,7 +17,7 @@ export default function Island() {
   const [tab, setTab] = useState(1);
   const [asked, setAsked] = useState(false);
   // const [test, setTest] = useState("")
-  let width = mode === "large" ? 90 : mode === "wide" ? 61 : 35;
+  let width = mode === "large" ? 80 : mode === "wide" ? 61 : 35;
   let height = mode === "large" ? 90 : mode === "wide" ? 20 : 20;
 
 
