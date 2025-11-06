@@ -3,8 +3,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: rgba(0,0,0,0)
-  
+  background: transparent;
 }
 
 @font-face {
@@ -77,6 +76,7 @@ body {
 }
 
 #userinput {
+  font-family: "OpenRunde", Helvetica;
   animation: appear 1s forwards;
   width: 70vw;
   height: 50vh;
@@ -88,16 +88,21 @@ body {
   border: none;
   font-size: 20px;
   padding: 10px;
+  resize: none;
 }
 
 #chatsubmit {
   transition: .2s;
   margin-top: 5px;
   margin-bottom: 10px;
+  padding: 3px;
   animation: appear 1s forwards;
   width: 72vw;
   font-size: 15px;
   font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  background-color: #FAFAFA;
 }
 
 #chatsubmit:active {
