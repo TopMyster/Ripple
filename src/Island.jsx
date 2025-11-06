@@ -6,7 +6,21 @@ function formatTime(date = new Date()) {
   const minutes = String(date.getMinutes()).padStart(2, "0");
   return `${hours}:${minutes}`;
 }
-  
+
+function formatDateShort(input) {
+  const date = input ? new Date(input) : new Date();
+  if (isNaN(date.getTime())) {
+    throw new Error("Invalid date provided to formatDateShort");
+  }
+  const weekday = date.toLocaleDateString(undefined, { weekday: "short" }); 
+  const month = date.toLocaleDateString(undefined, { month: "short" }); 
+  const day = date.getDate();
+  return `${weekday}, ${month} ${day}`;
+}
+
+
+
+
 function askAI() {
     let API_KEY = localStorage.getItem('API_KEY')
 }
@@ -76,8 +90,9 @@ export default function Island() {
       : null}
       {mode === "large" && tab === 1 ? 
       <>
-        <div>
+        <div id="date">
             <h1 className="text" style={{fontSize:50}}>{time}</h1>
+            <h2 className="text" style={{fontSize:15}}>{formatDateShort()}</h2>
         </div>
       </>
        : null}
