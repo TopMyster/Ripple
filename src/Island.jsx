@@ -18,9 +18,6 @@ function formatDateShort(input) {
   return `${weekday}, ${month} ${day}`;
 }
 
-
-
-
 function askAI() {
     let API_KEY = localStorage.getItem('API_KEY')
 }
@@ -30,6 +27,7 @@ export default function Island() {
   const [mode, setMode] = useState("shrink");
   const [tab, setTab] = useState(1);
   const [asked, setAsked] = useState(false);
+  const [percent, setPercent] = useState(null)
   // const [test, setTest] = useState("")
   let width = mode === "large" ? 80 : mode === "wide" ? 61 : 35;
   let height = mode === "large" ? 90 : mode === "wide" ? 20 : 20;
@@ -40,6 +38,26 @@ export default function Island() {
   //   let data = await response.json()
   //   setTest(data)
   // }
+  useEffect(() => {
+      let battery, handler;
+
+      (async () => {
+        if (!("getBattery" in navigator)) return setPercent("Battery not supported");
+        try {
+          battery = await navigator.getBattery();
+          const update = () => setPercent(Math.round(battery.level * 100));
+          handler = update;
+          update();
+          battery.addEventListener("levelchange", handler);
+        } catch {
+          setPercent("Battery unavailable");
+        }
+      })();
+
+      return () => {
+        if (battery && handler) battery.removeEventListener("levelchange", handler);
+      };
+  }, []);
 
   useEffect(() => {
   const handleKeyDown = (e) => {
@@ -49,9 +67,6 @@ export default function Island() {
         setTab((prev) => Math.max(1, prev - 1));
     }
   };
-
-  // loadSettings()
-
   document.addEventListener("keydown", handleKeyDown);
   return () => {
     document.removeEventListener("keydown", handleKeyDown);
