@@ -67,7 +67,7 @@ export default function Island() {
       const timerId = setTimeout(() => {
         setMode("normal");
         setAlert(null);
-      }, 1000);
+      }, 2000);
       return () => {
         clearTimeout(timerId);
       };
