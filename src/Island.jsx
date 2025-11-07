@@ -60,19 +60,19 @@ export default function Island() {
       };
   }, []);
 
-useEffect(() => {
-  if (percent === 10 || percent === 20 || percent === 5 || percent === 2) {
-    setMode("wide");
-    setAlert(true);
-    const timerId = setTimeout(() => {
-      setMode("normal");
-      setAlert(null);
-    }, 1000);
-    return () => {
-      clearTimeout(timerId);
-    };
-  }
-}, [percent]);
+  useEffect(() => {
+    if (percent === 10 || percent === 20 || percent === 5 || percent === 2) {
+      setMode("wide");
+      setAlert(true);
+      const timerId = setTimeout(() => {
+        setMode("normal");
+        setAlert(null);
+      }, 1000);
+      return () => {
+        clearTimeout(timerId);
+      };
+    }
+  }, [percent]);
 
 
   useEffect(() => {
@@ -103,7 +103,6 @@ useEffect(() => {
         alignItems: "center",
         justifyContent: "center",
         overflow: "hidden"
-
       }}
     >
       
@@ -123,6 +122,7 @@ useEffect(() => {
 
       {mode === "large" && tab === 1 ? 
       <>
+      <h1 className="text" style={{fontSize:15, right: 20, top: 10, position: "absolute"}}>{`${percent}%`}</h1>
         <div id="date">
             <h1 className="text" style={{fontSize:50}}>{time}</h1>
             <h2 className="text" style={{fontSize:15}}>{formatDateShort()}</h2>
