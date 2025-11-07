@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./App.css";
 
 function formatTime(date = new Date()) {
@@ -28,7 +28,9 @@ export default function Island() {
   const [tab, setTab] = useState(1);
   const [asked, setAsked] = useState(false);
   const [percent, setPercent] = useState(null)
+  const [alert, setAlert] = useState(null)
   // const [test, setTest] = useState("")
+  const hasAlerted = useRef(false)
   let width = mode === "large" ? 80 : mode === "wide" ? 61 : 35;
   let height = mode === "large" ? 90 : mode === "wide" ? 20 : 20;
 
@@ -40,7 +42,6 @@ export default function Island() {
   // }
   useEffect(() => {
       let battery, handler;
-
       (async () => {
         if (!("getBattery" in navigator)) return setPercent("Battery not supported");
         try {
@@ -58,6 +59,21 @@ export default function Island() {
         if (battery && handler) battery.removeEventListener("levelchange", handler);
       };
   }, []);
+
+useEffect(() => {
+  if (percent === 10 || percent === 20 || percent === 5 || percent === 2) {
+    setMode("wide");
+    setAlert(true);
+    const timerId = setTimeout(() => {
+      setMode("normal");
+      setAlert(null);
+    }, 1000);
+    return () => {
+      clearTimeout(timerId);
+    };
+  }
+}, [percent]);
+
 
   useEffect(() => {
   const handleKeyDown = (e) => {
@@ -91,7 +107,7 @@ export default function Island() {
       }}
     >
       
-      {mode === "wide" ? 
+      {mode === "wide"? 
       <>
         <h1 className="text" style={{
           position: 'absolute',
@@ -99,10 +115,12 @@ export default function Island() {
           left: '12%',
           transform: 'translate(-50%, -50%)',
           fontSize: 17,
-          fontWeight: 600
-        }}>{time}</h1>
+          fontWeight: 600,
+          color: `${alert === true ? "#ff3f3fff" : "#FAFAFA"}`
+        }}>{alert === true ? `${percent}%`:time}</h1>
       </>
       : null}
+
       {mode === "large" && tab === 1 ? 
       <>
         <div id="date">
