@@ -1,11 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import "./App.css";
 
-function formatTime(date = new Date()) {
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${hours}:${minutes}`;
-}
 
 function formatDateShort(input) {
   const date = input ? new Date(input) : new Date();
@@ -23,7 +18,7 @@ function askAI() {
 }
 
 export default function Island() {
-  const [time, setTime] = useState(formatTime());
+  const [time, setTime] = useState(null);
   const [mode, setMode] = useState("shrink");
   const [tab, setTab] = useState(1);
   const [asked, setAsked] = useState(false);
@@ -88,6 +83,14 @@ export default function Island() {
     document.removeEventListener("keydown", handleKeyDown);
   };
   }, []);
+
+  useEffect((date = new Date()) => {
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    setTime(`${hours}:${minutes}`);
+
+  })
+
 
   return (
      <div
