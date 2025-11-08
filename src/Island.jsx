@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import "./App.css";
 
-
+//Get Date
 function formatDateShort(input) {
   const date = input ? new Date(input) : new Date();
   if (isNaN(date.getTime())) {
@@ -35,6 +35,8 @@ export default function Island() {
   //   let data = await response.json()
   //   setTest(data)
   // }
+
+  //Get battery percent
   useEffect(() => {
       let battery, handler;
       (async () => {
@@ -55,6 +57,7 @@ export default function Island() {
       };
   }, []);
 
+  //Battery alerts
   useEffect(() => {
     if (percent === 10 || percent === 20 || percent === 5 || percent === 2) {
       setMode("wide");
@@ -69,11 +72,11 @@ export default function Island() {
     }
   }, [percent]);
 
-
+  //Navigate tabs
   useEffect(() => {
   const handleKeyDown = (e) => {
     if (e.key === "ArrowRight") {
-      setTab((prev) => Math.min(2, prev + 1));
+      setTab((prev) => Math.min(3, prev + 1));
     } else if (e.key === "ArrowLeft") {
         setTab((prev) => Math.max(1, prev - 1));
     }
@@ -84,13 +87,13 @@ export default function Island() {
   };
   }, []);
 
+  //Get time
   useEffect((date = new Date()) => {
     const hours = String(date.getHours()).padStart(2, "0");
     const minutes = String(date.getMinutes()).padStart(2, "0");
     setTime(`${hours}:${minutes}`);
 
   })
-
 
   return (
      <div
@@ -108,7 +111,7 @@ export default function Island() {
         overflow: "hidden"
       }}
     >
-      
+      {/*Quickview -time*/}
       {mode === "wide"? 
       <>
         <h1 className="text" style={{
@@ -122,7 +125,7 @@ export default function Island() {
         }}>{alert === true ? `${percent}%`:time}</h1>
       </>
       : null}
-
+      {/*Overview tab*/}
       {mode === "large" && tab === 1 ? 
       <>
       <h1 className="text" style={{fontSize:15, right: 20, top: 10, position: "absolute"}}>{`${percent}%`}</h1>
@@ -132,7 +135,7 @@ export default function Island() {
         </div>
       </>
        : null}
-
+       {/*AI ask*/}
        {mode === "large" && tab === 2 && asked === false ? 
        <>
         <div style={{
@@ -147,7 +150,7 @@ export default function Island() {
             <button id="chatsubmit" onClick={() => {setAsked(true); askAI()}} >Ask</button>
         </div>
        </>: null}
-        
+        {/*AI result*/}
        {mode === "large" && tab === 2 && asked === true ? 
        <>
         <div>
@@ -157,6 +160,15 @@ export default function Island() {
             <button onClick={() => {setAsked(false); askAI()}}>Ask another</button>
         </div>
        </>: null}
+       {/*Settings*/}
+       {mode === "large" && tab === 3 ? 
+        <>
+          <h1 className="text">Settings</h1>
+          <div>
+
+          </div>
+        </>
+       : null}
     </div>
   );
 }
