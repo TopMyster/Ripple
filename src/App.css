@@ -49,6 +49,7 @@ body {
   border-radius: 15px;
   background-color: black;
   transition: .4s;
+  overflow: auto;
 }
 
 #Island:hover {
@@ -124,4 +125,16 @@ body {
 
 #chatsubmit:active {
   scale: .9;
+}
+
+select {
+  color: #FAFAFA;
+  font-family: "OpenRunde", Helvetica;
+  background-color: rgb(32, 32, 32);
+  color: white;
+  border-radius: 10px;
+  outline: none;
+  border: 2px solid grey;
+  transition: .2s;
+  animation: appear 1s forwards;  
 }

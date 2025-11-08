@@ -24,10 +24,19 @@ export default function Island() {
   const [asked, setAsked] = useState(false);
   const [percent, setPercent] = useState(null)
   const [alert, setAlert] = useState(null)
-  // const [test, setTest] = useState("")
+  const [batteryAlertsEnabled, setBatteryAlertsEnabled] = useState(true);
   const hasAlerted = useRef(false)
   let width = mode === "large" ? 80 : mode === "wide" ? 61 : 35;
   let height = mode === "large" ? 90 : mode === "wide" ? 20 : 20;
+  if (!localStorage.getItem("battery-alerts")) {
+    localStorage.setItem("battery-alerts", "true")
+  }
+
+  const handleBatteryAlertsChange = (e) => {
+    const value = e.target.value === "true";
+    setBatteryAlertsEnabled(value);
+    localStorage.setItem("battery-alerts", value ? "true" : "false")
+  }
 
 
   // async function loadSettings() {
@@ -59,7 +68,7 @@ export default function Island() {
 
   //Battery alerts
   useEffect(() => {
-    if (percent === 10 || percent === 20 || percent === 5 || percent === 2) {
+    if ((percent === 20 || percent === 10 || percent === 5 || percent === 2) && localStorage.getItem("battery-alerts") === "true") {
       setMode("wide");
       setAlert(true);
       const timerId = setTimeout(() => {
@@ -150,7 +159,7 @@ export default function Island() {
             <button id="chatsubmit" onClick={() => {setAsked(true); askAI()}} >Ask</button>
         </div>
        </>: null}
-        {/*AI result*/}
+       {/*AI result*/}
        {mode === "large" && tab === 2 && asked === true ? 
        <>
         <div>
@@ -163,8 +172,16 @@ export default function Island() {
        {/*Settings*/}
        {mode === "large" && tab === 3 ? 
         <>
-          <h1 className="text">Settings</h1>
           <div>
+          <h1 className="text">Settings</h1>
+          <label for="battery-alerts" className="text" >Battery Alerts: </label>
+          <select id="battery-alerts" 
+            value={batteryAlertsEnabled ? "true" : "false"}
+            onChange={handleBatteryAlertsChange}
+          >
+            <option value={"true"}>Yes</option>
+            <option value={"false"}>No</option>
+          </select><br/>
 
           </div>
         </>
