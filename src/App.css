@@ -47,9 +47,7 @@ body {
   width: 40vw;
   height: 20vh;
   border-radius: 15px;
-  background-color: black;
   transition: .4s;
-  overflow: auto;
 }
 
 #Island:hover {
@@ -69,7 +67,6 @@ body {
 }
 
 .text {
-  color: #FAFAFA;
   pointer-events: none; 
   user-select: none; 
   transition: .2s;
@@ -137,4 +134,22 @@ select {
   border: 2px solid grey;
   transition: .2s;
   animation: appear 1s forwards;  
+}
+
+.select-input {
+  width: 100px;
+  padding: 4px;
+  color: #FAFAFA;
+  font-family: "OpenRunde", Helvetica;
+  background-color: rgb(32, 32, 32);
+  color: white;
+  border-radius: 15px;
+  outline: none;
+  border: 2px solid grey;
+  transition: .2s;
+  animation: appear 1s forwards; 
+}
+
+label {
+  margin-right: 10px;
 }

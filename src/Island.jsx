@@ -32,6 +32,14 @@ export default function Island() {
     localStorage.setItem("battery-alerts", "true")
   }
 
+  if (!localStorage.getItem("bg-color")) {
+    localStorage.setItem("bg-color", "#000000")
+  }
+
+  if (!localStorage.getItem("text-color")) {
+    localStorage.setItem("text-color", "#FAFAFA")
+  }
+
   const handleBatteryAlertsChange = (e) => {
     const value = e.target.value === "true";
     setBatteryAlertsEnabled(value);
@@ -117,7 +125,9 @@ export default function Island() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        overflow: "hidden"
+        overflow: "hidden",
+        backgroundColor: `${localStorage.getItem("bg-color")}`,
+        color: `${localStorage.getItem("text-color")}`
       }}
     >
       {/*Quickview -time*/}
@@ -130,7 +140,7 @@ export default function Island() {
           transform: 'translate(-50%, -50%)',
           fontSize: 17,
           fontWeight: 600,
-          color: `${alert === true ? "#ff3f3fff" : "#FAFAFA"}`
+          color: `${alert === true ? "#ff3f3fff" : `${localStorage.getItem("text-color")}`}`
         }}>{alert === true ? `${percent}%`:time}</h1>
       </>
       : null}
@@ -172,8 +182,19 @@ export default function Island() {
        {/*Settings*/}
        {mode === "large" && tab === 3 ? 
         <>
-          <div>
+          <div
+            style={{
+              lineHeight: 2,
+              textAlign: "center",
+              width: "90%",
+              maxHeight: "100%",   
+              overflowX: "hidden",
+              padding: 12,
+              boxSizing: "border-box",
+            }}
+          >
           <h1 className="text">Settings</h1>
+          {/*Battery alerts settings*/}
           <label for="battery-alerts" className="text" >Battery Alerts: </label>
           <select id="battery-alerts" 
             value={batteryAlertsEnabled ? "true" : "false"}
@@ -182,6 +203,22 @@ export default function Island() {
             <option value={"true"}>Yes</option>
             <option value={"false"}>No</option>
           </select><br/>
+          {/*Background color settings*/}
+          <label for="bg-color" className="text">Island Color: </label>
+          <input
+            id="bg-color"
+            className="select-input" 
+            placeholder="ex: #000000"
+            onChange={(e) => {localStorage.setItem("bg-color", e.target.value)}}
+          /><br/>
+          {/*Text color settings*/}
+          <label for="text-color" className="text">Text Color: </label>
+          <input
+            id="text-color"
+            className="select-input" 
+            placeholder="ex: #FAFAFA"
+            onChange={(e) => {localStorage.setItem("text-color", e.target.value)}}
+          /><br/>
 
           </div>
         </>
