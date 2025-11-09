@@ -207,7 +207,6 @@ export default function Island() {
           alignItems: "center",
           justifyContent: "center",
           flexWrap: "wrap"
-
         }}>
             <textarea id="userinput" type="text" placeholder="Ask Anything" onChange={(e) => {setUserText(e.target.value)}}/>
             <button id="chatsubmit" onClick={() => {setAsked(true); askAI()}} >Ask</button>
@@ -239,7 +238,7 @@ export default function Island() {
           >
             <h1 className="text">Settings</h1>
             {/*Battery alerts settings*/}
-            <label for="battery-alerts" className="text" >Battery Alerts: </label>
+            <label for="battery-alerts" className="text" >Low Battery Alerts: </label>
             <select id="battery-alerts" 
               value={batteryAlertsEnabled ? "true" : "false"}
               onChange={handleBatteryAlertsChange}
@@ -268,7 +267,7 @@ export default function Island() {
             <input
               id="api-key"
               className="select-input" 
-              placeholder="Add Groq API key here"
+              placeholder="Enter Groq API Key here"
               onChange={(e) => {localStorage.setItem("api-key", e.target.value)}}
             /><br/>
           </div>

@@ -110,7 +110,7 @@ body {
   font-family: "OpenRunde", Helvetica;
   transition: .2s;
   margin-top: 5px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   padding: 3px;
   animation: appear 1s forwards;
   width: 72vw;
@@ -119,6 +119,7 @@ body {
   border: none;
   border-radius: 10px;
   background-color: #FAFAFA;
+  user-select: none;
 }
 
 button:active {

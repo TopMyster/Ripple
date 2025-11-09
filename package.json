@@ -1,6 +1,6 @@
 {
   "name": "ripple",
-  "productName": "ripple",
+  "productName": "Ripple",
   "version": "1.0.0",
   "description": "A Dynamic Island for All",
   "main": ".vite/build/main.js",
@@ -13,8 +13,8 @@
   },
   "keywords": [],
   "author": {
-    "name": "Piko",
-    "email": "pikocanfly.contact@gmail.com"
+    "name": "TopMyster",
+    "email": "example@gmail.com"
   },
   "license": "MIT",
   "devDependencies": {
