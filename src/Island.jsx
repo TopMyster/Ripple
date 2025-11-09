@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, use } from "react";
+import { useState, useEffect, } from "react";
 import { Groq } from 'groq-sdk';
 import "./App.css";
 
@@ -226,7 +226,11 @@ export default function Island() {
       {/*Overview tab*/}
       {mode === "large" && tab === 1 ? 
       <>
-      <h1 className="text" style={{fontSize:15, right: 20, top: 10, position: "absolute"}}>{`${percent}%`}</h1>
+      <div id="battery" >
+        <div id="battery-bar" style={{backgroundColor: localStorage.getItem("text-color"), color: localStorage.getItem("bg-color")}}>
+          <h1 className="text">{`${percent}%`}</h1>
+        </div>
+      </div>
       <h1 className="text" style={{fontSize:15, left: 20, top: 10, position: "absolute"}}>{`${weather}º${localStorage.getItem("weather-unit").toUpperCase()}`}</h1>
         <div id="date">
             <h1 className="text" style={{fontSize:50}}>{time}</h1>

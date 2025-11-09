@@ -193,3 +193,36 @@ label {
   padding: 55px 35px;
   min-height: 0;                    
 }
+
+#battery {
+  animation: appear 1s forwards;
+  position: absolute;
+  top: 15px;
+  right: 22px;
+  width: 15px;
+  background-color: none;
+  padding: 8px 11px;
+  height: 8px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#battery-bar {
+  position: absolute;
+  width: 100%;
+  height: 70%;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#battery-bar h1 {
+  position: absolute;
+  font-size: 13px;
+  padding: 7px;
+}
