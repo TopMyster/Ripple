@@ -96,13 +96,17 @@ body {
   height: 50vh;
   margin: 5px;
   background-color: transparent;
-  color: #FAFAFA;
   border-radius: 5px;
   outline: none;
   border: none;
   font-size: 20px;
   padding: 10px;
   resize: none;
+}
+
+#userinput::placeholder {
+  opacity: .7;
+  color: inherit;
 }
 
 #chatsubmit {

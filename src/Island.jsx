@@ -155,6 +155,12 @@ export default function Island() {
 
   })
 
+  // // Get Weather
+  // useEffect(async() => {
+  //   const response = await fetch(`https://api.weatherapi.com/v1/current.json?key=0b18c67c443543e0a6045401250911&q=${place}&aqi=no`)
+  //   const data = await response.json()
+  // })
+
   return (
      <div
       id="Island"
@@ -208,7 +214,7 @@ export default function Island() {
           justifyContent: "center",
           flexWrap: "wrap"
         }}>
-            <textarea id="userinput" type="text" placeholder="Ask Anything" onChange={(e) => {setUserText(e.target.value)}}/>
+            <textarea id="userinput" type="text" placeholder="Ask Anything" onChange={(e) => {setUserText(e.target.value)}} style={{color: `${localStorage.getItem("text-color")}`}}/>
             <button id="chatsubmit" onClick={() => {setAsked(true); askAI()}} >Ask</button>
         </div>
        </>: null}
