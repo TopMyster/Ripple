@@ -185,6 +185,6 @@ label {
   overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
-  padding: 25px;
+  padding: 55px 35px;
   min-height: 0;                    
 }
