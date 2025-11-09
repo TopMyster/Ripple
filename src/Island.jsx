@@ -259,7 +259,7 @@ export default function Island() {
             <h4 id="result" style={{fontWeight: 400}}>
                 {aiAnswer}
             </h4>
-            <button onClick={() => {setAsked(false); askAI()}} id="Askanotherbtn">Ask another</button>
+            <button onClick={() => {setAsked(false); askAI()}} id="Askanotherbtn" style={{backgroundColor: localStorage.getItem("text-color"), color: localStorage.getItem("bg-color")}}>Ask another</button>
         </div>
        </>: null}
        {/*Settings*/}

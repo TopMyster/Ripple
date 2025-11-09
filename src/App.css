@@ -122,7 +122,6 @@ body {
   font-weight: bold;
   border: none;
   border-radius: 10px;
-  background-color: #FAFAFA;
   user-select: none;
 }
 
@@ -166,7 +165,6 @@ label {
   cursor: pointer;
   animation: appear 1s forwards; 
   border: none;
-  background-color: #FAFAFA;
   position: absolute;
   right: 15px;
   bottom: 15px;
