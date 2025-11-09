@@ -24,7 +24,6 @@ export default function Island() {
   const [alert, setAlert] = useState(null)
   const [userText, setUserText] = useState("")
   const [batteryAlertsEnabled, setBatteryAlertsEnabled] = useState(true)
-  const hasAlerted = useRef(false)
   let width = mode === "large" ? 80 : mode === "wide" ? 61 : 35;
   let height = mode === "large" ? 90 : mode === "wide" ? 20 : 20;
   if (!localStorage.getItem("battery-alerts")) {
@@ -217,9 +216,9 @@ export default function Island() {
        {mode === "large" && tab === 2 && asked === true ? 
        <>
         <div>
-            <div id="result">
+            <h4 id="result" style={{fontWeight: 400}}>
                 {aiAnswer}
-            </div>
+            </h4>
             <button onClick={() => {setAsked(false); askAI()}} id="Askanotherbtn">Ask another</button>
         </div>
        </>: null}
@@ -237,40 +236,40 @@ export default function Island() {
               boxSizing: "border-box",
             }}
           >
-          <h1 className="text">Settings</h1>
-          {/*Battery alerts settings*/}
-          <label for="battery-alerts" className="text" >Battery Alerts: </label>
-          <select id="battery-alerts" 
-            value={batteryAlertsEnabled ? "true" : "false"}
-            onChange={handleBatteryAlertsChange}
-          >
-            <option value={"true"}>Yes</option>
-            <option value={"false"}>No</option>
-          </select><br/>
-          {/*Background color settings*/}
-          <label for="bg-color" className="text">Island Color: </label>
-          <input
-            id="bg-color"
-            className="select-input" 
-            placeholder="ex: #000000"
-            onChange={(e) => {localStorage.setItem("bg-color", e.target.value)}}
-          /><br/>
-          {/*Text color settings*/}
-          <label for="text-color" className="text">Text Color: </label>
-          <input
-            id="text-color"
-            className="select-input" 
-            placeholder="ex: #FAFAFA"
-            onChange={(e) => {localStorage.setItem("text-color", e.target.value)}}
-          /><br/>
-          {/*API key*/}
-          <label for="api-key" className="text">API key: </label>
-          <input
-            id="api-key"
-            className="select-input" 
-            placeholder="Add Groq API key here"
-            onChange={(e) => {localStorage.setItem("api-key", e.target.value)}}
-          /><br/>
+            <h1 className="text">Settings</h1>
+            {/*Battery alerts settings*/}
+            <label for="battery-alerts" className="text" >Battery Alerts: </label>
+            <select id="battery-alerts" 
+              value={batteryAlertsEnabled ? "true" : "false"}
+              onChange={handleBatteryAlertsChange}
+            >
+              <option value={"true"}>Yes</option>
+              <option value={"false"}>No</option>
+            </select><br/>
+            {/*Background color settings*/}
+            <label for="bg-color" className="text">Island Color: </label>
+            <input
+              id="bg-color"
+              className="select-input" 
+              placeholder="ex: #000000"
+              onChange={(e) => {localStorage.setItem("bg-color", e.target.value)}}
+            /><br/>
+            {/*Text color settings*/}
+            <label for="text-color" className="text">Text Color: </label>
+            <input
+              id="text-color"
+              className="select-input" 
+              placeholder="ex: #FAFAFA"
+              onChange={(e) => {localStorage.setItem("text-color", e.target.value)}}
+            /><br/>
+            {/*API key*/}
+            <label for="api-key" className="text">API key: </label>
+            <input
+              id="api-key"
+              className="select-input" 
+              placeholder="Add Groq API key here"
+              onChange={(e) => {localStorage.setItem("api-key", e.target.value)}}
+            /><br/>
           </div>
         </>
        : null}
