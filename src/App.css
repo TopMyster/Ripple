@@ -46,8 +46,8 @@ body {
   position: relative;
   width: 40vw;
   height: 20vh;
-  border-radius: 15px;
   transition: .4s;
+  scrollbar-width: none;
 }
 
 #Island:hover {
@@ -117,7 +117,7 @@ body {
   font-size: 15px;
   font-weight: bold;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   background-color: #FAFAFA;
 }
 
@@ -167,7 +167,7 @@ label {
   bottom: 15px;
   padding: 6px 10px;
   font-weight: 700;
-  border-radius: 8px;
+  border-radius: 9px;
   transition: .2s;
 }
 

@@ -169,8 +169,9 @@ export default function Island() {
         alignItems: "center",
         justifyContent: "center",
         overflow: "hidden",
-        backgroundColor: `${localStorage.getItem("bg-color")}`,
-        color: `${localStorage.getItem("text-color")}`
+        borderRadius: mode === "large" ? 25 : 15,
+        backgroundColor: localStorage.getItem("bg-color"),
+        color: localStorage.getItem("text-color")
       }}
     >
       {/*Quickview -time*/}
@@ -227,7 +228,7 @@ export default function Island() {
         <>
           <div
             style={{
-              lineHeight: 2,
+              lineHeight: 2.3,
               textAlign: "center",
               width: "90%",
               maxHeight: "100%",   
