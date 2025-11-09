@@ -249,7 +249,7 @@ export default function Island() {
           flexWrap: "wrap"
         }}>
             <textarea id="userinput" type="text" placeholder="Ask Anything" onChange={(e) => {setUserText(e.target.value)}} style={{color: `${localStorage.getItem("text-color")}`}}/>
-            <button id="chatsubmit" onClick={() => {setAsked(true); askAI()}} >Ask</button>
+            <button id="chatsubmit" onClick={() => {setAsked(true); askAI()}} style={{backgroundColor: localStorage.getItem("text-color"), color: localStorage.getItem("bg-color")}}>Ask</button>
         </div>
        </>: null}
        {/*AI result*/}
