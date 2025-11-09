@@ -1,6 +1,6 @@
-import { app, BrowserWindow, screen } from 'electron';
-import path from 'node:path';
-import started from 'electron-squirrel-startup';
+const { app, BrowserWindow, screen } = require('electron');
+const path = require('node:path');
+const started = require('electron-squirrel-startup');
 
 if (started) {
   app.quit();
@@ -32,11 +32,21 @@ const createWindow = () => {
     alwaysOnTop: true,
     resizable: false,
     frame: false,
-    skipTaskbar: true, 
+    skipTaskbar: true,
+    // NOTE: setVisibleOnAllWorkspaces is NOT a constructor option; removed here.
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      devTools: false,
     },
   });
+
+  // Minimal fix: call the method on the instance (works on macOS and some Linux WMs).
+  // visibleOnFullScreen: true ensures it shows in fullscreen spaces too.
+  try {
+    mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  } catch (_) {
+    // Best-effort; ignore if platform/WM does not support this
+  }
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
