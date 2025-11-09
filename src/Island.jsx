@@ -24,8 +24,11 @@ export default function Island() {
   const [alert, setAlert] = useState(null)
   const [userText, setUserText] = useState("")
   const [batteryAlertsEnabled, setBatteryAlertsEnabled] = useState(true)
+  const [weather, setWeather] = useState("")
+  const [weatherUnit, setweatherUnit] = useState()
   let width = mode === "large" ? 80 : mode === "wide" ? 61 : 35;
   let height = mode === "large" ? 90 : mode === "wide" ? 20 : 20;
+
   if (!localStorage.getItem("battery-alerts")) {
     localStorage.setItem("battery-alerts", "true")
   }
@@ -38,10 +41,20 @@ export default function Island() {
     localStorage.setItem("text-color", "#FAFAFA")
   }
 
+  if (!localStorage.getItem("weather-unit")) {
+    localStorage.setItem("weather-unit", "f")
+  }
+
   const handleBatteryAlertsChange = (e) => {
     const value = e.target.value === "true";
     setBatteryAlertsEnabled(value);
     localStorage.setItem("battery-alerts", value ? "true" : "false")
+  }
+
+  const handleWeatherUnitChange = (e) => {
+    const value = e.target.value === "c" ? "c" : "f";
+    setweatherUnit(value);
+    localStorage.setItem("weather-unit", value)
   }
 
   //AI feature 
@@ -155,11 +168,18 @@ export default function Island() {
 
   })
 
-  // // Get Weather
-  // useEffect(async() => {
-  //   const response = await fetch(`https://api.weatherapi.com/v1/current.json?key=0b18c67c443543e0a6045401250911&q=${place}&aqi=no`)
-  //   const data = await response.json()
-  // })
+  // Get Weather
+  useEffect(() => {
+      const getWeather = async() => {
+        const response = await fetch(`https://api.weatherapi.com/v1/current.json?key=0b18c67c443543e0a6045401250911&q=${localStorage.getItem("location")}&aqi=no`)
+        const data = await response.json()
+        const unit = localStorage.getItem("weather-unit"); 
+        const key = unit === "f" ? "temp_f" : "temp_c"; 
+        setWeather(Math.round(data?.current?.[key]))
+      }
+      getWeather()
+    }
+  )
 
   return (
      <div
@@ -192,12 +212,22 @@ export default function Island() {
           fontWeight: 600,
           color: `${alert === true ? "#ff3f3fff" : `${localStorage.getItem("text-color")}`}`
         }}>{alert === true ? `${percent}%`:time}</h1>
+        <h1 className="text" style={{
+          position: 'absolute',
+          top: '20%',
+          right: '-1%',
+          transform: 'translate(-50%, -50%)',
+          fontSize: 17,
+          fontWeight: 600,
+          color: localStorage.getItem("text-color")
+        }}>{weather}º</h1>
       </>
       : null}
       {/*Overview tab*/}
       {mode === "large" && tab === 1 ? 
       <>
       <h1 className="text" style={{fontSize:15, right: 20, top: 10, position: "absolute"}}>{`${percent}%`}</h1>
+      <h1 className="text" style={{fontSize:15, left: 20, top: 10, position: "absolute"}}>{`${weather}º${localStorage.getItem("weather-unit").toUpperCase()}`}</h1>
         <div id="date">
             <h1 className="text" style={{fontSize:50}}>{time}</h1>
             <h2 className="text" style={{fontSize:15}}>{formatDateShort()}</h2>
@@ -276,6 +306,22 @@ export default function Island() {
               placeholder="Enter Groq API Key here"
               onChange={(e) => {localStorage.setItem("api-key", e.target.value)}}
             /><br/>
+            {/*Location settings*/}
+            <label for="location" className="text">Location: </label>
+            <input
+              id="location"
+              className="select-input" 
+              placeholder="ex. Trenton, New Jersey, United States"
+              onChange={(e) => {localStorage.setItem("location", e.target.value)}}
+            /><br/>
+            <label for="weather-unit" className="text" >Weather Unit: </label>
+            <select id="weather-unit" 
+              value={weatherUnit ? "f" : "c"}
+              onChange={handleWeatherUnitChange}
+            >
+              <option value={"f"}>F</option>
+              <option value={"c"}>C</option>
+            </select><br/>
           </div>
         </>
        : null}
