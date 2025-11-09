@@ -106,6 +106,7 @@ body {
 }
 
 #chatsubmit {
+  cursor: pointer;
   font-family: "OpenRunde", Helvetica;
   transition: .2s;
   margin-top: 5px;
@@ -125,6 +126,7 @@ body {
 }
 
 select {
+  cursor: pointer;
   color: #FAFAFA;
   font-family: "OpenRunde", Helvetica;
   background-color: rgb(32, 32, 32);
@@ -137,7 +139,7 @@ select {
 }
 
 .select-input {
-  width: 100px;
+  width: 120px;
   padding: 4px;
   color: #FAFAFA;
   font-family: "OpenRunde", Helvetica;
@@ -152,4 +154,29 @@ select {
 
 label {
   margin-right: 10px;
+}
+
+#Askanotherbtn {
+  font-family: "OpenRunde", Helvetica;
+  cursor: pointer;
+  animation: appear 1s forwards; 
+  border: none;
+  background-color: #FAFAFA;
+  position: absolute;
+  right: 15px;
+  bottom: 15px;
+  padding: 6px 10px;
+  font-weight: 700;
+  border-radius: 8px;
+}
+
+#result {
+  animation: appear 1s forwards; 
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0 auto;
+  max-width: 85%;
 }

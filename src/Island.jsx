@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, use } from "react";
+import { Groq } from 'groq-sdk';
 import "./App.css";
 
 //Get Date
@@ -13,18 +14,16 @@ function formatDateShort(input) {
   return `${weekday}, ${month} ${day}`;
 }
 
-function askAI() {
-    let API_KEY = localStorage.getItem('API_KEY')
-}
-
 export default function Island() {
-  const [time, setTime] = useState(null);
-  const [mode, setMode] = useState("shrink");
+  const [time, setTime] = useState(null)
+  const [mode, setMode] = useState("shrink")
   const [tab, setTab] = useState(1);
-  const [asked, setAsked] = useState(false);
+  const [asked, setAsked] = useState(false)
+  const [aiAnswer, setAIAnswer] = useState(null)
   const [percent, setPercent] = useState(null)
   const [alert, setAlert] = useState(null)
-  const [batteryAlertsEnabled, setBatteryAlertsEnabled] = useState(true);
+  const [userText, setUserText] = useState("")
+  const [batteryAlertsEnabled, setBatteryAlertsEnabled] = useState(true)
   const hasAlerted = useRef(false)
   let width = mode === "large" ? 80 : mode === "wide" ? 61 : 35;
   let height = mode === "large" ? 90 : mode === "wide" ? 20 : 20;
@@ -46,12 +45,57 @@ export default function Island() {
     localStorage.setItem("battery-alerts", value ? "true" : "false")
   }
 
+  //AI feature 
+  async function askAI() {
+    try {
+      const apiKey = (localStorage.getItem("api-key") || "").trim();
 
-  // async function loadSettings() {
-  //   let response = await fetch('settings.json')
-  //   let data = await response.json()
-  //   setTest(data)
-  // }
+      if (!apiKey) {
+        setAIAnswer("Enter your API key in settings");
+        return;
+      }
+
+      const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
+
+      setAIAnswer("");
+
+      const stream = await groq.chat.completions.create({
+        model: "openai/gpt-oss-20b",
+        messages: [
+          {
+            role: "user",
+            content: ` Users question: ${userText}. Answer the users question in a short paragraph, 3-4 sentences. If the question is straight forward answer the question in a short 2 sentences.`
+          }
+        ],
+        temperature: 1,
+        max_completion_tokens: 8192,
+        top_p: 1,
+        stream: true,
+        stop: null
+      });
+
+      let fullText = "";
+
+      for await (const chunk of stream) {
+        const delta = chunk?.choices?.[0]?.delta?.content || "";
+        if (delta) {
+          fullText += delta;
+          setAIAnswer(prev => (prev ? prev + delta : delta));
+        }
+      }
+
+
+      if (!fullText) {
+        setAIAnswer("No response streamed. Try again or check your model/params.");
+      }
+    } catch (err) {
+      const message =
+        err?.message ||
+        (typeof err === "string" ? err : "Unexpected error occurred.");
+      setAIAnswer(`Error: ${message}`);
+      console.error("askAI error:", err);
+    }
+  }
 
   //Get battery percent
   useEffect(() => {
@@ -165,7 +209,7 @@ export default function Island() {
           flexWrap: "wrap"
 
         }}>
-            <textarea id="userinput" type="text" placeholder="Ask Anything"/>
+            <textarea id="userinput" type="text" placeholder="Ask Anything" onChange={(e) => {setUserText(e.target.value)}}/>
             <button id="chatsubmit" onClick={() => {setAsked(true); askAI()}} >Ask</button>
         </div>
        </>: null}
@@ -174,9 +218,9 @@ export default function Island() {
        <>
         <div>
             <div id="result">
-                
+                {aiAnswer}
             </div>
-            <button onClick={() => {setAsked(false); askAI()}}>Ask another</button>
+            <button onClick={() => {setAsked(false); askAI()}} id="Askanotherbtn">Ask another</button>
         </div>
        </>: null}
        {/*Settings*/}
@@ -219,7 +263,14 @@ export default function Island() {
             placeholder="ex: #FAFAFA"
             onChange={(e) => {localStorage.setItem("text-color", e.target.value)}}
           /><br/>
-
+          {/*API key*/}
+          <label for="api-key" className="text">API key: </label>
+          <input
+            id="api-key"
+            className="select-input" 
+            placeholder="Add Groq API key here"
+            onChange={(e) => {localStorage.setItem("api-key", e.target.value)}}
+          /><br/>
           </div>
         </>
        : null}
