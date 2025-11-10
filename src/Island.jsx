@@ -207,6 +207,10 @@ export default function Island() {
         position: "relative",
         display: "flex",
         alignItems: "center",
+        backgroundImage: `url('${localStorage.getItem("bg-image")}')`,
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "center",
+        backgroundSize: "cover",
         justifyContent: "center",
         overflow: "hidden",
         fontFamily: theme === "win95" ? "w95" : "OpenRunde",
@@ -349,6 +353,14 @@ export default function Island() {
               <option value={"sleek-black"}>Sleek Black</option>
               <option value={"win95"}>win95</option>
             </select><br/>
+            {/*Background image settings*/}
+            <label for="bg-image" className="text">Background Image: </label>
+            <input
+              id="bg-image"
+              className="select-input" 
+              placeholder="ex. https://example.com/image.png"
+              onChange={(e) => {localStorage.setItem("bg-image", e.target.value)}}
+            /><br/>
           </div>
         </>
        : null}
