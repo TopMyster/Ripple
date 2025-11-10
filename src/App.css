@@ -38,6 +38,13 @@ body {
   font-display: swap;
 }
 
+@font-face {
+  font-family: "w95";
+  src: url("./assets/fonts/w95fa.woff") format("woff");
+  font-style: normal;
+  font-display: swap;
+}
+
 #app {
   background-color: transparent; 
 }
@@ -90,7 +97,6 @@ body {
 }
 
 #userinput {
-  font-family: "OpenRunde", Helvetica;
   animation: appear 1s forwards;
   width: 70vw;
   height: 50vh;
@@ -111,7 +117,6 @@ body {
 
 #chatsubmit {
   cursor: pointer;
-  font-family: "OpenRunde", Helvetica;
   transition: .2s;
   margin-top: 5px;
   margin-bottom: 8px;
@@ -161,7 +166,6 @@ label {
 }
 
 #Askanotherbtn {
-  font-family: "OpenRunde", Helvetica;
   cursor: pointer;
   animation: appear 1s forwards; 
   border: none;

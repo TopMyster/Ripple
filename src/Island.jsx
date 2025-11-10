@@ -26,6 +26,7 @@ export default function Island() {
   const [batteryAlertsEnabled, setBatteryAlertsEnabled] = useState(true)
   const [weather, setWeather] = useState("")
   const [weatherUnit, setweatherUnit] = useState()
+  const [theme, setTheme] = useState("default")
   let width = mode === "large" ? 80 : mode === "wide" ? 60 : 35;
   let height = mode === "large" ? 90 : mode === "wide" ? 20 : 20;
 
@@ -181,6 +182,18 @@ export default function Island() {
     }
   )
 
+  //Set theme
+  useEffect(() => {
+    if (theme === "sleek-black") {
+      localStorage.setItem("bg-color", "rgba(0, 0, 0, 0.64)")
+    } else if (theme === "win95") {
+      localStorage.setItem("bg-color", "rgba(195, 195, 195)")
+      localStorage.setItem("text-color", "rgba(0, 0, 0)")
+    } else if (theme === "none") {
+      
+    }
+  })
+
   return (
      <div
       id="Island"
@@ -195,7 +208,10 @@ export default function Island() {
         alignItems: "center",
         justifyContent: "center",
         overflow: "hidden",
-        borderRadius: mode === "large" ? 25 : 15,
+        fontFamily: theme === "win95" ? "w95" : "OpenRunde",
+        border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : "none",
+        borderColor: theme === "win95" ? "#FFFFFF #808080 #808080 #FFFFFF" : "none",
+        borderRadius: mode === "large" && theme === "win95" ? 0 : mode === "large" ? 25 : theme === "win95" ? 0 : 15,
         backgroundColor: localStorage.getItem("bg-color"),
         color: localStorage.getItem("text-color")
       }}
@@ -248,18 +264,18 @@ export default function Island() {
           justifyContent: "center",
           flexWrap: "wrap"
         }}>
-            <textarea id="userinput" type="text" placeholder="Ask Anything" onChange={(e) => {setUserText(e.target.value)}} style={{color: `${localStorage.getItem("text-color")}`}}/>
-            <button id="chatsubmit" onClick={() => {setAsked(true); askAI()}} style={{backgroundColor: localStorage.getItem("text-color"), color: localStorage.getItem("bg-color")}}>Ask</button>
+            <textarea id="userinput" type="text" placeholder="Ask Anything" onChange={(e) => {setUserText(e.target.value)}} style={{color: `${localStorage.getItem("text-color")}`, fontFamily: theme === "win95" ? "w95" : "OpenRunde",}}/>
+            <button id="chatsubmit" onClick={() => {setAsked(true); askAI()}} style={{backgroundColor: localStorage.getItem("text-color"), color: localStorage.getItem("bg-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde",}}>Ask</button>
         </div>
        </>: null}
        {/*AI result*/}
        {mode === "large" && tab === 2 && asked === true ? 
        <>
         <div>
-            <h4 id="result" style={{fontWeight: 400}}>
+            <h4 id="result" style={{fontWeight: 400, fontFamily: theme === "win95" ? "w95" : "OpenRunde",}}>
                 {aiAnswer}
             </h4>
-            <button onClick={() => {setAsked(false); askAI()}} id="Askanotherbtn" style={{backgroundColor: localStorage.getItem("text-color"), color: localStorage.getItem("bg-color")}}>Ask another</button>
+            <button onClick={() => {setAsked(false); askAI()}} id="Askanotherbtn" style={{backgroundColor: localStorage.getItem("text-color"), color: localStorage.getItem("bg-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde",}}>Ask another</button>
         </div>
        </>: null}
        {/*Settings*/}
@@ -325,6 +341,12 @@ export default function Island() {
             >
               <option value={"f"}>F</option>
               <option value={"c"}>C</option>
+            </select><br/>
+            <label for="theme" className="text" >Theme: </label>
+            <select id="theme" value={theme} onChange={(e) => {setTheme(e.target.value)}}>
+              <option value={"none"}>None</option>
+              <option value={"sleek-black"}>Sleek Black</option>
+              <option value={"win95"}>win95</option>
             </select><br/>
           </div>
         </>
