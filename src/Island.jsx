@@ -186,6 +186,7 @@ export default function Island() {
   useEffect(() => {
     if (theme === "sleek-black") {
       localStorage.setItem("bg-color", "rgba(0, 0, 0, 0.64)")
+      localStorage.setItem("text-color", "rgba(255, 255, 255)")
     } else if (theme === "win95") {
       localStorage.setItem("bg-color", "rgba(195, 195, 195)")
       localStorage.setItem("text-color", "rgba(0, 0, 0)")
