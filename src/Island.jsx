@@ -337,7 +337,7 @@ export default function Island() {
             /><br/>
             <label for="weather-unit" className="text" >Weather Unit: </label>
             <select id="weather-unit" 
-              value={weatherUnit ? "f" : "c"}
+              value={weatherUnit}
               onChange={handleWeatherUnitChange}
             >
               <option value={"f"}>F</option>
