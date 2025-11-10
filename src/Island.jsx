@@ -232,7 +232,7 @@ export default function Island() {
         <h1 className="text" style={{
           position: 'absolute',
           top: '22%',
-          right: '-1%',
+          right: '1%',
           transform: 'translate(-50%, -50%)',
           fontSize: 16,
           fontWeight: 600,
