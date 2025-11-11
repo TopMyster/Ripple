@@ -27,8 +27,8 @@ export default function Island() {
   const [weather, setWeather] = useState("")
   const [weatherUnit, setweatherUnit] = useState()
   const [theme, setTheme] = useState("default")
-  let width = mode === "large" ? 80 : mode === "wide" ? 60 : 35;
-  let height = mode === "large" ? 90 : mode === "wide" ? 20 : 20;
+  let width = mode === "large" ? 400 : mode === "wide" ? 300 : 175;
+  let height = mode === "large" ? 190 : mode === "wide" ? 40 : 40;
 
   if (!localStorage.getItem("battery-alerts")) {
     localStorage.setItem("battery-alerts", "true")
@@ -202,8 +202,8 @@ export default function Island() {
       onMouseLeave={() => setMode("shrink")}
       onClick={() => setMode("large")}
       style={{
-        width: `${width}vw`,
-        height: `${height}vh`,
+        width: `${width}px`,
+        height: `${height}px`,
         position: "relative",
         display: "flex",
         alignItems: "center",
@@ -267,7 +267,8 @@ export default function Island() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          flexWrap: "wrap"
+          flexWrap: "wrap",
+          width: "90%"
         }}>
             <textarea id="userinput" type="text" placeholder="Ask Anything" onChange={(e) => {setUserText(e.target.value)}} style={{color: `${localStorage.getItem("text-color")}`, fontFamily: theme === "win95" ? "w95" : "OpenRunde",}}/>
             <button id="chatsubmit" onClick={() => {setAsked(true); askAI()}} style={{backgroundColor: localStorage.getItem("text-color"), color: localStorage.getItem("bg-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde",}}>Ask</button>

@@ -6,8 +6,9 @@ if (started) {
   app.quit();
 }
 
-const WINDOW_WIDTH = 500;
-const WINDOW_HEIGHT = 210;
+// Initial window size (will be adjusted to content)
+const INITIAL_WIDTH = 500;
+const INITIAL_HEIGHT = 210;
 
 function getTopCenterPosition(winWidth, winHeight) {
   const primaryDisplay = screen.getPrimaryDisplay();
@@ -20,11 +21,11 @@ function getTopCenterPosition(winWidth, winHeight) {
 }
 
 const createWindow = () => {
-  const { x, y } = getTopCenterPosition(WINDOW_WIDTH, WINDOW_HEIGHT);
+  const { x, y } = getTopCenterPosition(INITIAL_WIDTH, INITIAL_HEIGHT);
 
   const mainWindow = new BrowserWindow({
-    width: WINDOW_WIDTH,
-    height: WINDOW_HEIGHT,
+    width: INITIAL_WIDTH,
+    height: INITIAL_HEIGHT,
     x,
     y,
     backgroundColor: '#00000000',
@@ -32,16 +33,14 @@ const createWindow = () => {
     alwaysOnTop: true,
     resizable: false,
     frame: false,
+    roundedCorners: true,
     skipTaskbar: true,
-    // NOTE: setVisibleOnAllWorkspaces is NOT a constructor option; removed here.
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       devTools: false,
     },
   });
 
-  // Minimal fix: call the method on the instance (works on macOS and some Linux WMs).
-  // visibleOnFullScreen: true ensures it shows in fullscreen spaces too.
   try {
     mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   } catch (_) {
@@ -56,8 +55,89 @@ const createWindow = () => {
     );
   }
 
+  // Instant window resizing
+  let lastContentSize = { width: 0, height: 0 };
+  let sizeCheckInterval = null;
+  
+  const adjustWindowToContent = async () => {
+    try {
+      const contentSize = await mainWindow.webContents.executeJavaScript(`
+        (() => {
+          const island = document.getElementById('Island');
+          if (!island) return null;
+          
+          const rect = island.getBoundingClientRect();
+          
+          return {
+            width: Math.ceil(rect.width) + 10,
+            height: Math.ceil(rect.height) + 10
+          };
+        })()
+      `);
+
+      if (!contentSize || contentSize.width <= 0 || contentSize.height <= 0) {
+        return;
+      }
+
+      // Only update if size changed
+      if (contentSize.width !== lastContentSize.width || 
+          contentSize.height !== lastContentSize.height) {
+        
+        lastContentSize = { width: contentSize.width, height: contentSize.height };
+        
+        // Instant resize
+        mainWindow.setSize(contentSize.width, contentSize.height, false);
+        
+        // Recenter
+        const pos = getTopCenterPosition(contentSize.width, contentSize.height);
+        mainWindow.setPosition(pos.x, pos.y);
+      }
+      
+    } catch (error) {
+      // Silently handle errors
+    }
+  };
+
+  // Fast polling to catch changes instantly
+  const startSizeMonitoring = () => {
+    if (sizeCheckInterval) {
+      clearInterval(sizeCheckInterval);
+      sizeCheckInterval = null;
+    }
+    
+    // Poll at 60fps for instant detection
+    const CHECK_INTERVAL = 16;
+    
+    sizeCheckInterval = setInterval(() => {
+      adjustWindowToContent();
+    }, CHECK_INTERVAL);
+    
+    adjustWindowToContent();
+  };
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    adjustWindowToContent();
+    setTimeout(() => adjustWindowToContent(), 8);
+    setTimeout(() => adjustWindowToContent(), 16);
+    setTimeout(() => {
+      startSizeMonitoring();
+    }, 50);
+  });
+
+  mainWindow.webContents.on('dom-ready', () => {
+    setTimeout(() => adjustWindowToContent(), 8);
+  });
+
+  mainWindow.on('closed', () => {
+    if (sizeCheckInterval) {
+      clearInterval(sizeCheckInterval);
+      sizeCheckInterval = null;
+    }
+  });
+
   const recenter = () => {
-    const pos = getTopCenterPosition(WINDOW_WIDTH, WINDOW_HEIGHT);
+    const [currentWidth, currentHeight] = mainWindow.getSize();
+    const pos = getTopCenterPosition(currentWidth, currentHeight);
     mainWindow.setPosition(pos.x, pos.y);
   };
 
@@ -65,7 +145,11 @@ const createWindow = () => {
   screen.on('display-added', recenter);
   screen.on('display-removed', recenter);
 
-  mainWindow.on('show', recenter);
+  mainWindow.on('show', () => {
+    recenter();
+    adjustWindowToContent();
+    setTimeout(() => adjustWindowToContent(), 16);
+  });
 };
 
 app.whenReady().then(() => {
