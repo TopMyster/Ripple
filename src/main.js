@@ -69,8 +69,8 @@ const createWindow = () => {
           const rect = island.getBoundingClientRect();
           
           return {
-            width: Math.ceil(rect.width) + 10,
-            height: Math.ceil(rect.height) + 10
+            width: Math.ceil(rect.width) + 30,
+            height: Math.ceil(rect.height) + 30
           };
         })()
       `);
