@@ -5,7 +5,7 @@ const started = require("electron-squirrel-startup");
 if (started) {
   app.quit();
 }
-const WINDOW_WIDTH = 420;
+const WINDOW_WIDTH = 500;
 const WINDOW_HEIGHT = 210;
 function getTopCenterPosition(winWidth, winHeight) {
   const primaryDisplay = screen.getPrimaryDisplay();
