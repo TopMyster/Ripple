@@ -1,10 +1,6 @@
 "use strict";
 const { app, BrowserWindow, screen, ipcMain } = require("electron");
 const path = require("node:path");
-const started = require("electron-squirrel-startup");
-if (started) {
-  app.quit();
-}
 const createWindow = () => {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width, height } = primaryDisplay.size;
