@@ -14,7 +14,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   background: transparent;
   overflow: hidden;
   box-sizing: border-box;
@@ -65,10 +65,12 @@ body {
   margin: 0;
   padding: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   min-width: fit-content;
   min-height: fit-content;
+  width: 100%;
+  height: 100%;
 }
 
 #app {
@@ -82,6 +84,10 @@ body {
 
 #Island {
   position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
   transition: .4s;
   scrollbar-width: none;
 }
@@ -128,15 +134,18 @@ body {
 #userinput {
   animation: appear 1s forwards;
   width: 100%;
-  height: 50vh;
-  margin: 5px;
+  height: 78%;
+  margin: 0;
+  margin-bottom: 8px;
   background-color: transparent;
   border-radius: 5px;
   outline: none;
   border: none;
   font-size: 20px;
-  padding: 10px;
+  padding: 15px;
   resize: none;
+  pointer-events: auto;
+  box-sizing: border-box;
 }
 
 #userinput::placeholder {
@@ -147,16 +156,17 @@ body {
 #chatsubmit {
   cursor: pointer;
   transition: .2s;
-  margin-top: 5px;
-  margin-bottom: 8px;
-  padding: 3px;
+  margin: 0 auto;
+  padding: 2px;
   animation: appear 1s forwards;
   width: 95%;
   font-size: 15px;
   font-weight: bold;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   user-select: none;
+  box-sizing: border-box;
+  align-self: center;
 }
 
 button:active {
@@ -199,12 +209,13 @@ label {
   animation: appear 1s forwards; 
   border: none;
   position: absolute;
-  right: 15px;
-  bottom: 15px;
+  right: 0px;
+  bottom: 20px;
   padding: 6px 10px;
   font-weight: 700;
   border-radius: 9px;
   transition: .2s;
+  z-index: 100;
 }
 
 #result {
@@ -216,13 +227,14 @@ label {
   width: 100%;
   max-width: 100%;
   z-index: 100;
-  height: 100vh;                     
-  max-height: 100vh;                
+  max-height: 150px;                
   overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
-  padding: 55px 35px;
-  min-height: 0;                    
+  padding: 10px;
+  min-height: 0;
+  pointer-events: auto;
+  word-wrap: break-word;
 }
 
 #battery {

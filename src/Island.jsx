@@ -198,13 +198,27 @@ export default function Island() {
   return (
      <div
       id="Island"
-      onMouseEnter={() => mode !== "large" && setMode("wide")}
-      onMouseLeave={() => setMode("shrink")}
-      onClick={() => setMode("large")}
+      onMouseEnter={() => {
+        if (mode !== "large") setMode("wide");
+        if (window.electronAPI) {
+          window.electronAPI.setIgnoreMouseEvents(false, false);
+        }
+      }}
+      onMouseLeave={() => {
+        setMode("shrink");
+        if (window.electronAPI) {
+          window.electronAPI.setIgnoreMouseEvents(true, true);
+        }
+      }}
+      onClick={() => {
+        setMode("large");
+        if (window.electronAPI) {
+          window.electronAPI.setIgnoreMouseEvents(false, false);
+        }
+      }}
       style={{
         width: `${width}px`,
         height: `${height}px`,
-        position: "relative",
         display: "flex",
         alignItems: "center",
         backgroundImage: `url('${localStorage.getItem("bg-image")}')`,
@@ -265,23 +279,36 @@ export default function Island() {
         <div style={{
           position: "relative",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexWrap: "wrap",
-          width: "90%"
+          flexDirection: "column",
+          alignItems: "stretch",
+          justifyContent: "flex-start",
+          width: "100%",
+          height: "100%",
+          padding: "10px",
+          boxSizing: "border-box"
         }}>
-            <textarea id="userinput" type="text" placeholder="Ask Anything" onChange={(e) => {setUserText(e.target.value)}} style={{color: `${localStorage.getItem("text-color")}`, fontFamily: theme === "win95" ? "w95" : "OpenRunde",}}/>
-            <button id="chatsubmit" onClick={() => {setAsked(true); askAI()}} style={{backgroundColor: localStorage.getItem("text-color"), color: localStorage.getItem("bg-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde",}}>Ask</button>
+            <textarea id="userinput" type="text" placeholder="Ask Anything" onChange={(e) => {setUserText(e.target.value)}} style={{color: `${localStorage.getItem("text-color")}`, fontFamily: theme === "win95" ? "w95" : "OpenRunde", pointerEvents: "auto"}}/>
+            <button id="chatsubmit" onClick={() => {setAsked(true); askAI()}} style={{backgroundColor: localStorage.getItem("text-color"), color: localStorage.getItem("bg-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde", pointerEvents: "auto"}}>Ask</button>
         </div>
        </>: null}
        {/*AI result*/}
        {mode === "large" && tab === 2 && asked === true ? 
        <>
-        <div>
-            <h4 id="result" style={{fontWeight: 400, fontFamily: theme === "win95" ? "w95" : "OpenRunde",}}>
+        <div style={{
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          width: "90%",
+          height: "100%",
+          padding: "10px",
+          boxSizing: "border-box"
+        }}>
+            <h4 id="result" style={{fontWeight: 400, fontFamily: theme === "win95" ? "w95" : "OpenRunde", pointerEvents: "auto"}}>
                 {aiAnswer}
             </h4>
-            <button onClick={() => {setAsked(false); askAI()}} id="Askanotherbtn" style={{backgroundColor: localStorage.getItem("text-color"), color: localStorage.getItem("bg-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde",}}>Ask another</button>
+            <button onClick={() => {setAsked(false); setAIAnswer(null)}} id="Askanotherbtn" style={{backgroundColor: localStorage.getItem("text-color"), color: localStorage.getItem("bg-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde", pointerEvents: "auto"}}>Ask another</button>
         </div>
        </>: null}
        {/*Settings*/}
@@ -359,7 +386,7 @@ export default function Island() {
             <input
               id="bg-image"
               className="select-input" 
-              placeholder="ex. https://example.com/image.png"
+              placeholder="File path or URL"
               onChange={(e) => {localStorage.setItem("bg-image", e.target.value)}}
             /><br/>
           </div>
