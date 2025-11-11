@@ -7,15 +7,16 @@ if (started) {
 }
 const INITIAL_WIDTH = 500;
 const INITIAL_HEIGHT = 210;
-function getTopCenterPosition(winWidth, winHeight) {
+function getCenteredXPosition(winWidth) {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { workArea } = primaryDisplay;
-  const x = Math.round(workArea.x + (workArea.width - winWidth) / 2);
-  const y = Math.round(workArea.y);
-  return { x, y };
+  return Math.round(workArea.x + (workArea.width - winWidth) / 2);
 }
 const createWindow = () => {
-  const { x, y } = getTopCenterPosition(INITIAL_WIDTH);
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { workArea } = primaryDisplay;
+  const x = getCenteredXPosition(INITIAL_WIDTH);
+  const y = Math.round(workArea.y);
   const mainWindow = new BrowserWindow({
     width: INITIAL_WIDTH,
     height: INITIAL_HEIGHT,
@@ -40,7 +41,9 @@ const createWindow = () => {
   {
     mainWindow.loadURL("http://localhost:5173");
   }
+  const fixedTopY = y;
   let lastContentSize = { width: 0, height: 0 };
+  let lastPositionedWidth = INITIAL_WIDTH;
   let sizeCheckInterval = null;
   const adjustWindowToContent = async () => {
     try {
@@ -63,8 +66,12 @@ const createWindow = () => {
       if (contentSize.width !== lastContentSize.width || contentSize.height !== lastContentSize.height) {
         lastContentSize = { width: contentSize.width, height: contentSize.height };
         mainWindow.setSize(contentSize.width, contentSize.height, false);
-        const pos = getTopCenterPosition(contentSize.width, contentSize.height);
-        mainWindow.setPosition(pos.x, pos.y);
+        const widthChanged = Math.abs(contentSize.width - lastPositionedWidth) >= 1;
+        if (widthChanged) {
+          const centeredX = getCenteredXPosition(contentSize.width);
+          mainWindow.setPosition(centeredX, fixedTopY);
+          lastPositionedWidth = contentSize.width;
+        }
       }
     } catch (error) {
     }
@@ -99,8 +106,8 @@ const createWindow = () => {
   });
   const recenter = () => {
     const [currentWidth, currentHeight] = mainWindow.getSize();
-    const pos = getTopCenterPosition(currentWidth);
-    mainWindow.setPosition(pos.x, pos.y);
+    const centeredX = getCenteredXPosition(currentWidth);
+    mainWindow.setPosition(centeredX, fixedTopY);
   };
   screen.on("display-metrics-changed", recenter);
   screen.on("display-added", recenter);

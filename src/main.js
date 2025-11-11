@@ -10,18 +10,17 @@ if (started) {
 const INITIAL_WIDTH = 500;
 const INITIAL_HEIGHT = 210;
 
-function getTopCenterPosition(winWidth, winHeight) {
+function getCenteredXPosition(winWidth) {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { workArea } = primaryDisplay;
-
-  const x = Math.round(workArea.x + (workArea.width - winWidth) / 2);
-  const y = Math.round(workArea.y);
-
-  return { x, y };
+  return Math.round(workArea.x + (workArea.width - winWidth) / 2);
 }
 
 const createWindow = () => {
-  const { x, y } = getTopCenterPosition(INITIAL_WIDTH, INITIAL_HEIGHT);
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { workArea } = primaryDisplay;
+  const x = getCenteredXPosition(INITIAL_WIDTH);
+  const y = Math.round(workArea.y); // Fixed top position
 
   const mainWindow = new BrowserWindow({
     width: INITIAL_WIDTH,
@@ -55,8 +54,10 @@ const createWindow = () => {
     );
   }
 
-  // Instant window resizing
+  // Store the fixed top Y position - never changes
+  const fixedTopY = y;
   let lastContentSize = { width: 0, height: 0 };
+  let lastPositionedWidth = INITIAL_WIDTH; // Track last width for repositioning
   let sizeCheckInterval = null;
   
   const adjustWindowToContent = async () => {
@@ -85,12 +86,16 @@ const createWindow = () => {
         
         lastContentSize = { width: contentSize.width, height: contentSize.height };
         
-        // Instant resize
+        // Resize window (height changes grow downward from fixed top)
         mainWindow.setSize(contentSize.width, contentSize.height, false);
         
-        // Recenter
-        const pos = getTopCenterPosition(contentSize.width, contentSize.height);
-        mainWindow.setPosition(pos.x, pos.y);
+        // Only reposition horizontally if width changed (keep Y fixed at top)
+        const widthChanged = Math.abs(contentSize.width - lastPositionedWidth) >= 1;
+        if (widthChanged) {
+          const centeredX = getCenteredXPosition(contentSize.width);
+          mainWindow.setPosition(centeredX, fixedTopY);
+          lastPositionedWidth = contentSize.width;
+        }
       }
       
     } catch (error) {
@@ -137,8 +142,9 @@ const createWindow = () => {
 
   const recenter = () => {
     const [currentWidth, currentHeight] = mainWindow.getSize();
-    const pos = getTopCenterPosition(currentWidth, currentHeight);
-    mainWindow.setPosition(pos.x, pos.y);
+    // Keep Y position fixed at top, only adjust X for horizontal centering
+    const centeredX = getCenteredXPosition(currentWidth);
+    mainWindow.setPosition(centeredX, fixedTopY);
   };
 
   screen.on('display-metrics-changed', recenter);
