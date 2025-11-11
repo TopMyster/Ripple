@@ -27,7 +27,7 @@ export default function Island() {
   const [weather, setWeather] = useState("")
   const [weatherUnit, setweatherUnit] = useState()
   const [theme, setTheme] = useState("default")
-  let width = mode === "large" ? 80 : mode === "wide" ? 60 : 35;
+  let width = mode === "large" ? 95 : mode === "wide" ? 70 : 42;
   let height = mode === "large" ? 90 : mode === "wide" ? 20 : 20;
 
   if (!localStorage.getItem("battery-alerts")) {
