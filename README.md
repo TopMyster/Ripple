@@ -1,6 +1,6 @@
 # Ripple
 #### Dynamic Island for All
-### CURRENT STAGE: In Development
+### CURRENT STAGE: In Mid Development
 
 https://github.com/user-attachments/assets/34310528-519b-48d2-99cf-97a940cd5ce7
 
