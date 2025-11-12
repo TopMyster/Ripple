@@ -28,7 +28,7 @@ export default function Island() {
   const [weatherUnit, setweatherUnit] = useState()
   const [theme, setTheme] = useState("default")
   let width = mode === "large" ? 400 : mode === "wide" ? 300 : 175;
-  let height = mode === "large" ? 190 : mode === "wide" ? 40 : 40;
+  let height = mode === "large" ? 190 : mode === "wide" ? 43 : 43;
 
   if (!localStorage.getItem("battery-alerts")) {
     localStorage.setItem("battery-alerts", "true")
@@ -240,7 +240,7 @@ export default function Island() {
       <>
         <h1 className="text" style={{
           position: 'absolute',
-          top: '22%',
+          top: '23%',
           left: '11%',
           transform: 'translate(-50%, -50%)',
           fontSize: 16,
@@ -249,8 +249,8 @@ export default function Island() {
         }}>{alert === true ? `${percent}%`:time}</h1>
         <h1 className="text" style={{
           position: 'absolute',
-          top: '22%',
-          right: '1%',
+          top: '23%',
+          right: '0%',
           transform: 'translate(-50%, -50%)',
           fontSize: 16,
           fontWeight: 600,
