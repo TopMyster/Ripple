@@ -241,12 +241,12 @@ export default function Island() {
         <h1 className="text" style={{
           position: 'absolute',
           top: '23%',
-          left: '11%',
+          left: `${alert === true ? `21%`: '11%'}`,
           transform: 'translate(-50%, -50%)',
           fontSize: 16,
           fontWeight: 600,
-          color: `${alert === true ? "#ff3f3fff" : `${localStorage.getItem("text-color")}`}`
-        }}>{alert === true ? `${percent}%`:time}</h1>
+          color: localStorage.getItem("text-color")
+        }}>{alert === true ? `Low Battery`:time}</h1>
         <h1 className="text" style={{
           position: 'absolute',
           top: '23%',
@@ -254,8 +254,8 @@ export default function Island() {
           transform: 'translate(-50%, -50%)',
           fontSize: 16,
           fontWeight: 600,
-          color: localStorage.getItem("text-color")
-        }}>{weather}º</h1>
+          color: `${alert === true ? "#ff3f3fff" : `${localStorage.getItem("text-color")}`}`
+        }}>{alert === true ? `${percent}%`: `${weather}º`}</h1>
       </>
       : null}
       {/*Overview tab*/}
