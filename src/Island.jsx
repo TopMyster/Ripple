@@ -230,7 +230,7 @@ export default function Island() {
         fontFamily: theme === "win95" ? "w95" : "OpenRunde",
         border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : "none",
         borderColor: theme === "win95" ? "#FFFFFF #808080 #808080 #FFFFFF" : "none",
-        borderRadius: mode === "large" && theme === "win95" ? 0 : mode === "large" ? 25 : theme === "win95" ? 0 : 15,
+        borderRadius: mode === "large" && theme === "win95" ? 0 : mode === "large" ? 32 : theme === "win95" ? 0 : 16,
         backgroundColor: localStorage.getItem("bg-color"),
         color: localStorage.getItem("text-color")
       }}

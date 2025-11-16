@@ -134,7 +134,7 @@ body {
 #userinput {
   animation: appear 1s forwards;
   width: 100%;
-  height: 78%;
+  height: 78.5%;
   margin: 0;
   margin-bottom: 8px;
   background-color: transparent;
@@ -163,7 +163,7 @@ body {
   font-size: 15px;
   font-weight: bold;
   border: none;
-  border-radius: 9px;
+  border-radius: 10px;
   user-select: none;
   box-sizing: border-box;
   align-self: center;
