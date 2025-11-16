@@ -2,7 +2,7 @@
 #### Dynamic Island for All
 ### CURRENT STAGE: In Mid Development
 
-https://github.com/user-attachments/assets/34310528-519b-48d2-99cf-97a940cd5ce7
+https://github.com/user-attachments/assets/ab7cfa09-7749-429a-bfa2-b2cc668aa7cc
 
 ## Planned Features
 ✅Battery Alerts<br>
