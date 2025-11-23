@@ -190,6 +190,9 @@ export default function Island() {
     } else if (theme === "win95") {
       localStorage.setItem("bg-color", "rgba(195, 195, 195)")
       localStorage.setItem("text-color", "rgba(0, 0, 0)")
+    } else if (theme === "invisible") {
+      localStorage.setItem("bg-image", "none")
+      localStorage.setItem("bg-color", "rgba(255, 255, 255, 0)")
     } else if (theme === "none") {
       
     }
@@ -378,6 +381,7 @@ export default function Island() {
             <label for="theme" className="text" >Theme: </label>
             <select id="theme" value={theme} onChange={(e) => {setTheme(e.target.value)}}>
               <option value={"none"}>None</option>
+              <option value={"invisible"}>Invisible</option>
               <option value={"sleek-black"}>Sleek Black</option>
               <option value={"win95"}>win95</option>
             </select><br/>
