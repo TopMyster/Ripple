@@ -285,10 +285,13 @@ label {
   margin-right: 8px;
   transition: .3s;
   cursor: pointer;
+  box-shadow: 2px 2px 30px rgba(0, 0, 0, 0.148);
+  z-index: 0;
 }
 
 .qa-app:hover {
   transform: scale(1.5);
+  z-index: 1;
 }
 
 .qa-app:active {
