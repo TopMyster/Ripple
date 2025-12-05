@@ -277,10 +277,10 @@ export default function Island() {
       {mode === "large" && tab === 0 ? 
       <>
         <div id="quick-apps">
-          <button className="qa-app" onClick={() => {openApp(qa1)}} style={{color: localStorage.getItem("bg-color"), backgroundColor: localStorage.getItem("text-color")}}>{qa1}</button>
-          <button className="qa-app" onClick={() => {openApp(qa2)}} style={{color: localStorage.getItem("bg-color"), backgroundColor: localStorage.getItem("text-color")}}>{qa2}</button>
-          <button className="qa-app" onClick={() => {openApp(qa3)}} style={{color: localStorage.getItem("bg-color"), backgroundColor: localStorage.getItem("text-color")}}>{qa3}</button>
-          <button className="qa-app" onClick={() => {openApp(qa4)}} style={{color: localStorage.getItem("bg-color"), backgroundColor: localStorage.getItem("text-color")}}>{qa4}</button>
+          <button className="qa-app" onClick={() => {openApp(qa1)}} style={{color: localStorage.getItem("bg-color"), backgroundColor: localStorage.getItem("text-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde"}}>{qa1}</button>
+          <button className="qa-app" onClick={() => {openApp(qa2)}} style={{color: localStorage.getItem("bg-color"), backgroundColor: localStorage.getItem("text-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde"}}>{qa2}</button>
+          <button className="qa-app" onClick={() => {openApp(qa3)}} style={{color: localStorage.getItem("bg-color"), backgroundColor: localStorage.getItem("text-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde"}}>{qa3}</button>
+          <button className="qa-app" onClick={() => {openApp(qa4)}} style={{color: localStorage.getItem("bg-color"), backgroundColor: localStorage.getItem("text-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde"}}>{qa4}</button>
         </div>
       </>
       :null}
