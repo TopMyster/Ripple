@@ -14,6 +14,15 @@ function formatDateShort(input) {
   return `${weekday}, ${month} ${day}`;
 }
 
+function openApp(app) {
+  if (!app) return;
+  try {
+    window.location.href = `${app}://`;
+  } catch (e) {
+    window.alert("Failed to open app:", app, e);
+  }
+}
+
 export default function Island() {
   const [time, setTime] = useState(null)
   const [mode, setMode] = useState("shrink")
@@ -27,8 +36,12 @@ export default function Island() {
   const [weather, setWeather] = useState("")
   const [weatherUnit, setweatherUnit] = useState()
   const [theme, setTheme] = useState("default")
-  let width = mode === "large" ? 400 : mode === "wide" ? 300 : 175;
-  let height = mode === "large" ? 190 : mode === "wide" ? 43 : 43;
+  let width = mode === "large" ? 400 : mode === "wide" ? 300 : 175
+  let height = mode === "large" ? 190 : mode === "wide" ? 43 : 43
+  const [qa1, setQa1] = useState(localStorage.getItem("qa1") || "discord");
+  const [qa2, setQa2] = useState(localStorage.getItem("qa2") || "spotify");
+  const [qa3, setQa3] = useState(localStorage.getItem("qa3") || "sms");
+  const [qa4, setQa4] = useState(localStorage.getItem("qa4") || "tel");
 
   if (!localStorage.getItem("battery-alerts")) {
     localStorage.setItem("battery-alerts", "true")
@@ -106,7 +119,7 @@ export default function Island() {
         err?.message ||
         (typeof err === "string" ? err : "Unexpected error occurred.");
       setAIAnswer(`Error: ${message}`);
-      console.error("askAI error:", err);
+      alert("askAI error:", err);
     }
   }
 
@@ -152,7 +165,7 @@ export default function Island() {
     if (e.key === "ArrowRight") {
       setTab((prev) => Math.min(3, prev + 1));
     } else if (e.key === "ArrowLeft") {
-        setTab((prev) => Math.max(1, prev - 1));
+        setTab((prev) => Math.max(0, prev - 1));
     }
   };
   document.addEventListener("keydown", handleKeyDown);
@@ -261,6 +274,16 @@ export default function Island() {
         }}>{alert === true ? `${percent}%`: `${weather}º`}</h1>
       </>
       : null}
+      {mode === "large" && tab === 0 ? 
+      <>
+        <div id="quick-apps">
+          <button className="qa-app" onClick={() => {openApp(qa1)}}>{qa1}</button>
+          <button className="qa-app" onClick={() => {openApp(qa2)}}>{qa2}</button>
+          <button className="qa-app" onClick={() => {openApp(qa3)}}>{qa3}</button>
+          <button className="qa-app" onClick={() => {openApp(qa4)}}>{qa4}</button>
+        </div>
+      </>
+      :null}
       {/*Overview tab*/}
       {mode === "large" && tab === 1 ? 
       <>
@@ -393,6 +416,54 @@ export default function Island() {
               placeholder="File path or URL"
               onChange={(e) => {localStorage.setItem("bg-image", e.target.value)}}
             /><br/>
+            {/*Quick app 1*/}
+            <label for="qa1" className="text" >Quick app 1: </label>
+            <select id="qa1" value={qa1} onChange={(e) => {setQa1(e.target.value); localStorage.setItem("qa1", e.target.value);}}>
+              <option value={"spotify"}>Spotify</option>
+              <option value={"discord"}>Discord</option>
+              <option value={"notion"}>Notion</option>
+              <option value={"files"}>Files</option>
+              <option value={"mailto"}>Mail</option>
+              <option value={"steam"}>Steam</option>
+              <option value={"tel"}>Phone</option>
+              <option value={"sms"}>Messages</option>
+            </select><br/>
+            {/*Quick app 2*/}
+            <label for="qa2" className="text" >Quick app 2: </label>
+            <select id="qa2" value={qa2} onChange={(e) => {setQa2(e.target.value); localStorage.setItem("qa2", e.target.value);}}>
+              <option value={"spotify"}>Spotify</option>
+              <option value={"discord"}>Discord</option>
+              <option value={"notion"}>Notion</option>
+              <option value={"files"}>Files</option>
+              <option value={"mailto"}>Mail</option>
+              <option value={"steam"}>Steam</option>
+              <option value={"tel"}>Phone</option>
+              <option value={"sms"}>Messages</option>
+            </select><br/>
+            {/*Quick app 3*/}
+            <label for="qa3" className="text" >Quick app 3: </label>
+            <select id="qa3" value={qa3} onChange={(e) => {setQa3(e.target.value); localStorage.setItem("qa3", e.target.value);}}>
+              <option value={"spotify"}>Spotify</option>
+              <option value={"discord"}>Discord</option>
+              <option value={"notion"}>Notion</option>
+              <option value={"files"}>Files</option>
+              <option value={"mailto"}>Mail</option>
+              <option value={"steam"}>Steam</option>
+              <option value={"tel"}>Phone</option>
+              <option value={"sms"}>Messages</option>
+            </select><br/>
+            {/*Quick app 4*/}
+            <label for="q4" className="text" >Quick app 4: </label>
+            <select id="qa4" value={qa4} onChange={(e) => {setQa4(e.target.value); localStorage.setItem("qa4", e.target.value);}}>
+              <option value={"spotify"}>Spotify</option>
+              <option value={"discord"}>Discord</option>
+              <option value={"notion"}>Notion</option>
+              <option value={"files"}>Files</option>
+              <option value={"mailto"}>Mail</option>
+              <option value={"steam"}>Steam</option>
+              <option value={"tel"}>Phone</option>
+              <option value={"sms"}>Messages</option>
+            </select><br/>
           </div>
         </>
        : null}
