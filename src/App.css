@@ -269,3 +269,29 @@ label {
   font-size: 13px;
   padding: 7px;
 }
+
+#quick-apps {
+  animation: appear .7s forwards;
+  display: flex;
+  flex-direction: row;
+}
+
+.qa-app {
+  font-family: "OpenRunde", Helvetica;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 15px;
+  font-size: 17px;
+  font-weight: 500;
+  margin-right: 8px;
+  transition: .3s;
+  cursor: pointer;
+}
+
+.qa-app:hover {
+  transform: scale(1.5);
+}
+
+.qa-app:active {
+  transform: scale(1.3);
+}

@@ -277,10 +277,10 @@ export default function Island() {
       {mode === "large" && tab === 0 ? 
       <>
         <div id="quick-apps">
-          <button className="qa-app" onClick={() => {openApp(qa1)}}>{qa1}</button>
-          <button className="qa-app" onClick={() => {openApp(qa2)}}>{qa2}</button>
-          <button className="qa-app" onClick={() => {openApp(qa3)}}>{qa3}</button>
-          <button className="qa-app" onClick={() => {openApp(qa4)}}>{qa4}</button>
+          <button className="qa-app" onClick={() => {openApp(qa1)}} style={{color: localStorage.getItem("bg-color"), backgroundColor: localStorage.getItem("text-color")}}>{qa1}</button>
+          <button className="qa-app" onClick={() => {openApp(qa2)}} style={{color: localStorage.getItem("bg-color"), backgroundColor: localStorage.getItem("text-color")}}>{qa2}</button>
+          <button className="qa-app" onClick={() => {openApp(qa3)}} style={{color: localStorage.getItem("bg-color"), backgroundColor: localStorage.getItem("text-color")}}>{qa3}</button>
+          <button className="qa-app" onClick={() => {openApp(qa4)}} style={{color: localStorage.getItem("bg-color"), backgroundColor: localStorage.getItem("text-color")}}>{qa4}</button>
         </div>
       </>
       :null}
@@ -422,7 +422,6 @@ export default function Island() {
               <option value={"spotify"}>Spotify</option>
               <option value={"discord"}>Discord</option>
               <option value={"notion"}>Notion</option>
-              <option value={"files"}>Files</option>
               <option value={"mailto"}>Mail</option>
               <option value={"steam"}>Steam</option>
               <option value={"tel"}>Phone</option>
@@ -434,7 +433,6 @@ export default function Island() {
               <option value={"spotify"}>Spotify</option>
               <option value={"discord"}>Discord</option>
               <option value={"notion"}>Notion</option>
-              <option value={"files"}>Files</option>
               <option value={"mailto"}>Mail</option>
               <option value={"steam"}>Steam</option>
               <option value={"tel"}>Phone</option>
@@ -446,7 +444,6 @@ export default function Island() {
               <option value={"spotify"}>Spotify</option>
               <option value={"discord"}>Discord</option>
               <option value={"notion"}>Notion</option>
-              <option value={"files"}>Files</option>
               <option value={"mailto"}>Mail</option>
               <option value={"steam"}>Steam</option>
               <option value={"tel"}>Phone</option>
@@ -458,7 +455,6 @@ export default function Island() {
               <option value={"spotify"}>Spotify</option>
               <option value={"discord"}>Discord</option>
               <option value={"notion"}>Notion</option>
-              <option value={"files"}>Files</option>
               <option value={"mailto"}>Mail</option>
               <option value={"steam"}>Steam</option>
               <option value={"tel"}>Phone</option>
