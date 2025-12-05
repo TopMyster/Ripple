@@ -219,7 +219,7 @@ label {
 }
 
 #result {
-  animation: appear 1s forwards;
+  animation: appear 1.2s forwards;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;       
