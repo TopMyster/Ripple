@@ -1,10 +1,9 @@
 # Ripple
-#### Dynamic Island for All
-### CURRENT STAGE: 1st Release Out Now!
-
+### Dynamic Island for All
+##### Apple's Dynamic Island on your computer
 https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
 
-*Having Apple's Dynamic Island on your computer*
+### <a href="https://discord.gg/a2xzVkxFVg">Join the Discord</a>
 
 ## Features
 ✅Battery Alerts<br>
@@ -15,8 +14,8 @@ https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
 ✅Quick Apps<br>
 ✅Browser search<br>
 -Clipboard<br>
-•Shows Battery percentange<br>
+•Shows Battery percentange<br><br>
 
-<small>✅ = done, - = Working on, • = Planned</small>
+<sup>✅ = done, - = Working on, • = Planned</sup>
 
 
