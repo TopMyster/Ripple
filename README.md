@@ -14,7 +14,7 @@ https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
 ✅Quick Apps<br>
 ✅Browser search<br>
 -Clipboard<br>
-•Shows Battery percentange<br><br>
+•Shows if Charging<br><br>
 
 <sup>✅ = done, - = Working on, • = Planned</sup>
 
