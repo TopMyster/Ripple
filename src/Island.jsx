@@ -26,7 +26,7 @@ function openApp(app) {
 export default function Island() {
   const [time, setTime] = useState(null)
   const [mode, setMode] = useState("shrink")
-  const [tab, setTab] = useState(1);
+  const [tab, setTab] = useState(2);
   const [asked, setAsked] = useState(false)
   const [aiAnswer, setAIAnswer] = useState(null)
   const [percent, setPercent] = useState(null)
@@ -42,6 +42,8 @@ export default function Island() {
   const [qa2, setQa2] = useState(localStorage.getItem("qa2") || "spotify");
   const [qa3, setQa3] = useState(localStorage.getItem("qa3") || "sms");
   const [qa4, setQa4] = useState(localStorage.getItem("qa4") || "tel");
+  const [browserSearch, setBrowserSearch] = useState("")
+  // const [charging, setCharging] = useState(false)
 
   if (!localStorage.getItem("battery-alerts")) {
     localStorage.setItem("battery-alerts", "true")
@@ -123,7 +125,7 @@ export default function Island() {
     }
   }
 
-  //Get battery percent
+  //Get battery info
   useEffect(() => {
       let battery, handler;
       (async () => {
@@ -134,13 +136,21 @@ export default function Island() {
           handler = update;
           update();
           battery.addEventListener("levelchange", handler);
+          
         } catch {
           setPercent("Battery unavailable");
         }
       })();
 
       return () => {
-        if (battery && handler) battery.removeEventListener("levelchange", handler);
+        if (battery && handler) {
+          battery.removeEventListener("levelchange", handler)
+          // if (battery.charging === true) {
+          // setCharging(true)
+          // } else {
+          //   setCharging(false)
+          // }
+        };
       };
   }, []);
 
@@ -159,11 +169,25 @@ export default function Island() {
     }
   }, [percent]);
 
+  // useEffect(() => {
+  //   if ((charging === true) && localStorage.getItem("battery-alerts") === "true") {
+  //     setMode("large");
+  //     setAlert(true); 
+  //     const timerId = setTimeout(() => {
+  //       setMode("normal");
+  //       setAlert(null);
+  //     }, 2000);
+  //     return () => {
+  //       clearTimeout(timerId);
+  //     };
+  //   }
+  // }, [charging]);
+
   //Navigate tabs
   useEffect(() => {
   const handleKeyDown = (e) => {
     if (e.key === "ArrowRight") {
-      setTab((prev) => Math.min(3, prev + 1));
+      setTab((prev) => Math.min(4, prev + 1));
     } else if (e.key === "ArrowLeft") {
         setTab((prev) => Math.max(0, prev - 1));
     }
@@ -210,6 +234,21 @@ export default function Island() {
       
     }
   })
+
+  //Browser Search Feature 
+
+  function searchBrowser() {
+    const trimmedSearch = browserSearch.trim();
+    if (trimmedSearch.includes(".")) {
+      const hasProtocol = /^https?:\/\//i.test(trimmedSearch);
+      const urlToOpen = hasProtocol ? trimmedSearch : `https://${trimmedSearch}`;
+      window.open(urlToOpen, "_blank");
+    } else {
+      const encodedQuery = encodeURIComponent(trimmedSearch);
+      window.open(`https://www.google.com/search?q=${encodedQuery}`, "_blank");
+    }
+  }
+
 
   return (
      <div
@@ -274,7 +313,13 @@ export default function Island() {
         }}>{alert === true ? `${percent}%`: `${weather}º`}</h1>
       </>
       : null}
+      {/*Browser Search*/}
       {mode === "large" && tab === 0 ? 
+      <>
+        <input id="browser-searchbar" placeholder="Enter a url or a query" onChange={(e) => {setBrowserSearch(e.target.value)}} onKeyDown={(e) => {if (e.key === "Enter") {searchBrowser()}}} style={{color: localStorage.getItem('text-color')}}/>
+      </>
+      : null}
+      {mode === "large" && tab === 1 ? 
       <>
         <div id="quick-apps">
           <button className="qa-app" onClick={() => {openApp(qa1)}} style={{color: localStorage.getItem("bg-color"), backgroundColor: localStorage.getItem("text-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde"}}>{qa1}</button>
@@ -285,7 +330,7 @@ export default function Island() {
       </>
       :null}
       {/*Overview tab*/}
-      {mode === "large" && tab === 1 ? 
+      {mode === "large" && tab === 2 ? 
       <>
       <div id="battery" >
         <div id="battery-bar" style={{backgroundColor: localStorage.getItem("text-color"), color: localStorage.getItem("bg-color")}}>
@@ -300,7 +345,7 @@ export default function Island() {
       </>
        : null}
        {/*AI ask*/}
-       {mode === "large" && tab === 2 && asked === false ? 
+       {mode === "large" && tab === 3 && asked === false ? 
        <>
         <div style={{
           position: "relative",
@@ -313,12 +358,12 @@ export default function Island() {
           padding: "10px",
           boxSizing: "border-box"
         }}>
-            <textarea id="userinput" type="text" placeholder="Ask Anything" onChange={(e) => {setUserText(e.target.value)}} style={{color: `${localStorage.getItem("text-color")}`, fontFamily: theme === "win95" ? "w95" : "OpenRunde", pointerEvents: "auto"}}/>
-            <button id="chatsubmit" onClick={() => {setAsked(true); askAI()}} style={{backgroundColor: localStorage.getItem("text-color"), color: localStorage.getItem("bg-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde", pointerEvents: "auto"}}>Ask</button>
+            <textarea id="userinput" type="text" placeholder="Ask Anything" onChange={(e) => {setUserText(e.target.value)}}onKeyDown={(e) => {if (e.ctrlKey && e.key === "Enter") {setAsked(true); askAI()}}}  style={{color: `${localStorage.getItem("text-color")}`, fontFamily: theme === "win95" ? "w95" : "OpenRunde", pointerEvents: "auto"}}/>
+            <button id="chatsubmit" onClick={() => {setAsked(true); askAI()}}  style={{backgroundColor: localStorage.getItem("text-color"), color: localStorage.getItem("bg-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde", pointerEvents: "auto"}}>Ask</button>
         </div>
        </>: null}
        {/*AI result*/}
-       {mode === "large" && tab === 2 && asked === true ? 
+       {mode === "large" && tab === 3 && asked === true ? 
        <>
         <div style={{
           position: "relative",
@@ -338,7 +383,7 @@ export default function Island() {
         </div>
        </>: null}
        {/*Settings*/}
-       {mode === "large" && tab === 3 ? 
+       {mode === "large" && tab === 4 ? 
         <>
           <div
             style={{
