@@ -1,5 +1,5 @@
 Ripple
-## Welcome to Ripple
+## 👋 Welcome to Ripple
 
 
 ### Island
@@ -21,7 +21,7 @@ Ripple
 ##### *It's mode you with see when you aren't doing anything with the Island.*
 <img width="268" height="103" alt="Screenshot 2025-12-27 at 4 59 51 PM" src="https://github.com/user-attachments/assets/244077b5-f63b-4492-a0d0-743dbaf5526a" />
 
-### These are the parts of the Island*
+### These are the parts of the Island
 
 
 ### Tabs
@@ -33,11 +33,11 @@ https://github.com/user-attachments/assets/048ef089-c975-4a08-81e6-1f62f1795d12
 <img width="443" height="217" alt="Screenshot 2025-12-27 at 5 02 41 PM" src="https://github.com/user-attachments/assets/e2569751-f892-472c-8df6-ae2a3effd4ce" />
 
 ### Settings
-##### It's the last tab and it allows you to adjust things from the Island's background color to you Quick Apps.
+##### *It's the last tab and it allows you to adjust things from the Island's background color to you Quick Apps.*
 https://github.com/user-attachments/assets/303dbcd0-37c8-457c-9372-73f756dbd472
 
 ### Shortcuts
-##### Just press Control + the number of the tab to.
+##### *Just press Control + the number of the tab to.*
 https://github.com/user-attachments/assets/e13465af-ea02-4986-9283-e8a0ff23f5dd
 
 
