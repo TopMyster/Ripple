@@ -6,7 +6,7 @@ Ripple
 ##### *The part of the interface you interact with is called the Island.*
 
 
-## There are 3 main modes in the interface<br>
+## There are 3 main modes in the interface
 
 
 ### Large Mode

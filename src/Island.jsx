@@ -232,20 +232,20 @@ export default function Island() {
 
   // Clipboard 
   async function getClipboard() {
-  try {
-    const text = await navigator.clipboard.readText();
-    setClipboard((prevClipboard) => {
-      if (prevClipboard[prevClipboard.length - 1] === text) {
-        return prevClipboard;
-      }
-      return [...prevClipboard, text];
-    });
-  } catch (error) {
-    console.log(
-      `Error reading clipboard: ${error.toString()}`,
-    );
+    try {
+      const text = await navigator.clipboard.readText();
+      setClipboard((prevClipboard) => {
+        if (prevClipboard[prevClipboard.length - 1] === text) {
+          return prevClipboard;
+        }
+        return [...prevClipboard, text];
+      });
+    } catch (error) {
+      console.log(
+        `Error reading clipboard: ${error.toString()}`,
+      );
+    }
   }
-}
 
   useEffect(() => {
       getClipboard();
@@ -544,7 +544,7 @@ export default function Island() {
               alignItems: "center",
               justifyContent: "flex-start",
               width: "90%",
-              height: "100%",
+              height: "130%",
               padding: "10px",
               boxSizing: "border-box"
             }}
@@ -582,7 +582,7 @@ export default function Island() {
       {mode === "large" && tab === 4 ? (
         <>
           <div id="clipboard">
-            {clipboard.length === 0 ? (<h2 className="clipboard-item">Empty 🗑️</h2>) : clipboard.map((item, index) => (
+            {clipboard.length === 0 ? (<h2 className="clipboard-item"></h2>) : clipboard.map((item, index) => (
               <>
                 <h3 className="clipboard-item" key={index}>
                   {item}

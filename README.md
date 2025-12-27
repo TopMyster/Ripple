@@ -21,5 +21,6 @@ https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
  - •Trackpad gestures<br>
 
 <sup>✅ = done, - = Working on, • = Planned, * = Note to self</sup>
+<a href="https://github.com/TopMyster/Ripple/blob/main/instructions.md">Further Instructions</a>
 
 
