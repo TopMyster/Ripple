@@ -1,5 +1,6 @@
-import { useState, useEffect, } from "react";
-import { Groq } from 'groq-sdk';
+// App.jsx (or Island.jsx)
+import { useState, useEffect } from "react";
+import { Groq } from "groq-sdk";
 import "./App.css";
 
 //Get Date
@@ -8,8 +9,8 @@ function formatDateShort(input) {
   if (isNaN(date.getTime())) {
     throw new Error("Invalid date provided to formatDateShort");
   }
-  const weekday = date.toLocaleDateString(undefined, { weekday: "short" }); 
-  const month = date.toLocaleDateString(undefined, { month: "short" }); 
+  const weekday = date.toLocaleDateString(undefined, { weekday: "short" });
+  const month = date.toLocaleDateString(undefined, { month: "short" });
   const day = date.getDate();
   return `${weekday}, ${month} ${day}`;
 }
@@ -24,56 +25,59 @@ function openApp(app) {
 }
 
 export default function Island() {
-  const [time, setTime] = useState(null)
-  const [mode, setMode] = useState("shrink")
+  const [time, setTime] = useState(null);
+  const [mode, setMode] = useState("shrink");
   const [tab, setTab] = useState(2);
-  const [asked, setAsked] = useState(false)
-  const [aiAnswer, setAIAnswer] = useState(null)
-  const [percent, setPercent] = useState(null)
-  const [alert, setAlert] = useState(null)
-  const [userText, setUserText] = useState("")
-  const [batteryAlertsEnabled, setBatteryAlertsEnabled] = useState(true)
-  const [weather, setWeather] = useState("")
-  const [weatherUnit, setweatherUnit] = useState()
-  const [theme, setTheme] = useState("default")
-  let width = mode === "large" ? 400 : mode === "wide" ? 300 : 175
-  let height = mode === "large" ? 190 : mode === "wide" ? 43 : 43
+  const [asked, setAsked] = useState(false);
+  const [aiAnswer, setAIAnswer] = useState(null);
+  const [percent, setPercent] = useState(null);
+  const [alert, setAlert] = useState(null);
+  const [userText, setUserText] = useState("");
+  const [batteryAlertsEnabled, setBatteryAlertsEnabled] = useState(true);
+  const [weather, setWeather] = useState("");
+  const [weatherUnit, setweatherUnit] = useState();
+  const [theme, setTheme] = useState("default");
+  const [browserSearch, setBrowserSearch] = useState("");
+  const [clipboard, setClipboard] = useState([]); // clipboard history as array of strings
+
+  let width = mode === "large" ? 400 : mode === "wide" ? 300 : 175;
+  let height = mode === "large" ? 190 : mode === "wide" ? 43 : 43;
+
   const [qa1, setQa1] = useState(localStorage.getItem("qa1") || "discord");
   const [qa2, setQa2] = useState(localStorage.getItem("qa2") || "spotify");
   const [qa3, setQa3] = useState(localStorage.getItem("qa3") || "sms");
   const [qa4, setQa4] = useState(localStorage.getItem("qa4") || "tel");
-  const [browserSearch, setBrowserSearch] = useState("")
-  // const [charging, setCharging] = useState(false)
 
+  // localStorage defaults
   if (!localStorage.getItem("battery-alerts")) {
-    localStorage.setItem("battery-alerts", "true")
+    localStorage.setItem("battery-alerts", "true");
   }
 
   if (!localStorage.getItem("bg-color")) {
-    localStorage.setItem("bg-color", "#000000")
+    localStorage.setItem("bg-color", "#000000");
   }
 
   if (!localStorage.getItem("text-color")) {
-    localStorage.setItem("text-color", "#FAFAFA")
+    localStorage.setItem("text-color", "#FAFAFA");
   }
 
   if (!localStorage.getItem("weather-unit")) {
-    localStorage.setItem("weather-unit", "f")
+    localStorage.setItem("weather-unit", "f");
   }
 
   const handleBatteryAlertsChange = (e) => {
     const value = e.target.value === "true";
     setBatteryAlertsEnabled(value);
-    localStorage.setItem("battery-alerts", value ? "true" : "false")
-  }
+    localStorage.setItem("battery-alerts", value ? "true" : "false");
+  };
 
   const handleWeatherUnitChange = (e) => {
     const value = e.target.value === "c" ? "c" : "f";
     setweatherUnit(value);
-    localStorage.setItem("weather-unit", value)
-  }
+    localStorage.setItem("weather-unit", value);
+  };
 
-  //AI feature 
+  // AI feature 
   async function askAI() {
     try {
       const apiKey = (localStorage.getItem("api-key") || "").trim();
@@ -108,10 +112,9 @@ export default function Island() {
         const delta = chunk?.choices?.[0]?.delta?.content || "";
         if (delta) {
           fullText += delta;
-          setAIAnswer(prev => (prev ? prev + delta : delta));
+          setAIAnswer((prev) => (prev ? prev + delta : delta));
         }
       }
-
 
       if (!fullText) {
         setAIAnswer("No response streamed. Try again or check your model/params.");
@@ -125,38 +128,35 @@ export default function Island() {
     }
   }
 
-  //Get battery info
+  // Get battery info
   useEffect(() => {
-      let battery, handler;
-      (async () => {
-        if (!("getBattery" in navigator)) return setPercent("Battery not supported");
-        try {
-          battery = await navigator.getBattery();
-          const update = () => setPercent(Math.round(battery.level * 100));
-          handler = update;
-          update();
-          battery.addEventListener("levelchange", handler);
-          
-        } catch {
-          setPercent("Battery unavailable");
-        }
-      })();
+    let battery, handler;
+    (async () => {
+      if (!("getBattery" in navigator)) return setPercent("Battery not supported");
+      try {
+        battery = await navigator.getBattery();
+        const update = () => setPercent(Math.round(battery.level * 100));
+        handler = update;
+        update();
+        battery.addEventListener("levelchange", handler);
+      } catch {
+        setPercent("Battery unavailable");
+      }
+    })();
 
-      return () => {
-        if (battery && handler) {
-          battery.removeEventListener("levelchange", handler)
-          // if (battery.charging === true) {
-          // setCharging(true)
-          // } else {
-          //   setCharging(false)
-          // }
-        };
-      };
+    return () => {
+      if (battery && handler) {
+        battery.removeEventListener("levelchange", handler);
+      }
+    };
   }, []);
 
-  //Battery alerts
+  // Battery alerts
   useEffect(() => {
-    if ((percent === 20 || percent === 10 || percent === 5 || percent === 2) && localStorage.getItem("battery-alerts") === "true") {
+    if (
+      (percent === 20 || percent === 10 || percent === 5 || percent === 2) &&
+      localStorage.getItem("battery-alerts") === "true"
+    ) {
       setMode("wide");
       setAlert(true);
       const timerId = setTimeout(() => {
@@ -169,76 +169,48 @@ export default function Island() {
     }
   }, [percent]);
 
-  // useEffect(() => {
-  //   if ((charging === true) && localStorage.getItem("battery-alerts") === "true") {
-  //     setMode("large");
-  //     setAlert(true); 
-  //     const timerId = setTimeout(() => {
-  //       setMode("normal");
-  //       setAlert(null);
-  //     }, 2000);
-  //     return () => {
-  //       clearTimeout(timerId);
-  //     };
-  //   }
-  // }, [charging]);
-
-  //Navigate tabs
-  useEffect(() => {
-  const handleKeyDown = (e) => {
-    if (e.key === "ArrowRight") {
-      setTab((prev) => Math.min(4, prev + 1));
-    } else if (e.key === "ArrowLeft") {
-        setTab((prev) => Math.max(0, prev - 1));
-    }
-  };
-  document.addEventListener("keydown", handleKeyDown);
-  return () => {
-    document.removeEventListener("keydown", handleKeyDown);
-  };
-  }, []);
-
-  //Get time
+  // Get time
   useEffect((date = new Date()) => {
     const hours = String(date.getHours()).padStart(2, "0");
     const minutes = String(date.getMinutes()).padStart(2, "0");
     setTime(`${hours}:${minutes}`);
-
-  })
+  });
 
   // Get Weather
   useEffect(() => {
-      const getWeather = async() => {
-        const response = await fetch(`https://api.weatherapi.com/v1/current.json?key=0b18c67c443543e0a6045401250911&q=${localStorage.getItem("location")}&aqi=no`)
-        const data = await response.json()
-        const unit = localStorage.getItem("weather-unit"); 
-        const key = unit === "f" ? "temp_f" : "temp_c"; 
-        setWeather(Math.round(data?.current?.[key]))
-      }
-      getWeather()
-    }
-  )
+    const getWeather = async () => {
+      const response = await fetch(
+        `https://api.weatherapi.com/v1/current.json?key=0b18c67c443543e0a6045401250911&q=${localStorage.getItem(
+          "location"
+        )}&aqi=no`
+      );
+      const data = await response.json();
+      const unit = localStorage.getItem("weather-unit");
+      const key = unit === "f" ? "temp_f" : "temp_c";
+      setWeather(Math.round(data?.current?.[key]));
+    };
+    getWeather();
+  });
 
-  //Set theme
+  // Set theme
   useEffect(() => {
     if (theme === "sleek-black") {
-      localStorage.setItem("bg-color", "rgba(0, 0, 0, 0.64)")
-      localStorage.setItem("text-color", "rgba(255, 255, 255)")
+      localStorage.setItem("bg-color", "rgba(0, 0, 0, 0.64)");
+      localStorage.setItem("text-color", "rgba(255, 255, 255)");
     } else if (theme === "win95") {
-      localStorage.setItem("bg-color", "rgba(195, 195, 195)")
-      localStorage.setItem("text-color", "rgba(0, 0, 0)")
+      localStorage.setItem("bg-color", "rgba(195, 195, 195)");
+      localStorage.setItem("text-color", "rgba(0, 0, 0)");
     } else if (theme === "invisible") {
-      localStorage.setItem("bg-image", "none")
-      localStorage.setItem("bg-color", "rgba(255, 255, 255, 0)")
+      localStorage.setItem("bg-image", "none");
+      localStorage.setItem("bg-color", "rgba(255, 255, 255, 0)");
     } else if (theme === "none") {
-      
     }
-  })
+  });
 
-  //Browser Search Feature 
-
+  // Browser Search Feature
   function searchBrowser() {
     const trimmedSearch = browserSearch.trim();
+    if (!trimmedSearch) return;
     if (trimmedSearch.includes(".")) {
       const hasProtocol = /^https?:\/\//i.test(trimmedSearch);
       const urlToOpen = hasProtocol ? trimmedSearch : `https://${trimmedSearch}`;
@@ -249,9 +221,53 @@ export default function Island() {
     }
   }
 
+  // Clipboard 
+  async function getClipboard() {
+  try {
+    const text = await navigator.clipboard.readText();
+    setClipboard((prevClipboard) => {
+      if (prevClipboard[prevClipboard.length - 1] === text) {
+        return prevClipboard;
+      }
+      return [...prevClipboard, text];
+    });
+  } catch (error) {
+    setClipboard((prevClipboard) => [
+      ...prevClipboard,
+      `Error reading clipboard: ${error.toString()}`,
+    ]);
+  }
+}
+
+  useEffect(() => {
+    if (tab === 4) {
+      getClipboard();
+    }
+  }, [tab]);
+
+  function copyToClipboard(text) {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      return navigator.clipboard.writeText(text);
+    }
+  }
+
+  // Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "ArrowRight") {
+        setTab((prev) => Math.min(6, prev + 1));
+      } else if (e.key === "ArrowLeft") {
+        setTab((prev) => Math.max(0, prev - 1));
+      } 
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   return (
-     <div
+    <div
       id="Island"
       onMouseEnter={() => {
         if (mode !== "large") setMode("wide");
@@ -284,186 +300,437 @@ export default function Island() {
         overflow: "hidden",
         fontFamily: theme === "win95" ? "w95" : "OpenRunde",
         border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : "none",
-        borderColor: theme === "win95" ? "#FFFFFF #808080 #808080 #FFFFFF" : "none",
-        borderRadius: mode === "large" && theme === "win95" ? 0 : mode === "large" ? 32 : theme === "win95" ? 0 : 16,
+        borderColor:
+          theme === "win95"
+            ? "#FFFFFF #808080 #808080 #FFFFFF"
+            : "none",
+        borderRadius:
+          mode === "large" && theme === "win95"
+            ? 0
+            : mode === "large"
+            ? 32
+            : theme === "win95"
+            ? 0
+            : 16,
         backgroundColor: localStorage.getItem("bg-color"),
         color: localStorage.getItem("text-color")
       }}
     >
       {/*Quickview -time*/}
-      {mode === "wide"? 
-      <>
-        <h1 className="text" style={{
-          position: 'absolute',
-          top: '23%',
-          left: `${alert === true ? `21%`: '11%'}`,
-          transform: 'translate(-50%, -50%)',
-          fontSize: 16,
-          fontWeight: 600,
-          color: localStorage.getItem("text-color")
-        }}>{alert === true ? `Low Battery`:time}</h1>
-        <h1 className="text" style={{
-          position: 'absolute',
-          top: '23%',
-          right: '0%',
-          transform: 'translate(-50%, -50%)',
-          fontSize: 16,
-          fontWeight: 600,
-          color: `${alert === true ? "#ff3f3fff" : `${localStorage.getItem("text-color")}`}`
-        }}>{alert === true ? `${percent}%`: `${weather}º`}</h1>
-      </>
-      : null}
+      {mode === "wide" ? (
+        <>
+          <h1
+            className="text"
+            style={{
+              position: "absolute",
+              top: "23%",
+              left: `${alert === true ? `21%` : "11%"}`,
+              transform: "translate(-50%, -50%)",
+              fontSize: 16,
+              fontWeight: 600,
+              color: localStorage.getItem("text-color")
+            }}
+          >
+            {alert === true ? `Low Battery` : time}
+          </h1>
+          <h1
+            className="text"
+            style={{
+              position: "absolute",
+              top: "23%",
+              right: "0%",
+              transform: "translate(-50%, -50%)",
+              fontSize: 16,
+              fontWeight: 600,
+              color: `${
+                alert === true
+                  ? "#ff3f3fff"
+                  : `${localStorage.getItem("text-color")}`
+              }`
+            }}
+          >
+            {alert === true ? `${percent}%` : `${weather}º`}
+          </h1>
+        </>
+      ) : null}
+
       {/*Browser Search*/}
-      {mode === "large" && tab === 0 ? 
-      <>
-        <input id="browser-searchbar" placeholder="Enter a url or a query" onChange={(e) => {setBrowserSearch(e.target.value)}} onKeyDown={(e) => {if (e.key === "Enter") {searchBrowser()}}} style={{color: localStorage.getItem('text-color')}}/>
-      </>
-      : null}
-      {mode === "large" && tab === 1 ? 
-      <>
-        <div id="quick-apps">
-          <button className="qa-app" onClick={() => {openApp(qa1)}} style={{color: localStorage.getItem("bg-color"), backgroundColor: localStorage.getItem("text-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde"}}>{qa1}</button>
-          <button className="qa-app" onClick={() => {openApp(qa2)}} style={{color: localStorage.getItem("bg-color"), backgroundColor: localStorage.getItem("text-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde"}}>{qa2}</button>
-          <button className="qa-app" onClick={() => {openApp(qa3)}} style={{color: localStorage.getItem("bg-color"), backgroundColor: localStorage.getItem("text-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde"}}>{qa3}</button>
-          <button className="qa-app" onClick={() => {openApp(qa4)}} style={{color: localStorage.getItem("bg-color"), backgroundColor: localStorage.getItem("text-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde"}}>{qa4}</button>
-        </div>
-      </>
-      :null}
+      {mode === "large" && tab === 0 ? (
+        <>
+          <input
+            id="browser-searchbar"
+            placeholder="Enter a url or a query"
+            onChange={(e) => {
+              setBrowserSearch(e.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                searchBrowser();
+              }
+            }}
+            style={{ color: localStorage.getItem("text-color") }}
+          />
+        </>
+      ) : null}
+
+      {/* Quick Apps */}
+      {mode === "large" && tab === 1 ? (
+        <>
+          <div id="quick-apps">
+            <button
+              className="qa-app"
+              onClick={() => {
+                openApp(qa1);
+              }}
+              style={{
+                color: localStorage.getItem("bg-color"),
+                backgroundColor: localStorage.getItem("text-color"),
+                fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+              }}
+            >
+              {qa1}
+            </button>
+            <button
+              className="qa-app"
+              onClick={() => {
+                openApp(qa2);
+              }}
+              style={{
+                color: localStorage.getItem("bg-color"),
+                backgroundColor: localStorage.getItem("text-color"),
+                fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+              }}
+            >
+              {qa2}
+            </button>
+            <button
+              className="qa-app"
+              onClick={() => {
+                openApp(qa3);
+              }}
+              style={{
+                color: localStorage.getItem("bg-color"),
+                backgroundColor: localStorage.getItem("text-color"),
+                fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+              }}
+            >
+              {qa3}
+            </button>
+            <button
+              className="qa-app"
+              onClick={() => {
+                openApp(qa4);
+              }}
+              style={{
+                color: localStorage.getItem("bg-color"),
+                backgroundColor: localStorage.getItem("text-color"),
+                fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+              }}
+            >
+              {qa4}
+            </button>
+          </div>
+        </>
+      ) : null}
+
       {/*Overview tab*/}
-      {mode === "large" && tab === 2 ? 
-      <>
-      <div id="battery" >
-        <div id="battery-bar" style={{backgroundColor: localStorage.getItem("text-color"), color: localStorage.getItem("bg-color")}}>
-          <h1 className="text">{`${percent}%`}</h1>
-        </div>
-      </div>
-      <h1 className="text" style={{fontSize:15, left: 20, top: 10, position: "absolute"}}>{`${weather}º${localStorage.getItem("weather-unit").toUpperCase()}`}</h1>
-        <div id="date">
-            <h1 className="text" style={{fontSize:50}}>{time}</h1>
-            <h2 className="text" style={{fontSize:15}}>{formatDateShort()}</h2>
-        </div>
-      </>
-       : null}
-       {/*AI ask*/}
-       {mode === "large" && tab === 3 && asked === false ? 
-       <>
-        <div style={{
-          position: "relative",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "stretch",
-          justifyContent: "flex-start",
-          width: "100%",
-          height: "100%",
-          padding: "10px",
-          boxSizing: "border-box"
-        }}>
-            <textarea id="userinput" type="text" placeholder="Ask Anything" onChange={(e) => {setUserText(e.target.value)}}onKeyDown={(e) => {if (e.ctrlKey && e.key === "Enter") {setAsked(true); askAI()}}}  style={{color: `${localStorage.getItem("text-color")}`, fontFamily: theme === "win95" ? "w95" : "OpenRunde", pointerEvents: "auto"}}/>
-            <button id="chatsubmit" onClick={() => {setAsked(true); askAI()}}  style={{backgroundColor: localStorage.getItem("text-color"), color: localStorage.getItem("bg-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde", pointerEvents: "auto"}}>Ask</button>
-        </div>
-       </>: null}
-       {/*AI result*/}
-       {mode === "large" && tab === 3 && asked === true ? 
-       <>
-        <div style={{
-          position: "relative",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "flex-start",
-          width: "90%",
-          height: "100%",
-          padding: "10px",
-          boxSizing: "border-box"
-        }}>
-            <h4 id="result" style={{fontWeight: 400, fontFamily: theme === "win95" ? "w95" : "OpenRunde", pointerEvents: "auto"}}>
-                {aiAnswer}
+      {mode === "large" && tab === 2 ? (
+        <>
+          <div id="battery">
+            <div
+              id="battery-bar"
+              style={{
+                backgroundColor: localStorage.getItem("text-color"),
+                color: localStorage.getItem("bg-color")
+              }}
+            >
+              <h1 className="text">{`${percent}%`}</h1>
+            </div>
+          </div>
+          <h1
+            className="text"
+            style={{
+              fontSize: 15,
+              left: 25,
+              top: 16,
+              position: "absolute"
+            }}
+          >{`${weather}º${localStorage
+            .getItem("weather-unit")
+            .toUpperCase()}`}</h1>
+          <div id="date">
+            <h1 className="text" style={{ fontSize: 50 }}>
+              {time}
+            </h1>
+            <h2 className="text" style={{ fontSize: 15 }}>
+              {formatDateShort()}
+            </h2>
+          </div>
+        </>
+      ) : null}
+
+      {/*AI ask*/}
+      {mode === "large" && tab === 3 && asked === false ? (
+        <>
+          <div
+            style={{
+              position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "stretch",
+              justifyContent: "flex-start",
+              width: "100%",
+              height: "100%",
+              padding: "10px",
+              boxSizing: "border-box"
+            }}
+          >
+            <textarea
+              id="userinput"
+              type="text"
+              placeholder="Ask Anything"
+              onChange={(e) => {
+                setUserText(e.target.value);
+              }}
+              onKeyDown={(e) => {
+                if (e.ctrlKey && e.key === "Enter") {
+                  setAsked(true);
+                  askAI();
+                }
+              }}
+              style={{
+                color: `${localStorage.getItem("text-color")}`,
+                fontFamily: theme === "win95" ? "w95" : "OpenRunde",
+                pointerEvents: "auto"
+              }}
+            />
+            <button
+              id="chatsubmit"
+              onClick={() => {
+                setAsked(true);
+                askAI();
+              }}
+              style={{
+                backgroundColor: localStorage.getItem("text-color"),
+                color: localStorage.getItem("bg-color"),
+                fontFamily: theme === "win95" ? "w95" : "OpenRunde",
+                pointerEvents: "auto"
+              }}
+            >
+              Ask
+            </button>
+          </div>
+        </>
+      ) : null}
+
+      {/*AI result*/}
+      {mode === "large" && tab === 3 && asked === true ? (
+        <>
+          <div
+            style={{
+              position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              width: "90%",
+              height: "100%",
+              padding: "10px",
+              boxSizing: "border-box"
+            }}
+          >
+            <h4
+              id="result"
+              style={{
+                fontWeight: 400,
+                fontFamily: theme === "win95" ? "w95" : "OpenRunde",
+                pointerEvents: "auto"
+              }}
+            >
+              {aiAnswer}
             </h4>
-            <button onClick={() => {setAsked(false); setAIAnswer(null)}} id="Askanotherbtn" style={{backgroundColor: localStorage.getItem("text-color"), color: localStorage.getItem("bg-color"), fontFamily: theme === "win95" ? "w95" : "OpenRunde", pointerEvents: "auto"}}>Ask another</button>
-        </div>
-       </>: null}
-       {/*Settings*/}
-       {mode === "large" && tab === 4 ? 
+            <button
+              onClick={() => {
+                setAsked(false);
+                setAIAnswer(null);
+              }}
+              id="Askanotherbtn"
+              style={{
+                backgroundColor: localStorage.getItem("text-color"),
+                color: localStorage.getItem("bg-color"),
+                fontFamily: theme === "win95" ? "w95" : "OpenRunde",
+                pointerEvents: "auto"
+              }}
+            >
+              Ask another
+            </button>
+          </div>
+        </>
+      ) : null}
+
+      {/*Clipboard*/}
+      {mode === "large" && tab === 4 ? (
+        <>
+          <div id="clipboard">
+            {clipboard.length === 0 ? (<h2 className="clipboard-item">Empty 🗑️</h2>) : clipboard.map((item, index) => (
+              <>
+                <h3 className="clipboard-item" key={index}>
+                  {item}
+                </h3>
+                <button
+                  onClick={() => copyToClipboard(item)}
+                  className="clipboard-btn"
+                  style={{
+                    backgroundColor: localStorage.getItem("text-color"),
+                    color: localStorage.getItem("bg-color"),
+                  }}
+                >
+                  Copy {index + 1}
+                </button><br></br>
+              </>
+            ))}
+          </div>
+        </>
+      ) : null}
+
+      {/*Settings*/}
+      {mode === "large" && tab === 5 ? (
         <>
           <div
             style={{
               lineHeight: 2.3,
               textAlign: "center",
               width: "90%",
-              maxHeight: "100%",   
+              maxHeight: "100%",
               overflowX: "hidden",
               padding: 12,
-              boxSizing: "border-box",
+              boxSizing: "border-box"
             }}
           >
             <h1 className="text">Settings</h1>
             {/*Battery alerts settings*/}
-            <label for="battery-alerts" className="text" >Low Battery Alerts: </label>
-            <select id="battery-alerts" 
+            <label htmlFor="battery-alerts" className="text">
+              Low Battery Alerts:{" "}
+            </label>
+            <select
+              id="battery-alerts"
               value={batteryAlertsEnabled ? "true" : "false"}
               onChange={handleBatteryAlertsChange}
             >
               <option value={"true"}>Yes</option>
               <option value={"false"}>No</option>
-            </select><br/>
+            </select>
+            <br />
             {/*Background color settings*/}
-            <label for="bg-color" className="text">Island Color: </label>
+            <label htmlFor="bg-color" className="text">
+              Island Color:{" "}
+            </label>
+            <br />
             <input
               id="bg-color"
-              className="select-input" 
+              className="select-input"
               placeholder="ex: #000000"
-              onChange={(e) => {localStorage.setItem("bg-color", e.target.value)}}
-            /><br/>
+              onChange={(e) => {
+                localStorage.setItem("bg-color", e.target.value);
+              }}
+            />
+            <br />
             {/*Text color settings*/}
-            <label for="text-color" className="text">Text Color: </label>
+            <label htmlFor="text-color" className="text">
+              Text Color:{" "}
+            </label>
+            <br />
             <input
               id="text-color"
-              className="select-input" 
+              className="select-input"
               placeholder="ex: #FAFAFA"
-              onChange={(e) => {localStorage.setItem("text-color", e.target.value)}}
-            /><br/>
+              onChange={(e) => {
+                localStorage.setItem("text-color", e.target.value);
+              }}
+            />
+            <br />
             {/*API key*/}
-            <label for="api-key" className="text">API key: </label>
+            <label htmlFor="api-key" className="text">
+              API key:{" "}
+            </label>
+            <br />
             <input
               id="api-key"
-              className="select-input" 
+              className="select-input"
               placeholder="Enter Groq API Key here"
-              onChange={(e) => {localStorage.setItem("api-key", e.target.value)}}
-            /><br/>
+              onChange={(e) => {
+                localStorage.setItem("api-key", e.target.value);
+              }}
+            />
+            <br />
             {/*Location settings*/}
-            <label for="location" className="text">Location: </label>
+            <label htmlFor="location" className="text">
+              Location:{" "}
+            </label>
+            <br />
             <input
               id="location"
-              className="select-input" 
-              placeholder="ex. Trenton, New Jersey, United States"
-              onChange={(e) => {localStorage.setItem("location", e.target.value)}}
-            /><br/>
-            <label for="weather-unit" className="text" >Weather Unit: </label>
-            <select id="weather-unit" 
+              className="select-input"
+              placeholder="ex. Trenton, NJ, US"
+              onChange={(e) => {
+                localStorage.setItem("location", e.target.value);
+              }}
+            />
+            <br />
+            <label htmlFor="weather-unit" className="text">
+              Weather Unit:{" "}
+            </label>
+            <select
+              id="weather-unit"
               value={weatherUnit}
               onChange={handleWeatherUnitChange}
             >
               <option value={"f"}>F</option>
               <option value={"c"}>C</option>
-            </select><br/>
-            <label for="theme" className="text" >Theme: </label>
-            <select id="theme" value={theme} onChange={(e) => {setTheme(e.target.value)}}>
+            </select>
+            <br />
+            <label htmlFor="theme" className="text">
+              Theme:{" "}
+            </label>
+            <select
+              id="theme"
+              value={theme}
+              onChange={(e) => {
+                setTheme(e.target.value);
+              }}
+            >
               <option value={"none"}>None</option>
               <option value={"invisible"}>Invisible</option>
               <option value={"sleek-black"}>Sleek Black</option>
               <option value={"win95"}>win95</option>
-            </select><br/>
+            </select>
+            <br />
             {/*Background image settings*/}
-            <label for="bg-image" className="text">Background Image: </label>
+            <label htmlFor="bg-image" className="text">
+              Background Image:{" "}
+            </label>
+            <br />
             <input
               id="bg-image"
-              className="select-input" 
+              className="select-input"
               placeholder="File path or URL"
-              onChange={(e) => {localStorage.setItem("bg-image", e.target.value)}}
-            /><br/>
+              onChange={(e) => {
+                localStorage.setItem("bg-image", e.target.value);
+              }}
+            />
+            <br />
             {/*Quick app 1*/}
-            <label for="qa1" className="text" >Quick app 1: </label>
-            <select id="qa1" value={qa1} onChange={(e) => {setQa1(e.target.value); localStorage.setItem("qa1", e.target.value);}}>
+            <label htmlFor="qa1" className="text">
+              Quick app 1:{" "}
+            </label>
+            <select
+              id="qa1"
+              value={qa1}
+              onChange={(e) => {
+                setQa1(e.target.value);
+                localStorage.setItem("qa1", e.target.value);
+              }}
+            >
               <option value={"spotify"}>Spotify</option>
               <option value={"discord"}>Discord</option>
               <option value={"notion"}>Notion</option>
@@ -471,10 +738,20 @@ export default function Island() {
               <option value={"steam"}>Steam</option>
               <option value={"tel"}>Phone</option>
               <option value={"sms"}>Messages</option>
-            </select><br/>
+            </select>
+            <br />
             {/*Quick app 2*/}
-            <label for="qa2" className="text" >Quick app 2: </label>
-            <select id="qa2" value={qa2} onChange={(e) => {setQa2(e.target.value); localStorage.setItem("qa2", e.target.value);}}>
+            <label htmlFor="qa2" className="text">
+              Quick app 2:{" "}
+            </label>
+            <select
+              id="qa2"
+              value={qa2}
+              onChange={(e) => {
+                setQa2(e.target.value);
+                localStorage.setItem("qa2", e.target.value);
+              }}
+            >
               <option value={"spotify"}>Spotify</option>
               <option value={"discord"}>Discord</option>
               <option value={"notion"}>Notion</option>
@@ -482,10 +759,20 @@ export default function Island() {
               <option value={"steam"}>Steam</option>
               <option value={"tel"}>Phone</option>
               <option value={"sms"}>Messages</option>
-            </select><br/>
+            </select>
+            <br />
             {/*Quick app 3*/}
-            <label for="qa3" className="text" >Quick app 3: </label>
-            <select id="qa3" value={qa3} onChange={(e) => {setQa3(e.target.value); localStorage.setItem("qa3", e.target.value);}}>
+            <label htmlFor="qa3" className="text">
+              Quick app 3:{" "}
+            </label>
+            <select
+              id="qa3"
+              value={qa3}
+              onChange={(e) => {
+                setQa3(e.target.value);
+                localStorage.setItem("qa3", e.target.value);
+              }}
+            >
               <option value={"spotify"}>Spotify</option>
               <option value={"discord"}>Discord</option>
               <option value={"notion"}>Notion</option>
@@ -493,10 +780,20 @@ export default function Island() {
               <option value={"steam"}>Steam</option>
               <option value={"tel"}>Phone</option>
               <option value={"sms"}>Messages</option>
-            </select><br/>
+            </select>
+            <br />
             {/*Quick app 4*/}
-            <label for="q4" className="text" >Quick app 4: </label>
-            <select id="qa4" value={qa4} onChange={(e) => {setQa4(e.target.value); localStorage.setItem("qa4", e.target.value);}}>
+            <label htmlFor="qa4" className="text">
+              Quick app 4:{" "}
+            </label>
+            <select
+              id="qa4"
+              value={qa4}
+              onChange={(e) => {
+                setQa4(e.target.value);
+                localStorage.setItem("qa4", e.target.value);
+              }}
+            >
               <option value={"spotify"}>Spotify</option>
               <option value={"discord"}>Discord</option>
               <option value={"notion"}>Notion</option>
@@ -504,10 +801,11 @@ export default function Island() {
               <option value={"steam"}>Steam</option>
               <option value={"tel"}>Phone</option>
               <option value={"sms"}>Messages</option>
-            </select><br/>
+            </select>
+            <br />
           </div>
         </>
-       : null}
+      ) : null}
     </div>
   );
 }

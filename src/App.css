@@ -187,16 +187,19 @@ select {
   border: 2px solid grey;
   transition: .2s;
   animation: appear 1s forwards;  
+  margin: 15px;
 }
 
 .select-input {
-  width: 120px;
-  padding: 4px;
+  width: 180px;
+  padding: 8px 10px;
   color: #FAFAFA;
   background-color: rgb(32, 32, 32);
   color: white;
-  border-radius: 15px;
+  border-radius: 14px;
   outline: none;
+  margin-top: 5px;
+  margin-bottom: 25px;
   border: 2px solid grey;
   transition: .2s;
   animation: appear 1s forwards; 
@@ -204,6 +207,8 @@ select {
 
 label {
   margin-right: 10px;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 #Askanotherbtn {
@@ -217,7 +222,7 @@ label {
   font-weight: 700;
   border-radius: 9px;
   transition: .2s;
-  z-index: 100;
+  z-index: 101;
 }
 
 #result {
@@ -229,7 +234,7 @@ label {
   width: 100%;
   max-width: 100%;
   z-index: 100;
-  max-height: 150px;                
+  max-height: 250px;                
   overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
@@ -242,8 +247,8 @@ label {
 #battery {
   animation: appear 1s forwards;
   position: absolute;
-  top: 15px;
-  right: 22px;
+  top: 21px;
+  right: 25px;
   width: 15px;
   background-color: none;
   padding: 8px 11px;
@@ -307,7 +312,61 @@ label {
   background-color: transparent;
   border: none;
   padding: 12px;
-  font-size: 22px;
+  font-size: 24px;
   outline: none;
   text-align: center;
+}
+
+#browser-searchbar::placeholder {
+  opacity: .9;
+}
+
+#clipboard {
+  animation: appear 0.6s forwards;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  max-height: 280px;
+  padding: 30px;
+  box-sizing: border-box;
+  z-index: 100;
+  overflow-y: auto;    
+  overflow-x: hidden;
+  pointer-events: auto;
+}
+
+#clipboard h3 {
+  font-size: 15px;
+  width: 100%;
+  max-width: 100%;
+  white-space: pre-wrap;    
+  word-break: break-word;    
+  overflow-wrap: anywhere; 
+}
+
+.clipboard-item {
+  display: flex;
+  flex-direction: column;
+  padding: 15px 18px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.clipboard-btn {
+  margin-top: 5px;
+  margin-bottom: 10px;
+  padding: 5px 4px;
+  width: 150px;
+  border-radius: 9px;
+  border: none;
+  font-weight: 800;
+  transition: .4s;
+}
+
+.clipboard-btn:active {
+  transform: scale(.8);
 }
