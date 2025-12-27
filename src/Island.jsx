@@ -1,4 +1,3 @@
-// App.jsx (or Island.jsx)
 import { useState, useEffect } from "react";
 import { Groq } from "groq-sdk";
 import "./App.css";
@@ -38,7 +37,7 @@ export default function Island() {
   const [weatherUnit, setweatherUnit] = useState();
   const [theme, setTheme] = useState("default");
   const [browserSearch, setBrowserSearch] = useState("");
-  const [clipboard, setClipboard] = useState([]); // clipboard history as array of strings
+  const [clipboard, setClipboard] = useState([]); 
 
   let width = mode === "large" ? 400 : mode === "wide" ? 300 : 175;
   let height = mode === "large" ? 190 : mode === "wide" ? 43 : 43;
@@ -47,6 +46,16 @@ export default function Island() {
   const [qa2, setQa2] = useState(localStorage.getItem("qa2") || "spotify");
   const [qa3, setQa3] = useState(localStorage.getItem("qa3") || "sms");
   const [qa4, setQa4] = useState(localStorage.getItem("qa4") || "tel");
+
+  //User age
+  if (!localStorage.getItem('newuser')) {
+    localStorage.setItem('newuser', 'true')
+  }
+
+  if (localStorage.getItem('newuser') === 'true') {
+    window.open("https://github.com/TopMyster/Ripple/blob/main/instructions.md" ,'_blank')
+    localStorage.setItem('newuser', 'false')
+  }
 
   // localStorage defaults
   if (!localStorage.getItem("battery-alerts")) {
@@ -232,18 +241,15 @@ export default function Island() {
       return [...prevClipboard, text];
     });
   } catch (error) {
-    setClipboard((prevClipboard) => [
-      ...prevClipboard,
+    console.log(
       `Error reading clipboard: ${error.toString()}`,
-    ]);
+    );
   }
 }
 
   useEffect(() => {
-    if (tab === 4) {
       getClipboard();
-    }
-  }, [tab]);
+    })
 
   function copyToClipboard(text) {
     if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
@@ -251,14 +257,18 @@ export default function Island() {
     }
   }
 
-  // Keyboard Shortcuts
+  // Keyboard Shortcuts and Navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "ArrowRight") {
-        setTab((prev) => Math.min(6, prev + 1));
+        setTab((prev) => Math.min(5, prev + 1));
       } else if (e.key === "ArrowLeft") {
         setTab((prev) => Math.max(0, prev - 1));
-      } 
+      } else if (e.ctrlKey && e.key >= "1" && e.key <= "6") {
+        const tabNum = parseInt(e.key) - 1;
+        setMode("large");
+        setTab(tabNum);
+      }
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => {

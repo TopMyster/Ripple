@@ -18,7 +18,6 @@ const createWindow = () => {
     skipTaskbar: true,
     fullscreen: false,
     visibleOnFullScreen: true,
-    // NOTE: setVisibleOnAllWorkspaces is NOT a constructor option; removed here.
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       devTools: false

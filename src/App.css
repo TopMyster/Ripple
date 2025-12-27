@@ -251,7 +251,7 @@ label {
   right: 25px;
   width: 15px;
   background-color: none;
-  padding: 8px 11px;
+  padding: 8px 13px;
   height: 8px;
   border-radius: 10px;
   display: flex;
@@ -350,15 +350,18 @@ label {
 .clipboard-item {
   display: flex;
   flex-direction: column;
-  padding: 15px 18px;
+  text-align: center;
+  padding: 30px 18px;
   margin-bottom: 10px;
   border-radius: 6px;
   background-color: rgba(0, 0, 0, 0.1);
 }
 
 .clipboard-btn {
-  margin-top: 5px;
-  margin-bottom: 10px;
+  cursor: pointer;
+  user-select: none;
+  margin-top: 2px;
+  margin-bottom: 15px;
   padding: 5px 4px;
   width: 150px;
   border-radius: 9px;
