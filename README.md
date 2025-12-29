@@ -18,6 +18,8 @@ https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
  - ✅ Clipboard<br>
  - ✅ Intructions<br>
  - ✅ Charging Alert<br>
+ - -Fix title bar being visible on windows (https://github.com/TopMyster/Ripple/issues/3)
+ - -Fix not working on Ubuntu (https://github.com/TopMyster/Ripple/issues/4)
  - •Make windows build an install<br>
  - •Redesign code to make each Tab their own component in order to make it easier for community Tabs<br>
  - •Trackpad gestures<br>
