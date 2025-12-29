@@ -28,7 +28,7 @@ Ripple
 
 <img width="268" height="103" alt="Screenshot 2025-12-27 at 4 59 51 PM" src="https://github.com/user-attachments/assets/244077b5-f63b-4492-a0d0-743dbaf5526a" />
 
-### These are the parts of the Island
+## These are the parts of the Island
 
 ### Tabs
 
