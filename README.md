@@ -23,4 +23,32 @@ https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
 <sup>✅ = done, - = Working on, • = Planned, * = Note to self</sup><br>
 <a href="https://github.com/TopMyster/Ripple/blob/main/instructions.md">Further Instructions</a>
 
+## Build Instructions
 
+### Standard Build (Current OS)
+```bash
+npm run make
+```
+
+### Build for Specific Platforms
+
+**Windows (x64)**
+```bash
+npm run make -- --platform=win32 --arch=x64
+```
+
+**Linux (x64)**
+```bash
+npm run make -- --platform=linux --arch=x64
+```
+
+**macOS (Apple Silicon & Intel)**
+```bash
+# Apple Silicon (M1/M2/M3)
+npm run make -- --platform=darwin --arch=arm64
+
+# Intel Macs
+npm run make -- --platform=darwin --arch=x64
+```
+
+Artifacts will be generated in the `out/make` directory.
