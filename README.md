@@ -7,6 +7,7 @@ https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
 
 ## Features
  - ✅ Battery Alerts<br>
+ - ✅ Island syncs accross desktops and monitors<br>
  - ✅ AI Ask feature<br>
  - ✅ Themes e.g. Win95, Sleek Black<br>
  - ✅ Has Weather<br>
@@ -17,6 +18,7 @@ https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
  - ✅ Clipboard<br>
  - ✅ Intructions<br>
  - ✅ Charging Alert<br>
+ - •Make windows build an install<br>
  - •Redesign code to make each Tab their own component in order to make it easier for community Tabs<br>
  - •Trackpad gestures<br>
 
@@ -44,11 +46,11 @@ npm run make -- --platform=linux --arch=x64
 
 **macOS (Apple Silicon & Intel)**
 ```bash
-# Apple Silicon (M1/M2/M3)
+# Apple Silicon
 npm run make -- --platform=darwin --arch=arm64
 
-# Intel Macs
+# Intel
 npm run make -- --platform=darwin --arch=x64
 ```
 
-Artifacts will be generated in the `out/make` directory.
+Artifacts will be found in the `out/make` directory.
