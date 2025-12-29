@@ -20,7 +20,7 @@ https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
  - •Redesign code to make each Tab their own component in order to make it easier for community Tabs<br>
  - •Trackpad gestures<br>
 
-<sup>✅ = done, - = Working on, • = Planned, * = Note to self</sup>
+<sup>✅ = done, - = Working on, • = Planned, * = Note to self</sup><br>
 <a href="https://github.com/TopMyster/Ripple/blob/main/instructions.md">Further Instructions</a>
 
 
