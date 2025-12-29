@@ -16,7 +16,7 @@ https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
  - ✅ Keyboard Shortcuts<br>
  - ✅ Clipboard<br>
  - ✅ Intructions<br>
- - -Charging Alert<br>
+ - ✅ Charging Alert<br>
  - •Redesign code to make each Tab their own component in order to make it easier for community Tabs<br>
  - •Trackpad gestures<br>
 

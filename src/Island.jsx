@@ -37,7 +37,9 @@ export default function Island() {
   const [weatherUnit, setweatherUnit] = useState();
   const [theme, setTheme] = useState("default");
   const [browserSearch, setBrowserSearch] = useState("");
-  const [clipboard, setClipboard] = useState([]); 
+  const [clipboard, setClipboard] = useState([]);
+  const [charging, setCharging] = useState(false);
+  const [chargingAlert, setChargingAlert] = useState(false);
 
   let width = mode === "large" ? 400 : mode === "wide" ? 300 : 175;
   let height = mode === "large" ? 190 : mode === "wide" ? 43 : 43;
@@ -53,7 +55,7 @@ export default function Island() {
   }
 
   if (localStorage.getItem('newuser') === 'true') {
-    window.open("https://github.com/TopMyster/Ripple/blob/main/instructions.md" ,'_blank')
+    window.open("https://github.com/TopMyster/Ripple/blob/main/instructions.md", '_blank')
     localStorage.setItem('newuser', 'false')
   }
 
@@ -144,9 +146,13 @@ export default function Island() {
       if (!("getBattery" in navigator)) return setPercent("Battery not supported");
       try {
         battery = await navigator.getBattery();
-        const update = () => setPercent(Math.round(battery.level * 100));
+        const update = () => {
+          setPercent(Math.round(battery.level * 100));
+          setCharging(battery.charging);
+        };
         handler = update;
         update();
+        battery.addEventListener("chargingchange", handler);
         battery.addEventListener("levelchange", handler);
       } catch {
         setPercent("Battery unavailable");
@@ -156,6 +162,7 @@ export default function Island() {
     return () => {
       if (battery && handler) {
         battery.removeEventListener("levelchange", handler);
+        battery.removeEventListener("chargingchange", handler);
       }
     };
   }, []);
@@ -177,6 +184,23 @@ export default function Island() {
       };
     }
   }, [percent]);
+
+  useEffect(() => {
+    if (
+      (charging === true) &&
+      localStorage.getItem("battery-alerts") === "true"
+    ) {
+      setMode("wide");
+      setChargingAlert(true);
+      const timerId = setTimeout(() => {
+        setMode("normal");
+        setChargingAlert(false);
+      }, 2000);
+      return () => {
+        clearTimeout(timerId);
+      };
+    }
+  }, [charging]);
 
   // Get time
   useEffect((date = new Date()) => {
@@ -248,8 +272,8 @@ export default function Island() {
   }
 
   useEffect(() => {
-      getClipboard();
-    })
+    getClipboard();
+  })
 
   function copyToClipboard(text) {
     if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
@@ -318,10 +342,10 @@ export default function Island() {
           mode === "large" && theme === "win95"
             ? 0
             : mode === "large"
-            ? 32
-            : theme === "win95"
-            ? 0
-            : 16,
+              ? 32
+              : theme === "win95"
+                ? 0
+                : 16,
         backgroundColor: localStorage.getItem("bg-color"),
         color: localStorage.getItem("text-color")
       }}
@@ -334,14 +358,14 @@ export default function Island() {
             style={{
               position: "absolute",
               top: "23%",
-              left: `${alert === true ? `21%` : "11%"}`,
+              left: `${alert === true ? `21%` : chargingAlert ? `18%` : "11%"}`,
               transform: "translate(-50%, -50%)",
               fontSize: 16,
               fontWeight: 600,
-              color: localStorage.getItem("text-color")
+              color: chargingAlert === true ? "#6fff7bff" : localStorage.getItem("text-color")
             }}
           >
-            {alert === true ? `Low Battery` : time}
+            {alert === true ? `Low Battery` : chargingAlert ? "Charging" : time}
           </h1>
           <h1
             className="text"
@@ -352,14 +376,13 @@ export default function Island() {
               transform: "translate(-50%, -50%)",
               fontSize: 16,
               fontWeight: 600,
-              color: `${
-                alert === true
-                  ? "#ff3f3fff"
-                  : `${localStorage.getItem("text-color")}`
-              }`
+              color: `${alert === true
+                ? "#ff3f3fff"
+                : `${localStorage.getItem("text-color")}`
+                }`
             }}
           >
-            {alert === true ? `${percent}%` : `${weather}º`}
+            {alert === true ? `${percent}%` : chargingAlert === true ? `${percent}%` : `${weather}º`}
           </h1>
         </>
       ) : null}
@@ -454,7 +477,7 @@ export default function Island() {
                 color: localStorage.getItem("bg-color")
               }}
             >
-              <h1 className="text">{`${percent}%`}</h1>
+              <h1 className="text">{charging ? "⚡︎" : null}{`${percent}%`}</h1>
             </div>
           </div>
           <h1
