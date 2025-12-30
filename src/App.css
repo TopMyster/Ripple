@@ -241,13 +241,12 @@ label {
 #battery {
   animation: appear 1s forwards;
   position: absolute;
-  top: 21px;
+  top: 17px;
   right: 25px;
-  width: 15px;
-  background-color: none;
-  padding: 8px 13px;
-  height: 8px;
-  border-radius: 12px;
+  width: 18px;
+  padding: 14px 21px;
+  height: 10px;
+  border-radius: 18px;
   display: flex;
   flex-direction: column;
   align-items: center;

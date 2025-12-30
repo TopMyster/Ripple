@@ -496,7 +496,7 @@ export default function Island() {
             style={{
               fontSize: 15,
               left: 25,
-              top: 16,
+              top: 14,
               position: "absolute"
             }}
           >{`${weather}º${localStorage
