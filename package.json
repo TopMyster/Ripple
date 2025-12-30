@@ -1,7 +1,7 @@
 {
   "name": "ripple",
   "productName": "Ripple",
-  "version": "1.0.0",
+  "version": "2.1.0",
   "description": "A Dynamic Island for All",
   "main": ".vite/build/main.js",
   "scripts": {

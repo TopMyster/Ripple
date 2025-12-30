@@ -33,7 +33,7 @@ export default function Island() {
   const [alert, setAlert] = useState(null);
   const [userText, setUserText] = useState("");
   const [batteryAlertsEnabled, setBatteryAlertsEnabled] = useState(true);
-  const [islandBorderEnabled, setIslandBorderEnabled] = useState(false);
+  const [islandBorderEnabled, setIslandBorderEnabled] = useState(localStorage.getItem("island-border"));
   const [weather, setWeather] = useState("");
   const [weatherUnit, setweatherUnit] = useState();
   const [theme, setTheme] = useState("default");
@@ -67,6 +67,10 @@ export default function Island() {
 
   if (!localStorage.getItem("default-tab")) {
     localStorage.setItem("default-tab", "2");
+  }
+
+  if (!localStorage.getItem("island-border")) {
+    localStorage.setItem("island-border", "false");
   }
 
   if (!localStorage.getItem("bg-color")) {
