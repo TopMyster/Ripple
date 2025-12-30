@@ -33,6 +33,7 @@ export default function Island() {
   const [alert, setAlert] = useState(null);
   const [userText, setUserText] = useState("");
   const [batteryAlertsEnabled, setBatteryAlertsEnabled] = useState(true);
+  const [islandBorderEnabled, setIslandBorderEnabled] = useState(false);
   const [weather, setWeather] = useState("");
   const [weatherUnit, setweatherUnit] = useState();
   const [theme, setTheme] = useState("default");
@@ -80,6 +81,12 @@ export default function Island() {
     const value = e.target.value === "true";
     setBatteryAlertsEnabled(value);
     localStorage.setItem("battery-alerts", value ? "true" : "false");
+  };
+
+  const handleIslandBorderChange = (e) => {
+    const value = e.target.value === "true";
+    setIslandBorderEnabled(value);
+    localStorage.setItem("island-border", value ? "true" : "false");
   };
 
   const handleWeatherUnitChange = (e) => {
@@ -333,7 +340,7 @@ export default function Island() {
         justifyContent: "center",
         overflow: "hidden",
         fontFamily: theme === "win95" ? "w95" : "OpenRunde",
-        border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : "none",
+        border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : islandBorderEnabled ? `1px solid ${localStorage.getItem("text-color")}` : "none",
         borderColor:
           theme === "win95"
             ? "#FFFFFF #808080 #808080 #FFFFFF"
@@ -836,9 +843,23 @@ export default function Island() {
               <option value={"sms"}>Messages</option>
             </select>
             <br />
+            {/*Battery alerts settings*/}
+            <label htmlFor="battery-alerts" className="text">
+              Island Border:{" "}
+            </label>
+            <select
+              id="island-border"
+              value={islandBorderEnabled ? "true" : "false"}
+              onChange={handleIslandBorderChange}
+            >
+              <option value={"true"}>Yes</option>
+              <option value={"false"}>No</option>
+            </select>
+            <br />
           </div>
         </>
       ) : null}
+
     </div>
   );
 }

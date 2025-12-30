@@ -18,7 +18,7 @@ https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
  - ✅ Clipboard<br>
  - ✅ Intructions<br>
  - ✅ Charging Alert<br>
- - -A settings to enable a slight border on the Island<br>
+ - ✅ A settings to enable a slight border on the Island<br>
  - -Add a settings to change default Tab<br>
  - •Fix title bar being visible on Windows (https://github.com/TopMyster/Ripple/issues/3)<br>
  - •Fix not working on Ubuntu (https://github.com/TopMyster/Ripple/issues/4)<br>
