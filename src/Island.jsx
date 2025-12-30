@@ -32,10 +32,10 @@ export default function Island() {
   const [percent, setPercent] = useState(null);
   const [alert, setAlert] = useState(null);
   const [userText, setUserText] = useState("");
-  const [batteryAlertsEnabled, setBatteryAlertsEnabled] = useState(true);
-  const [islandBorderEnabled, setIslandBorderEnabled] = useState(localStorage.getItem("island-border"));
+  const [batteryAlertsEnabled, setBatteryAlertsEnabled] = useState(localStorage.getItem("battery-alerts") !== "false");
+  const [islandBorderEnabled, setIslandBorderEnabled] = useState(localStorage.getItem("island-border") === "true");
   const [weather, setWeather] = useState("");
-  const [weatherUnit, setweatherUnit] = useState();
+  const [weatherUnit, setweatherUnit] = useState(localStorage.getItem("weather-unit") || "f");
   const [theme, setTheme] = useState("default");
   const [browserSearch, setBrowserSearch] = useState("");
   const [clipboard, setClipboard] = useState([]);
@@ -852,7 +852,7 @@ export default function Island() {
             </select>
             <br />
             {/*Battery alerts settings*/}
-            <label htmlFor="battery-alerts" className="text">
+            <label htmlFor="island-border" className="text">
               Island Border:{" "}
             </label>
             <select
