@@ -1,0 +1,1 @@
+If you would like to add a feature please add an issue about it. Please note that not all features may be added. If you would like to contribute code wise make a pull request and the same thing applies.
