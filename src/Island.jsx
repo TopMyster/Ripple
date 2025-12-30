@@ -26,7 +26,7 @@ function openApp(app) {
 export default function Island() {
   const [time, setTime] = useState(null);
   const [mode, setMode] = useState("shrink");
-  const [tab, setTab] = useState(2);
+  const [tab, setTab] = useState(Number(localStorage.getItem("default-tab")));
   const [asked, setAsked] = useState(false);
   const [aiAnswer, setAIAnswer] = useState(null);
   const [percent, setPercent] = useState(null);
@@ -63,6 +63,10 @@ export default function Island() {
   // localStorage defaults
   if (!localStorage.getItem("battery-alerts")) {
     localStorage.setItem("battery-alerts", "true");
+  }
+
+  if (!localStorage.getItem("default-tab")) {
+    localStorage.setItem("default-tab", "2");
   }
 
   if (!localStorage.getItem("bg-color")) {
@@ -855,6 +859,20 @@ export default function Island() {
               <option value={"true"}>Yes</option>
               <option value={"false"}>No</option>
             </select>
+            <br />
+            {/*Default tab settings*/}
+            <label htmlFor="default-tab" className="text">
+              Default Tab:{" "}
+            </label>
+            <br />
+            <input
+              id="default-tab"
+              className="select-input"
+              placeholder="ex. 0, 1, 2, 3, 4"
+              onChange={(e) => {
+                localStorage.setItem("default-tab", e.target.value);
+              }}
+            />
             <br />
           </div>
         </>
