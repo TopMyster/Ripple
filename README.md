@@ -18,11 +18,11 @@ https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
  - ✅ Clipboard<br>
  - ✅ Intructions<br>
  - ✅ Charging Alert<br>
- - -Fix title bar being visible on windows (https://github.com/TopMyster/Ripple/issues/3)
- - -Fix not working on Ubuntu (https://github.com/TopMyster/Ripple/issues/4)
+ - -A settings to enable a slight border on the Island<br>
+ - -Add a settings to change default Tab<br>
+ - •Fix title bar being visible on Windows (https://github.com/TopMyster/Ripple/issues/3)<br>
+ - •Fix not working on Ubuntu (https://github.com/TopMyster/Ripple/issues/4)<br>
  - •Make windows build an install<br>
- - •Redesign code to make each Tab their own component in order to make it easier for community Tabs<br>
- - •Trackpad gestures<br>
 
 <sup>✅ = done, - = Working on, • = Planned, * = Note to self</sup><br>
 <a href="https://github.com/TopMyster/Ripple/blob/main/instructions.md">Further Instructions</a>
