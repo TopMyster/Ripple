@@ -15,6 +15,8 @@ const createWindow = () => {
     alwaysOnTop: true,
     resizable: false,
     frame: false,
+    thickFrame: false,
+    hasShadow: false,
     skipTaskbar: true,
     fullscreen: false,
     visibleOnFullScreen: true,
