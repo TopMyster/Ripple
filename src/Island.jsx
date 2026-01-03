@@ -378,7 +378,7 @@ export default function Island() {
         justifyContent: "center",
         overflow: "hidden",
         fontFamily: theme === "win95" ? "w95" : "OpenRunde",
-        border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : islandBorderEnabled ? chargingAlert ? `1px solid rgba(3, 196, 3, 0.301)` : alert ? `1px solid rgba(255, 38, 0, 0.34)` : hideNotActiveIslandEnabled ? "none" : `1px solid ${localStorage.getItem("text-color")}` : "none",
+        border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : islandBorderEnabled ? chargingAlert ? `1px solid rgba(3, 196, 3, 0.301)` : alert ? `1px solid rgba(255, 38, 0, 0.34)` : hideNotActiveIslandEnabled ? "none" : `1px solid color-mix(in srgb, ${localStorage.getItem("text-color")}, transparent 70%)` : "none",
         borderColor:
           theme === "win95"
             ? "#FFFFFF #808080 #808080 #FFFFFF"

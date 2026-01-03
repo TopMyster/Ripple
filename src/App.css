@@ -93,10 +93,6 @@ body {
   scrollbar-width: none;
 }
 
-#Island:hover {
-  width: 60vw;
-}
-
 @keyframes appear {
   0% {
     -webkit-filter: blur(5px);
