@@ -34,9 +34,13 @@ Ripple
 
 ##### *A mode that hides the Island when it's inactive*
 
+https://github.com/user-attachments/assets/44316ba5-34a7-4eca-9fe0-6ce6bad3c257
+
 ### Standby Mode 
 
 ##### *A mode that shows the time and your battery percentage in Quick mode that when enabled replaces still mode*
+
+https://github.com/user-attachments/assets/95317766-8599-4da4-9078-6b2a48af64f8
 
 ## These are the parts of the Island
 
