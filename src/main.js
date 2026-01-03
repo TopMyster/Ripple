@@ -2,10 +2,11 @@
 const { app, BrowserWindow, screen, ipcMain } = require("electron");
 const path = require("node:path");
 const fs = require("fs");
-// const started = require("electron-squirrel-startup");
-// if (started) {
-//   app.quit();
-// }
+
+if (process.platform === 'linux') {
+  app.commandLine.appendSwitch('enable-transparent-visuals');
+  app.disableHardwareAcceleration();
+}
 const createWindow = () => {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width, height } = primaryDisplay.size;
@@ -28,14 +29,23 @@ const createWindow = () => {
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       devTools: false
-    }
+    },
+    show: false
   });
 
-  // Make window fullscreen
-  mainWindow.setFullScreen(true);
+  if (process.platform !== 'linux') {
+    mainWindow.setFullScreen(true);
+  }
 
-  // Enable click-through by default
   mainWindow.setIgnoreMouseEvents(true, { forward: true });
+
+  const showDelay = process.platform === 'linux' ? 300 : 0;
+
+  mainWindow.once('ready-to-show', () => {
+    setTimeout(() => {
+      mainWindow.show();
+    }, showDelay);
+  });
 
   // Handle IPC calls to toggle mouse event ignoring
   ipcMain.handle('set-ignore-mouse-events', (event, ignore, forward) => {
