@@ -89,8 +89,8 @@ body {
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
-  transition: .4s;
-  scrollbar-width: none;
+  transition: 0.59s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+  scrollbar-width: 0px;
 }
 
 @keyframes appear {
