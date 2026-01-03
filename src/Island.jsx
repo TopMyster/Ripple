@@ -25,7 +25,7 @@ function openApp(app) {
 
 export default function Island() {
   const [time, setTime] = useState(null);
-  const [mode, setMode] = useState("shrink");
+  const [mode, setMode] = useState("still");
   const [tab, setTab] = useState(Number(localStorage.getItem("default-tab")));
   const [asked, setAsked] = useState(false);
   const [aiAnswer, setAIAnswer] = useState(null);
@@ -34,6 +34,8 @@ export default function Island() {
   const [userText, setUserText] = useState("");
   const [batteryAlertsEnabled, setBatteryAlertsEnabled] = useState(localStorage.getItem("battery-alerts") !== "false");
   const [islandBorderEnabled, setIslandBorderEnabled] = useState(localStorage.getItem("island-border") === "true");
+  const [standbyBorderEnabled, setStandbyEnabled] = useState(localStorage.getItem("standby-mode") === "true");
+  const [hideNotActiveIslandEnabled, sethideNotActiveIslandEnabled] = useState(localStorage.getItem("hide-island-notactive") === "true");
   const [weather, setWeather] = useState("");
   const [weatherUnit, setweatherUnit] = useState(localStorage.getItem("weather-unit") || "f");
   const [theme, setTheme] = useState("default");
@@ -42,8 +44,8 @@ export default function Island() {
   const [charging, setCharging] = useState(false);
   const [chargingAlert, setChargingAlert] = useState(false);
 
-  let width = mode === "large" ? 400 : mode === "wide" ? 300 : 175;
-  let height = mode === "large" ? 190 : mode === "wide" ? 43 : 43;
+  let width = mode === "large" ? 400 : mode === "quick" ? 300 : 175;
+  let height = mode === "large" ? 190 : mode === "quick" ? 43 : 43;
 
   const [qa1, setQa1] = useState(localStorage.getItem("qa1") || "discord");
   const [qa2, setQa2] = useState(localStorage.getItem("qa2") || "spotify");
@@ -73,6 +75,14 @@ export default function Island() {
     localStorage.setItem("island-border", "false");
   }
 
+  if (!localStorage.getItem("hide-island-notactive")) {
+    localStorage.setItem("hide-island-notactive", "false");
+  }
+
+  if (!localStorage.getItem("standby-mode")) {
+    localStorage.setItem("standby-mode", "false");
+  }
+
   if (!localStorage.getItem("bg-color")) {
     localStorage.setItem("bg-color", "#000000");
   }
@@ -95,6 +105,18 @@ export default function Island() {
     const value = e.target.value === "true";
     setIslandBorderEnabled(value);
     localStorage.setItem("island-border", value ? "true" : "false");
+  };
+
+  const handleStandbyChange = (e) => {
+    const value = e.target.value === "true";
+    setStandbyEnabled(value);
+    localStorage.setItem("standby-mode", value ? "true" : "false");
+  };
+
+  const handlehideNotActiveIslandChange = (e) => {
+    const value = e.target.value === "true";
+    sethideNotActiveIslandEnabled(value);
+    localStorage.setItem("hide-island-notactive", value ? "true" : "false");
   };
 
   const handleWeatherUnitChange = (e) => {
@@ -188,7 +210,7 @@ export default function Island() {
       (percent === 20 || percent === 10 || percent === 5 || percent === 2) &&
       localStorage.getItem("battery-alerts") === "true"
     ) {
-      setMode("wide");
+      setMode("quick");
       setAlert(true);
       const timerId = setTimeout(() => {
         setMode("normal");
@@ -205,7 +227,7 @@ export default function Island() {
       (charging === true) &&
       localStorage.getItem("battery-alerts") === "true"
     ) {
-      setMode("wide");
+      setMode("quick");
       setChargingAlert(true);
       const timerId = setTimeout(() => {
         setMode("normal");
@@ -223,6 +245,14 @@ export default function Island() {
     const minutes = String(date.getMinutes()).padStart(2, "0");
     setTime(`${hours}:${minutes}`);
   });
+
+  //Standby Mode 
+
+  useEffect(() => {
+    if (standbyBorderEnabled && mode === 'still') {
+      setMode('quick')
+    }
+  })
 
   // Get Weather
   useEffect(() => {
@@ -319,13 +349,13 @@ export default function Island() {
     <div
       id="Island"
       onMouseEnter={() => {
-        if (mode !== "large") setMode("wide");
+        if (mode !== "large") setMode("quick");
         if (window.electronAPI) {
           window.electronAPI.setIgnoreMouseEvents(false, false);
         }
       }}
       onMouseLeave={() => {
-        setMode("shrink");
+        setMode("still");
         if (window.electronAPI) {
           window.electronAPI.setIgnoreMouseEvents(true, true);
         }
@@ -348,7 +378,7 @@ export default function Island() {
         justifyContent: "center",
         overflow: "hidden",
         fontFamily: theme === "win95" ? "w95" : "OpenRunde",
-        border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : islandBorderEnabled ? `1px solid ${localStorage.getItem("text-color")}` : "none",
+        border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : islandBorderEnabled ? chargingAlert ? `1px solid rgba(3, 196, 3, 0.301)` : alert ? `1px solid rgba(255, 38, 0, 0.34)` : hideNotActiveIslandEnabled ? "none" : `1px solid ${localStorage.getItem("text-color")}` : "none",
         borderColor:
           theme === "win95"
             ? "#FFFFFF #808080 #808080 #FFFFFF"
@@ -361,19 +391,20 @@ export default function Island() {
               : theme === "win95"
                 ? 0
                 : 16,
-        backgroundColor: localStorage.getItem("bg-color"),
-        color: localStorage.getItem("text-color")
+        boxShadow: hideNotActiveIslandEnabled && mode === 'still' ? "none" : '2px 2px 30px rgba(0, 0, 0, 0.07)',
+        backgroundColor: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : localStorage.getItem("bg-color"),
+        color: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : localStorage.getItem("text-color")
       }}
     >
       {/*Quickview -time*/}
-      {mode === "wide" ? (
+      {mode === "quick" ? (
         <>
           <h1
             className="text"
             style={{
               position: "absolute",
               top: "23%",
-              left: `${alert === true ? `21%` : chargingAlert ? `18%` : "11%"}`,
+              left: `${alert === true ? `21%` : chargingAlert ? `18%` : "12%"}`,
               transform: "translate(-50%, -50%)",
               fontSize: 16,
               fontWeight: 600,
@@ -387,17 +418,17 @@ export default function Island() {
             style={{
               position: "absolute",
               top: "23%",
-              right: "0%",
+              right: standbyBorderEnabled ? "-1.5%" : "-1%",
               transform: "translate(-50%, -50%)",
               fontSize: 16,
               fontWeight: 600,
-              color: `${alert === true
+              color: alert === true
                 ? "#ff3f3fff"
                 : `${localStorage.getItem("text-color")}`
-                }`
+
             }}
           >
-            {alert === true ? `${percent}%` : chargingAlert === true ? `${percent}%` : `${weather}º`}
+            {alert === true ? `${percent}%` : chargingAlert === true ? `${percent}%` : standbyBorderEnabled ? `${percent}%` : `${weather ? weather : "??"}º`}
           </h1>
         </>
       ) : null}
@@ -488,7 +519,7 @@ export default function Island() {
             <div
               id="battery-bar"
               style={{
-                backgroundColor: localStorage.getItem("text-color"),
+                backgroundColor: localStorage.getItem('text-color'),
                 color: localStorage.getItem("bg-color")
               }}
             >
@@ -503,9 +534,7 @@ export default function Island() {
               top: 14,
               position: "absolute"
             }}
-          >{`${weather}º${localStorage
-            .getItem("weather-unit")
-            .toUpperCase()}`}</h1>
+          >{`${weather ? weather : "??"}º`}</h1>
           <div id="date">
             <h1 className="text" style={{ fontSize: 50 }}>
               {time}
@@ -851,7 +880,7 @@ export default function Island() {
               <option value={"sms"}>Messages</option>
             </select>
             <br />
-            {/*Battery alerts settings*/}
+            {/*Island border settings*/}
             <label htmlFor="island-border" className="text">
               Island Border:{" "}
             </label>
@@ -872,11 +901,37 @@ export default function Island() {
             <input
               id="default-tab"
               className="select-input"
-              placeholder="ex. 0, 1, 2, 3, 4"
+              placeholder="ex. 1, 2, 3, 4..."
               onChange={(e) => {
-                localStorage.setItem("default-tab", e.target.value);
+                localStorage.setItem("default-tab", e.target.value - 1);
               }}
             />
+            <br />
+            {/*Standby mode settings*/}
+            <label htmlFor="standby-mode" className="text">
+              Standby Mode:{" "}
+            </label>
+            <select
+              id="standby-mode"
+              value={standbyBorderEnabled ? "true" : "false"}
+              onChange={handleStandbyChange}
+            >
+              <option value={"true"}>Yes</option>
+              <option value={"false"}>No</option>
+            </select>
+            <br />
+            {/*Hide Island when inactive setting*/}
+            <label htmlFor="hide-island-notactive" className="text">
+              Hide Island when inactive:{" "}
+            </label>
+            <select
+              id="hide-island-notactive"
+              value={hideNotActiveIslandEnabled ? "true" : "false"}
+              onChange={handlehideNotActiveIslandChange}
+            >
+              <option value={"true"}>Yes</option>
+              <option value={"false"}>No</option>
+            </select>
             <br />
           </div>
         </>

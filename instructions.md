@@ -26,7 +26,17 @@ Ripple
 
 ##### *It's the mode you will see when you aren't doing anything with the Island.*
 
-<img width="268" height="103" alt="Screenshot 2025-12-27 at 4 59 51 PM" src="https://github.com/user-attachments/assets/244077b5-f63b-4492-a0d0-743dbaf5526a" />
+<img width="268" height="103" alt="Screenshot 2025-12-27 at 4 59 51 PM src="https://github.com/user-attachments/assets/244077b5-f63b-4492-a0d0-743dbaf5526a" />
+
+## These are 2 optional modes
+
+### Stealth Mode 
+
+##### *A mode that hides the Island when it's inactive*
+
+### Standby Mode 
+
+##### *A mode that shows the time and your battery percentage in Quick mode that when enabled replaces still mode*
 
 ## These are the parts of the Island
 

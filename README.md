@@ -10,16 +10,16 @@ https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
  - ✅ Island syncs accross desktops and monitors<br>
  - ✅ AI Ask feature<br>
  - ✅ Themes e.g. Win95, Sleek Black<br>
- - ✅ Has Weather<br>
+ - ✅ Shows the Weather<br>
  - ✅ Shows on all desktops<br>
  - ✅ Quick Apps<br>
  - ✅ Browser search<br>
  - ✅ Keyboard Shortcuts<br>
  - ✅ Clipboard<br>
  - ✅ Intructions<br>
+ - ✅ Stealth Mode<br>
  - ✅ Charging Alert<br>
- - ✅ A settings to enable Island border and to change default Tab<br>
- - •Add a standby mode that shows battery and weather instead of still mode
+ - ✅ Standby Mode<br>
  - •Fix not working on Ubuntu (https://github.com/TopMyster/Ripple/issues/4)<br>
  - •Make windows build an installer<br>
 

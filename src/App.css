@@ -19,6 +19,10 @@ body {
   box-sizing: border-box;
 }
 
+*::-webkit-scrollbar {
+  display: none;
+}
+
 @font-face {
   font-family: "OpenRunde";
   src: url("./assets/fonts/OpenRunde-Regular.woff") format("woff");
@@ -111,7 +115,7 @@ body {
   pointer-events: none;
   user-select: none;
   transition: .2s;
-  animation: appear 1s forwards;
+  animation: cubic-bezier(0.165, 0.84, 0.44, 1) appear 1s forwards;
 }
 
 #date {
@@ -122,7 +126,7 @@ body {
 }
 
 #date h1 {
-  margin-top: 15px;
+  margin-top: 10px;
   margin-bottom: 5px;
 }
 
@@ -181,7 +185,7 @@ select {
   outline: none;
   border: 2px solid grey;
   transition: .2s;
-  animation: appear 1s forwards;
+  animation: cubic-bezier(0.165, 0.84, 0.44, 1) appear 1s forwards;
   margin: 15px;
 }
 
@@ -197,7 +201,7 @@ select {
   margin-bottom: 25px;
   border: 2px solid grey;
   transition: .2s;
-  animation: appear 1s forwards;
+  animation: cubic-bezier(0.165, 0.84, 0.44, 1) appear 1s forwards;
 }
 
 label {
@@ -208,7 +212,7 @@ label {
 
 #Askanotherbtn {
   cursor: pointer;
-  animation: appear 1s forwards;
+  animation: cubic-bezier(0.165, 0.84, 0.44, 1) appear 1s forwards;
   border: none;
   position: absolute;
   right: 0px;
@@ -221,7 +225,7 @@ label {
 }
 
 #result {
-  animation: appear 1.2s forwards;
+  animation: cubic-bezier(0.165, 0.84, 0.44, 1) appear 1.2s forwards;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -239,7 +243,7 @@ label {
 }
 
 #battery {
-  animation: appear 1s forwards;
+  animation: cubic-bezier(0.165, 0.84, 0.44, 1) appear 1s forwards;
   position: absolute;
   top: 17px;
   right: 25px;
@@ -271,7 +275,7 @@ label {
 }
 
 #quick-apps {
-  animation: appear .7s forwards;
+  animation: cubic-bezier(0.165, 0.84, 0.44, 1) appear .7s forwards;
   display: flex;
   flex-direction: row;
 }
@@ -301,7 +305,7 @@ label {
 
 #browser-searchbar {
   font-weight: 500;
-  animation: appear .55s forwards;
+  animation: cubic-bezier(0.165, 0.84, 0.44, 1) appear .55s forwards;
   background-color: transparent;
   border: none;
   padding: 12px;
