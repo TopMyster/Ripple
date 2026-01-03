@@ -378,7 +378,7 @@ export default function Island() {
         justifyContent: "center",
         overflow: "hidden",
         fontFamily: theme === "win95" ? "w95" : "OpenRunde",
-        border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : islandBorderEnabled ? chargingAlert ? `1px solid rgba(3, 196, 3, 0.301)` : alert ? `1px solid rgba(255, 38, 0, 0.34)` : hideNotActiveIslandEnabled ? "none" : `1px solid color-mix(in srgb, ${localStorage.getItem("text-color")}, transparent 70%)` : "none",
+        border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : islandBorderEnabled ? chargingAlert && !alert ? `1px solid rgba(3, 196, 3, 0.301)` : alert ? `1px solid rgba(255, 38, 0, 0.34)` : hideNotActiveIslandEnabled ? "none" : `1px solid color-mix(in srgb, ${localStorage.getItem("text-color")}, transparent 70%)` : "none",
         borderColor:
           theme === "win95"
             ? "#FFFFFF #808080 #808080 #FFFFFF"
@@ -403,12 +403,13 @@ export default function Island() {
             className="text"
             style={{
               position: "absolute",
-              top: "23%",
-              left: `${alert === true ? `21%` : chargingAlert ? `18%` : "12%"}`,
-              transform: "translate(-50%, -50%)",
+              top: "50%",
+              left: "15px",
+              transform: "translateY(-50%)",
               fontSize: 16,
               fontWeight: 600,
-              color: chargingAlert === true ? "#6fff7bff" : localStorage.getItem("text-color")
+              margin: 0,
+              color: chargingAlert === true && !alert ? "#6fff7bff" : localStorage.getItem("text-color")
             }}
           >
             {alert === true ? `Low Battery` : chargingAlert ? "Charging" : time}
@@ -417,11 +418,12 @@ export default function Island() {
             className="text"
             style={{
               position: "absolute",
-              top: "23%",
-              right: standbyBorderEnabled ? "-1.5%" : "-1%",
-              transform: "translate(-50%, -50%)",
+              top: "50%",
+              right: "15px",
+              transform: "translateY(-50%)",
               fontSize: 16,
               fontWeight: 600,
+              margin: 0,
               color: alert === true
                 ? "#ff3f3fff"
                 : `${localStorage.getItem("text-color")}`
