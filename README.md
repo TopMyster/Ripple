@@ -20,6 +20,8 @@ https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
  - ✅ Stealth Mode<br>
  - ✅ Charging Alert<br>
  - ✅ Standby Mode<br>
+ - -12hr option for time<br>
+ - -Standby for Large mode<br>
  - •Fix not working on Ubuntu (https://github.com/TopMyster/Ripple/issues/4)<br>
  - •Make windows build an installer<br>
 
