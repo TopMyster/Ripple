@@ -24,6 +24,8 @@ const createWindow = () => {
     thickFrame: false,
     hasShadow: false,
     skipTaskbar: true,
+    hiddenInMissionControl: true,
+    type: 'toolbar',
     fullscreen: false,
     visibleOnFullScreen: true,
     webPreferences: {
