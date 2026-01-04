@@ -36,6 +36,7 @@ export default function Island() {
   const [islandBorderEnabled, setIslandBorderEnabled] = useState(localStorage.getItem("island-border") === "true");
   const [standbyBorderEnabled, setStandbyEnabled] = useState(localStorage.getItem("standby-mode") === "true");
   const [hideNotActiveIslandEnabled, sethideNotActiveIslandEnabled] = useState(localStorage.getItem("hide-island-notactive") === "true");
+  const [hourFormat, setHourFormat] = useState(localStorage.getItem("hour-format") === "12-hr");
   const [weather, setWeather] = useState("");
   const [weatherUnit, setweatherUnit] = useState(localStorage.getItem("weather-unit") || "f");
   const [theme, setTheme] = useState("default");
@@ -85,6 +86,10 @@ export default function Island() {
     localStorage.setItem("standby-mode", "false");
   }
 
+  if (!localStorage.getItem("hour-format")) {
+    localStorage.setItem("hour-format", "12-hr");
+  }
+
   if (!localStorage.getItem("bg-color")) {
     localStorage.setItem("bg-color", "#000000");
   }
@@ -113,6 +118,12 @@ export default function Island() {
     const value = e.target.value === "true";
     setStandbyEnabled(value);
     localStorage.setItem("standby-mode", value ? "true" : "false");
+  };
+
+  const handleHourFormatChange = (e) => {
+    const value = e.target.value;
+    setHourFormat(value === "12-hr");
+    localStorage.setItem("hour-format", value);
   };
 
   const handlehideNotActiveIslandChange = (e) => {
@@ -243,9 +254,15 @@ export default function Island() {
 
   // Get time
   useEffect((date = new Date()) => {
-    const hours = String(date.getHours()).padStart(2, "0");
+    let hours = date.getHours();
     const minutes = String(date.getMinutes()).padStart(2, "0");
-    setTime(`${hours}:${minutes}`);
+    if (hourFormat) {
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      setTime(`${hours}:${minutes}`);
+    } else {
+      setTime(`${hours}:${minutes}`);
+    }
   });
 
   //Standby Mode 
@@ -1086,6 +1103,19 @@ export default function Island() {
             >
               <option value={"true"}>Yes</option>
               <option value={"false"}>No</option>
+            </select>
+            <br />
+            {/*12/24 hour format setting*/}
+            <label htmlFor="hour-format" className="text">
+              12/24 hour format:{" "}
+            </label>
+            <select
+              id="hour-format"
+              value={hourFormat ? "12-hr" : "24-hr"}
+              onChange={handleHourFormatChange}
+            >
+              <option value={"12-hr"}>12 hour</option>
+              <option value={"24-hr"}>24 hour</option>
             </select>
             <br />
           </div>
