@@ -35,6 +35,7 @@ export default function Island() {
   const [batteryAlertsEnabled, setBatteryAlertsEnabled] = useState(localStorage.getItem("battery-alerts") !== "false");
   const [islandBorderEnabled, setIslandBorderEnabled] = useState(localStorage.getItem("island-border") === "true");
   const [standbyBorderEnabled, setStandbyEnabled] = useState(localStorage.getItem("standby-mode") === "true");
+  const [largeStandbyEnabled, setLargeStandbyEnabled] = useState(localStorage.getItem("large-standby-mode") === "true");
   const [hideNotActiveIslandEnabled, sethideNotActiveIslandEnabled] = useState(localStorage.getItem("hide-island-notactive") === "true");
   const [hourFormat, setHourFormat] = useState(localStorage.getItem("hour-format") === "12-hr");
   const [weather, setWeather] = useState("");
@@ -118,6 +119,12 @@ export default function Island() {
     const value = e.target.value === "true";
     setStandbyEnabled(value);
     localStorage.setItem("standby-mode", value ? "true" : "false");
+  };
+
+  const handleLargeStandbyChange = (e) => {
+    const value = e.target.value === "true";
+    setLargeStandbyEnabled(value);
+    localStorage.setItem("large-standby-mode", value ? "true" : "false");
   };
 
   const handleHourFormatChange = (e) => {
@@ -270,6 +277,8 @@ export default function Island() {
   useEffect(() => {
     if (standbyBorderEnabled && mode === 'still') {
       setMode('quick')
+    } else if (largeStandbyEnabled && mode === 'still') {
+      setMode('large')
     }
   })
 
@@ -446,7 +455,7 @@ export default function Island() {
               alignItems: 'center',
               justifyContent: 'space-between',
               width: '100%',
-              opacity: hideNotActiveIslandEnabled ? .7 : 1,
+              opacity: hideNotActiveIslandEnabled ? .6 : 1,
               padding: '0 10px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', flex: 1, userSelect: 'none', }}>
@@ -1116,6 +1125,19 @@ export default function Island() {
             >
               <option value={"12-hr"}>12 hour</option>
               <option value={"24-hr"}>24 hour</option>
+            </select>
+            <br />
+            {/*Large Standby mode setting*/}
+            <label htmlFor="large-standby-mode" className="text">
+              Large Standby Mode:{" "}
+            </label>
+            <select
+              id="large-standby-mode"
+              value={largeStandbyEnabled ? "true" : "false"}
+              onChange={handleLargeStandbyChange}
+            >
+              <option value={"true"}>Yes</option>
+              <option value={"false"}>No</option>
             </select>
             <br />
           </div>
