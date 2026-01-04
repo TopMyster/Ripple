@@ -131,7 +131,7 @@ body {
 }
 
 #userinput {
-  animation: appear 1s forwards;
+  animation: appear .7s forwards;
   width: 100%;
   height: 78.5%;
   margin: 0;

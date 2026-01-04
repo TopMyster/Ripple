@@ -43,8 +43,10 @@ export default function Island() {
   const [clipboard, setClipboard] = useState([]);
   const [charging, setCharging] = useState(false);
   const [chargingAlert, setChargingAlert] = useState(false);
+  const [spotifyTrack, setSpotifyTrack] = useState(null);
 
-  let width = mode === "large" ? 400 : mode === "quick" ? 300 : 175;
+  let isPlaying = spotifyTrack?.state === 'playing';
+  let width = mode === "large" ? 400 : (mode === "quick" || isPlaying) ? 300 : 175;
   let height = mode === "large" ? 190 : mode === "quick" ? 43 : 43;
 
   const [qa1, setQa1] = useState(localStorage.getItem("qa1") || "discord");
@@ -320,6 +322,28 @@ export default function Island() {
     getClipboard();
   })
 
+  useEffect(() => {
+    getClipboard();
+  })
+
+  // Now Playing
+  useEffect(() => {
+    const fetchMedia = async () => {
+      if (window.electronAPI?.getSystemMedia) {
+        try {
+          const track = await window.electronAPI.getSystemMedia();
+          setSpotifyTrack(track);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    };
+
+    fetchMedia();
+    const interval = setInterval(fetchMedia, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
   function copyToClipboard(text) {
     if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
       return navigator.clipboard.writeText(text);
@@ -330,10 +354,10 @@ export default function Island() {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "ArrowRight") {
-        setTab((prev) => Math.min(5, prev + 1));
+        setTab((prev) => Math.min(6, prev + 1));
       } else if (e.key === "ArrowLeft") {
         setTab((prev) => Math.max(0, prev - 1));
-      } else if (e.ctrlKey && e.key >= "1" && e.key <= "6") {
+      } else if (e.ctrlKey && e.key >= "1" && e.key <= "7") {
         const tabNum = parseInt(e.key) - 1;
         setMode("large");
         setTab(tabNum);
@@ -396,42 +420,75 @@ export default function Island() {
         color: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : localStorage.getItem("text-color")
       }}
     >
-      {/*Quickview -time*/}
-      {mode === "quick" ? (
+      {/*Quickview -time (Shared with Music View logic)*/}
+      {(mode === "quick" || (mode === "still" && isPlaying)) ? (
         <>
-          <h1
-            className="text"
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "15px",
-              transform: "translateY(-50%)",
-              fontSize: 16,
-              fontWeight: 600,
-              margin: 0,
-              color: chargingAlert === true && !alert ? "#6fff7bff" : localStorage.getItem("text-color")
-            }}
-          >
-            {alert === true ? `Low Battery` : chargingAlert ? "Charging" : time}
-          </h1>
-          <h1
-            className="text"
-            style={{
-              position: "absolute",
-              top: "50%",
-              right: "15px",
-              transform: "translateY(-50%)",
-              fontSize: 16,
-              fontWeight: 600,
-              margin: 0,
-              color: alert === true
-                ? "#ff3f3fff"
-                : `${localStorage.getItem("text-color")}`
+          {/* If Playing and No Alerts: Show Music */}
+          {isPlaying && !alert && !chargingAlert ? (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: '100%',
+              padding: '0 10px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', flex: 1, userSelect: 'none', }}>
+                {spotifyTrack?.artwork_url && (
+                  <img src={spotifyTrack.artwork_url} style={{ width: 24, height: 24, borderRadius: 4, flexShrink: 0 }} />
+                )}
+                <div style={{
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                  textOverflow: 'ellipsis',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: localStorage.getItem("text-color"),
+                  maxWidth: '180px'
+                }}>
+                  {spotifyTrack?.name} <span style={{ opacity: 0.7, fontWeight: 400 }}> • {spotifyTrack?.artist}</span>
+                </div>
+              </div>
+              <div style={{ marginLeft: 8, opacity: 0.5, userSelect: 'none' }}>
+                🎵
+              </div>
+            </div>
+          ) : (
+            <>
+              <h1
+                className="text"
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "15px",
+                  transform: "translateY(-50%)",
+                  fontSize: 16,
+                  fontWeight: 600,
+                  margin: 0,
+                  color: chargingAlert === true && !alert ? "#6fff7bff" : localStorage.getItem("text-color")
+                }}
+              >
+                {alert === true ? `Low Battery` : chargingAlert ? "Charging" : time}
+              </h1>
+              <h1
+                className="text"
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  right: "15px",
+                  transform: "translateY(-50%)",
+                  fontSize: 16,
+                  fontWeight: 600,
+                  margin: 0,
+                  color: alert === true
+                    ? "#ff3f3fff"
+                    : `${localStorage.getItem("text-color")}`
 
-            }}
-          >
-            {alert === true ? `${percent}%` : chargingAlert === true ? `${percent}%` : standbyBorderEnabled ? `${percent}%` : `${weather ? weather : "??"}º`}
-          </h1>
+                }}
+              >
+                {alert === true ? `${percent}%` : chargingAlert === true ? `${percent}%` : standbyBorderEnabled ? `${percent}%` : `${weather ? weather : "??"}º`}
+              </h1>
+            </>
+          )}
         </>
       ) : null}
 
@@ -548,8 +605,105 @@ export default function Island() {
         </>
       ) : null}
 
+      {/* Now Playing*/}
+      {mode === "large" && tab === 3 ? (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '90%',
+          height: '100%',
+          gap: '15px',
+          userSelect: 'none',
+          animation: 'cubic-bezier(0.165, 0.84, 0.44, 1) appear .7s forwards'
+        }}>
+          {spotifyTrack ? (
+            <>
+              {/* Artwork or Icon */}
+              {spotifyTrack.artwork_url ? (
+                <img src={spotifyTrack.artwork_url} style={{
+                  width: 90, height: 90, minWidth: 90,
+                  borderRadius: 12, objectFit: 'cover',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                }} />
+              ) : (
+                <div style={{
+                  width: 90, height: 90, minWidth: 90,
+                  borderRadius: 12, background: 'rgba(255,255,255,0.1)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 24
+                }}>
+                  🎵
+                </div>
+              )}
+
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                maxWidth: '220px',
+                justifyContent: 'center',
+                textAlign: 'left'
+              }}>
+                <h2 style={{
+                  margin: 0,
+                  fontSize: 18,
+                  fontWeight: 600,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  color: localStorage.getItem("text-color"),
+                  fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+                }}>
+                  {spotifyTrack.name || "Unknown Title"}
+                </h2>
+                <p style={{
+                  margin: '4px 0 0 0',
+                  fontSize: 13,
+                  opacity: 0.8,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  color: localStorage.getItem("text-color"),
+                  fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+                }}>
+                  {spotifyTrack.artist || "Unknown Artist"}
+                </p>
+                {/* Controls */}
+                <div style={{ display: 'flex', gap: 15, marginTop: 8, alignItems: 'center' }}>
+                  <button
+                    onClick={() => window.electronAPI.controlSystemMedia('previous')}
+                    style={{ background: 'none', border: 'none', color: localStorage.getItem("text-color"), cursor: 'pointer', fontSize: 28, padding: 0, opacity: 0.8 }}
+                  >⏮</button>
+                  <button
+                    onClick={() => window.electronAPI.controlSystemMedia('playpause')}
+                    style={{ background: 'none', border: 'none', color: localStorage.getItem("text-color"), cursor: 'pointer', fontSize: 23, padding: 0 }}
+                  >
+                    {spotifyTrack.state === 'playing' ? '⏸' : '▶'}
+                  </button>
+                  <button
+                    onClick={() => window.electronAPI.controlSystemMedia('next')}
+                    style={{ background: 'none', border: 'none', color: localStorage.getItem("text-color"), cursor: 'pointer', fontSize: 28, padding: 0, opacity: 0.8 }}
+                  >⏭</button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div style={{
+              width: '100%',
+              textAlign: 'center',
+              color: localStorage.getItem("text-color"),
+              fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+            }}>
+              <h3 style={{ margin: 0, fontSize: 16 }}>Nothing Playing</h3>
+              <p style={{ margin: '5px 0 0 0', opacity: 0.7, fontSize: 13 }}>Play music on Spotify or Apple Music</p>
+            </div>
+          )}
+        </div>
+      ) : null}
+
       {/*AI ask*/}
-      {mode === "large" && tab === 3 && asked === false ? (
+      {mode === "large" && tab === 4 && asked === false ? (
         <>
           <div
             style={{
@@ -603,7 +757,7 @@ export default function Island() {
       ) : null}
 
       {/*AI result*/}
-      {mode === "large" && tab === 3 && asked === true ? (
+      {mode === "large" && tab === 4 && asked === true ? (
         <>
           <div
             style={{
@@ -648,7 +802,7 @@ export default function Island() {
       ) : null}
 
       {/*Clipboard*/}
-      {mode === "large" && tab === 4 ? (
+      {mode === "large" && tab === 5 ? (
         <>
           <div id="clipboard">
             {clipboard.length === 0 ? (<h2 className="clipboard-item"></h2>) : clipboard.map((item, index) => (
@@ -673,7 +827,7 @@ export default function Island() {
       ) : null}
 
       {/*Settings*/}
-      {mode === "large" && tab === 5 ? (
+      {mode === "large" && tab === 6 ? (
         <>
           <div
             style={{

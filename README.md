@@ -6,6 +6,7 @@ https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
 ### <a href="https://discord.gg/a2xzVkxFVg">Join the Discord</a>
 
 ## Features
+ - ✅ Now playing<br>
  - ✅ Battery Alerts<br>
  - ✅ Island syncs accross desktops and monitors<br>
  - ✅ AI Ask feature<br>
