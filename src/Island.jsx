@@ -420,16 +420,16 @@ export default function Island() {
         color: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : localStorage.getItem("text-color")
       }}
     >
-      {/*Quickview -time (Shared with Music View logic)*/}
+      {/*Quickview*/}
       {(mode === "quick" || (mode === "still" && isPlaying)) ? (
         <>
-          {/* If Playing and No Alerts: Show Music */}
           {isPlaying && !alert && !chargingAlert ? (
             <div style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               width: '100%',
+              opacity: hideNotActiveIslandEnabled ? .7 : 1,
               padding: '0 10px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', flex: 1, userSelect: 'none', }}>
@@ -443,13 +443,13 @@ export default function Island() {
                   fontSize: 13,
                   fontWeight: 600,
                   color: localStorage.getItem("text-color"),
-                  maxWidth: '180px'
+                  maxWidth: '250px'
                 }}>
                   {spotifyTrack?.name} <span style={{ opacity: 0.7, fontWeight: 400 }}> • {spotifyTrack?.artist}</span>
                 </div>
               </div>
               <div style={{ marginLeft: 8, opacity: 0.5, userSelect: 'none' }}>
-                🎵
+
               </div>
             </div>
           ) : (
@@ -619,16 +619,15 @@ export default function Island() {
         }}>
           {spotifyTrack ? (
             <>
-              {/* Artwork or Icon */}
               {spotifyTrack.artwork_url ? (
                 <img src={spotifyTrack.artwork_url} style={{
-                  width: 90, height: 90, minWidth: 90,
-                  borderRadius: 12, objectFit: 'cover',
+                  width: 110, height: 110, minWidth: 110,
+                  borderRadius: 13, objectFit: 'cover',
                   boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
                 }} />
               ) : (
                 <div style={{
-                  width: 90, height: 90, minWidth: 90,
+                  width: 110, height: 110, minWidth: 110,
                   borderRadius: 12, background: 'rgba(255,255,255,0.1)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 24
@@ -646,7 +645,7 @@ export default function Island() {
                 textAlign: 'left'
               }}>
                 <h2 style={{
-                  margin: 0,
+                  margin: '0 20px 0 13px',
                   fontSize: 18,
                   fontWeight: 600,
                   whiteSpace: 'nowrap',
@@ -658,7 +657,7 @@ export default function Island() {
                   {spotifyTrack.name || "Unknown Title"}
                 </h2>
                 <p style={{
-                  margin: '4px 0 0 0',
+                  margin: '4px 0 0 13px',
                   fontSize: 13,
                   opacity: 0.8,
                   whiteSpace: 'nowrap',
@@ -670,14 +669,14 @@ export default function Island() {
                   {spotifyTrack.artist || "Unknown Artist"}
                 </p>
                 {/* Controls */}
-                <div style={{ display: 'flex', gap: 15, marginTop: 8, alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: 15, marginTop: 8, alignItems: 'center', marginLeft: 5 }}>
                   <button
                     onClick={() => window.electronAPI.controlSystemMedia('previous')}
                     style={{ background: 'none', border: 'none', color: localStorage.getItem("text-color"), cursor: 'pointer', fontSize: 28, padding: 0, opacity: 0.8 }}
                   >⏮</button>
                   <button
                     onClick={() => window.electronAPI.controlSystemMedia('playpause')}
-                    style={{ background: 'none', border: 'none', color: localStorage.getItem("text-color"), cursor: 'pointer', fontSize: 23, padding: 0 }}
+                    style={{ background: 'none', border: 'none', color: localStorage.getItem("text-color"), cursor: 'pointer', fontSize: spotifyTrack.state === 'playing' ? 28.1 : 23, padding: 0 }}
                   >
                     {spotifyTrack.state === 'playing' ? '⏸' : '▶'}
                   </button>
