@@ -9,24 +9,24 @@ module.exports = {
     extendInfo: {
       NSAppleEventsUsageDescription: 'Ripple needs to control media players like Spotify and AppleMusic.',
     },
-    osxSign: {
-      identity: '-',
-      entitlements: path.resolve(__dirname, 'entitlements.plist'),
-      'entitlements-inherit': path.resolve(__dirname, 'entitlements.plist'), // Good practice to have inheritance for child processes if needed, though often different.
-      optionsForFile: (filePath) => {
-        // This ensures child helpers also get signed/entitled if needed, though they usually use default entitlements.
-        // For simplistic ad-hoc, maybe defaults are fine, but let's be explicit if needed.
-        // Actually, let's keep it simple first.
-        return {
-          entitlements: path.resolve(__dirname, 'entitlements.plist'),
-        };
-      },
-    },
+    // osxSign: {
+    //   identity: '-',
+    //   entitlements: path.resolve(__dirname, 'entitlements.plist'),
+    //   'entitlements-inherit': path.resolve(__dirname, 'entitlements.plist'), // Good practice to have inheritance for child processes if needed, though often different.
+    //   optionsForFile: (filePath) => {
+    //     // This ensures child helpers also get signed/entitled if needed, though they usually use default entitlements.
+    //     // For simplistic ad-hoc, maybe defaults are fine, but let's be explicit if needed.
+    //     // Actually, let's keep it simple first.
+    //     return {
+    //       entitlements: path.resolve(__dirname, 'entitlements.plist'),
+    //     };
+    //   },
+    // },
   },
   hooks: {
     postPackage: async (forgeConfig, options) => {
       if (options.platform !== 'darwin') return;
-      console.log('Force signing application with entitlements...');
+      console.log('Signing application with entitlements...');
       const { execSync } = require('child_process');
       const fs = require('fs');
       const path = require('path');
@@ -36,9 +36,18 @@ module.exports = {
         const appFile = files.find(f => f.endsWith('.app'));
         if (appFile) {
           const appPath = path.join(outPath, appFile);
+          console.log(`Waiting for file lock release...`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
           console.log(`Signing ${appPath}...`);
-          execSync(`codesign -s - --force --deep --entitlements "${path.resolve(__dirname, 'entitlements.plist')}" "${appPath}"`);
-          console.log('Signed successfully.');
+          try {
+            execSync(`codesign --deep --force --verbose -s - --entitlements "${path.resolve(__dirname, 'entitlements.plist')}" "${appPath}"`);
+            console.log('Signed successfully.');
+          } catch (e) {
+            console.error('Sign failed, retrying without deep...');
+            // Sometimes deep signing fails on frameworks, retry specifically the top level? 
+            // Or maybe just fail.
+            throw e;
+          }
         }
       }
     },
