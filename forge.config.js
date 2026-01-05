@@ -9,19 +9,6 @@ module.exports = {
     extendInfo: {
       NSAppleEventsUsageDescription: 'Ripple needs to control media players like Spotify and AppleMusic.',
     },
-    // osxSign: {
-    //   identity: '-',
-    //   entitlements: path.resolve(__dirname, 'entitlements.plist'),
-    //   'entitlements-inherit': path.resolve(__dirname, 'entitlements.plist'), // Good practice to have inheritance for child processes if needed, though often different.
-    //   optionsForFile: (filePath) => {
-    //     // This ensures child helpers also get signed/entitled if needed, though they usually use default entitlements.
-    //     // For simplistic ad-hoc, maybe defaults are fine, but let's be explicit if needed.
-    //     // Actually, let's keep it simple first.
-    //     return {
-    //       entitlements: path.resolve(__dirname, 'entitlements.plist'),
-    //     };
-    //   },
-    // },
   },
   hooks: {
     postPackage: async (forgeConfig, options) => {
