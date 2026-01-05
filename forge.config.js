@@ -4,7 +4,10 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 module.exports = {
   packagerConfig: {
     asar: true,
-    icon: 'src/assets/icons/icon', // Electron Forge adds .icns/.ico automatically
+    icon: 'src/assets/icons/icon',
+    extendInfo: {
+      NSAppleEventsUsageDescription: 'Ripple needs to control media players like Spotify and AppleMusic.',
+    },
   },
   rebuildConfig: {},
   makers: [
@@ -14,7 +17,7 @@ module.exports = {
     // },
     {
       name: '@electron-forge/maker-zip',
-      // platforms: ['darwin'], // Enable for all platforms as fallback
+      // platforms: ['darwin'], 
     },
     {
       name: '@electron-forge/maker-deb',
@@ -57,7 +60,7 @@ module.exports = {
     new FusesPlugin({
       version: FuseVersion.V1,
       [FuseV1Options.RunAsNode]: false,
-      [FuseV1Options.EnableCookieEncryption]: true,
+      [FuseV1Options.EnableCookieEncryption]: false,
       [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
       [FuseV1Options.EnableNodeCliInspectArguments]: false,
       [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,

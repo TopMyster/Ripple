@@ -63,31 +63,10 @@ const createWindow = () => {
   if (!app.isPackaged || process.env.NODE_ENV === 'development') {
     mainWindow.loadURL("http://localhost:5173");
   } else {
-    // In production, Electron Forge copies renderer to app resources
-    // Try multiple possible paths
-    const possiblePaths = [
-      path.join(__dirname, "../renderer/main_window/index.html"),
-      path.join(__dirname, "../.vite/renderer/main_window/index.html"),
-      path.join(process.resourcesPath, "app/.vite/renderer/main_window/index.html"),
-      path.join(process.resourcesPath, "app/renderer/main_window/index.html"),
-    ];
-
-    let loaded = false;
-    for (const rendererPath of possiblePaths) {
-      try {
-        if (fs.existsSync(rendererPath)) {
-          mainWindow.loadFile(rendererPath);
-          loaded = true;
-          break;
-        }
-      } catch (e) {
-        // Continue to next path
-      }
-    }
-
-    if (!loaded) {
-      console.error("Could not find renderer HTML file. Tried paths:", possiblePaths);
-    }
+    // In production, Electron Forge with Vite puts the renderer in ../renderer/main_window/index.html
+    // relative to the main process file in .vite/build/main.js
+    const rendererPath = path.join(__dirname, "../renderer/main_window/index.html");
+    mainWindow.loadFile(rendererPath);
   }
 };
 app.whenReady().then(() => {

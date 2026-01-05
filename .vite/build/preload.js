@@ -1,9 +1,1 @@
-"use strict";
-const { contextBridge, ipcRenderer } = require("electron");
-contextBridge.exposeInMainWorld("electronAPI", {
-  setIgnoreMouseEvents: (ignore, forward) => {
-    ipcRenderer.invoke("set-ignore-mouse-events", ignore, forward);
-  },
-  getSystemMedia: () => ipcRenderer.invoke("get-system-media"),
-  controlSystemMedia: (command) => ipcRenderer.invoke("control-system-media", command)
-});
+"use strict";const{contextBridge:s,ipcRenderer:t}=require("electron");s.exposeInMainWorld("electronAPI",{setIgnoreMouseEvents:(e,o)=>{t.invoke("set-ignore-mouse-events",e,o)},getSystemMedia:()=>t.invoke("get-system-media"),controlSystemMedia:e=>t.invoke("control-system-media",e)});
