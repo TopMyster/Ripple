@@ -12,7 +12,6 @@ let mainWindow = null;
 
 const { exec } = require('child_process');
 
-// Handle IPC calls to toggle mouse event ignoring
 ipcMain.handle('set-ignore-mouse-events', (event, ignore, forward) => {
   if (mainWindow) {
     mainWindow.setIgnoreMouseEvents(ignore, { forward: forward || false });
@@ -57,9 +56,19 @@ const createWindow = () => {
 
   mainWindow.once('ready-to-show', () => {
     setTimeout(() => {
-      mainWindow.show();
+      if (mainWindow) {
+        mainWindow.show();
+        mainWindow.focus();
+      }
     }, showDelay);
   });
+
+  setTimeout(() => {
+    if (mainWindow && !mainWindow.isVisible()) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  }, 5000);
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -72,12 +81,9 @@ const createWindow = () => {
   } catch (_) {
   }
 
-  // Load the renderer - use dev server in development, file path in production
   if (!app.isPackaged || process.env.NODE_ENV === 'development') {
     mainWindow.loadURL("http://localhost:5173");
   } else {
-    // In production, Electron Forge with Vite puts the renderer in ../renderer/main_window/index.html
-    // relative to the main process file in .vite/build/main.js
     const rendererPath = path.join(__dirname, "../renderer/main_window/index.html");
     mainWindow.loadFile(rendererPath);
   }
@@ -196,11 +202,9 @@ ipcMain.handle('get-system-media', async () => {
             `;
       exec(`osascript -e '${script}'`, (error, stdout) => {
         if (error) {
-          // console.error("AppleScript Error:", error); // Debugging
           return resolve(null);
         }
         const output = stdout.trim();
-        // console.log("AppleScript Output:", output); // Debugging
 
         if (!output || output === "None" || output === "Error") return resolve(null);
 
@@ -244,7 +248,6 @@ ipcMain.handle('get-system-media', async () => {
       });
 
     } else if (platform === 'linux') {
-      // Linux: playerctl
       exec('playerctl metadata --format "{{title}}||{{artist}}||{{album}}||{{status}}"', (err, stdout) => {
         if (err || !stdout) return resolve(null);
         const parts = stdout.trim().split('||');
@@ -262,7 +265,7 @@ ipcMain.handle('get-system-media', async () => {
   });
 });
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin" && !tray) {
+  if (process.platform === 'linux' && !tray) {
     app.quit();
   }
 });
@@ -284,7 +287,6 @@ ipcMain.handle('control-system-media', async (event, command) => {
         `;
     exec(`osascript -e '${script}'`);
   } else if (platform === 'linux') {
-    // command: playpause, next, previous
     let cmd = command;
     if (command === 'playpause') cmd = 'play-pause';
     exec(`playerctl ${cmd}`);

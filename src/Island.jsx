@@ -26,7 +26,7 @@ function openApp(app) {
 export default function Island() {
   const [time, setTime] = useState(null);
   const [mode, setMode] = useState("still");
-  const [tab, setTab] = useState(Number(localStorage.getItem("default-tab")));
+  const [tab, setTab] = useState(Number(localStorage.getItem("default-tab") || 2));
   const [asked, setAsked] = useState(false);
   const [aiAnswer, setAIAnswer] = useState(null);
   const [percent, setPercent] = useState(null);
@@ -37,7 +37,7 @@ export default function Island() {
   const [standbyBorderEnabled, setStandbyEnabled] = useState(localStorage.getItem("standby-mode") === "true");
   const [largeStandbyEnabled, setLargeStandbyEnabled] = useState(localStorage.getItem("large-standby-mode") === "true");
   const [hideNotActiveIslandEnabled, sethideNotActiveIslandEnabled] = useState(localStorage.getItem("hide-island-notactive") === "true");
-  const [hourFormat, setHourFormat] = useState(localStorage.getItem("hour-format") === "12-hr");
+  const [hourFormat, setHourFormat] = useState((localStorage.getItem("hour-format") || "12-hr") === "12-hr");
   const [weather, setWeather] = useState("");
   const [weatherUnit, setweatherUnit] = useState(localStorage.getItem("weather-unit") || "f");
   const [theme, setTheme] = useState("default");
@@ -57,14 +57,19 @@ export default function Island() {
   const [qa4, setQa4] = useState(localStorage.getItem("qa4") || "tel");
 
   //User age
-  if (!localStorage.getItem('newuser')) {
-    localStorage.setItem('newuser', 'true')
-  }
+  useEffect(() => {
+    if (!localStorage.getItem('newuser')) {
+      localStorage.setItem('newuser', 'true');
+    }
 
-  if (localStorage.getItem('newuser') === 'true') {
-    window.open("https://github.com/TopMyster/Ripple/blob/main/instructions.md", '_blank')
-    localStorage.setItem('newuser', 'false')
-  }
+    if (localStorage.getItem('newuser') === 'true') {
+      const timer = setTimeout(() => {
+        window.open("https://github.com/TopMyster/Ripple/blob/main/instructions.md", '_blank');
+        localStorage.setItem('newuser', 'false');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   // localStorage defaults
   if (!localStorage.getItem("battery-alerts")) {
