@@ -1,5 +1,5 @@
 "use strict";
-const { app, BrowserWindow, screen, ipcMain, shell } = require("electron");
+const { app, BrowserWindow, screen, ipcMain, shell, Tray, Menu, nativeImage } = require("electron");
 const path = require("node:path");
 const fs = require("fs");
 
@@ -7,11 +7,23 @@ if (process.platform === 'linux') {
   app.commandLine.appendSwitch('enable-transparent-visuals');
   app.disableHardwareAcceleration();
 }
+let tray = null;
+let mainWindow = null;
+
+const { exec } = require('child_process');
+
+// Handle IPC calls to toggle mouse event ignoring
+ipcMain.handle('set-ignore-mouse-events', (event, ignore, forward) => {
+  if (mainWindow) {
+    mainWindow.setIgnoreMouseEvents(ignore, { forward: forward || false });
+  }
+});
+
 const createWindow = () => {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width, height } = primaryDisplay.size;
 
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: width,
     height: height,
     x: 0,
@@ -49,10 +61,11 @@ const createWindow = () => {
     }, showDelay);
   });
 
-  // Handle IPC calls to toggle mouse event ignoring
-  ipcMain.handle('set-ignore-mouse-events', (event, ignore, forward) => {
-    mainWindow.setIgnoreMouseEvents(ignore, { forward: forward || false });
+  mainWindow.on('closed', () => {
+    mainWindow = null;
   });
+
+
 
   try {
     mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
@@ -79,11 +92,64 @@ app.whenReady().then(() => {
       createWindow();
     }
   });
+
+  const getIconPath = () => {
+    const ext = process.platform === 'win32' ? 'ico' : 'png';
+    if (app.isPackaged) {
+      return path.join(process.resourcesPath, `assets/icons/icon.${ext}`);
+    }
+    return path.join(__dirname, `../../src/assets/icons/icon.${ext}`);
+  };
+
+  try {
+    const icon = nativeImage.createFromPath(getIconPath());
+    const trayIcon = process.platform === 'win32' ? icon : icon.resize({ width: 16, height: 16 });
+    tray = new Tray(trayIcon);
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: 'Show Ripple',
+        click: () => {
+          if (mainWindow) {
+            mainWindow.show();
+          }
+        }
+      },
+      {
+        label: 'Hide Ripple',
+        click: () => {
+          if (mainWindow) {
+            mainWindow.hide();
+          }
+        }
+      },
+      { type: 'separator' },
+      {
+        label: 'Quit',
+        click: () => {
+          app.quit();
+        }
+      }
+    ]);
+    tray.setToolTip('Ripple');
+    tray.setContextMenu(contextMenu);
+
+    tray.on('click', () => {
+      if (mainWindow) {
+        if (mainWindow.isVisible()) {
+          mainWindow.hide();
+        } else {
+          mainWindow.show();
+        }
+      }
+    });
+  } catch (e) {
+    console.error('Failed to create tray:', e);
+  }
 });
 
 //Keep in mind that this part was made by AI
 
-const { exec } = require('child_process');
+
 
 ipcMain.handle('get-system-media', async () => {
   return new Promise((resolve) => {
@@ -196,7 +262,7 @@ ipcMain.handle('get-system-media', async () => {
   });
 });
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
+  if (process.platform !== "darwin" && !tray) {
     app.quit();
   }
 });

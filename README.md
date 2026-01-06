@@ -21,6 +21,7 @@ https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
  - ✅ Stealth Mode<br>
  - ✅ Charging Alert<br>
  - ✅ Standby Mode<br>
+ - ✅ Shows in menu bar & system tray<br>
  - •Fix not working on Ubuntu (https://github.com/TopMyster/Ripple/issues/4)<br>
  - •Make windows build an installer<br>
 
