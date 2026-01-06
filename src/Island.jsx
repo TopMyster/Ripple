@@ -516,7 +516,7 @@ export default function Island() {
 
                 }}
               >
-                {alert === true ? `${percent}%` : chargingAlert === true ? `${percent}%` : standbyBorderEnabled ? `${percent}%` : `${weather ? weather : "??"}º`}
+                {alert === true ? `${percent}%` : chargingAlert === true ? `${percent}%` : standbyBorderEnabled ? `${percent}%` : weather ? `${weather}º` : `${percent}%`}
               </h1>
             </>
           )}
