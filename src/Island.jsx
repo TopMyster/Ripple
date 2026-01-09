@@ -464,8 +464,12 @@ export default function Island() {
               padding: '0 10px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', flex: 1, userSelect: 'none', }}>
-                {spotifyTrack?.artwork_url && (
+                {spotifyTrack?.artwork_url ? (
                   <img src={spotifyTrack.artwork_url} style={{ width: 24, height: 24, borderRadius: 4, flexShrink: 0 }} />
+                ) : (
+                  <div style={{ width: 24, height: 24, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0 }}>
+                    🎵
+                  </div>
                 )}
                 <div style={{
                   overflow: 'hidden',

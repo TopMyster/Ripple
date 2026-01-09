@@ -18,6 +18,18 @@ ipcMain.handle('set-ignore-mouse-events', (event, ignore, forward) => {
   }
 });
 
+const getIconPath = () => {
+  // Both Tray and BrowserWindow on Windows handle PNGs well and it's more reliable for scaling.
+  const ext = process.platform === 'win32' ? 'png' : 'png';
+  if (app.isPackaged) {
+    // In packaged builds, we should look for the icon in a reliable place.
+    // Note: We need to ensure forge.config.js or build process copies this file.
+    return path.join(process.resourcesPath, `assets/icons/icon.${ext}`);
+  }
+  // In dev, look relative to __dirname which is .vite/build/
+  return path.join(__dirname, `../../src/assets/icons/icon.${ext}`);
+};
+
 const createWindow = () => {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width, height } = primaryDisplay.size;
@@ -35,6 +47,7 @@ const createWindow = () => {
     thickFrame: false,
     hasShadow: false,
     skipTaskbar: true,
+    icon: getIconPath(),
     hiddenInMissionControl: true,
     type: 'toolbar',
     fullscreen: false,
@@ -74,8 +87,6 @@ const createWindow = () => {
     mainWindow = null;
   });
 
-
-
   try {
     mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   } catch (_) {
@@ -88,6 +99,7 @@ const createWindow = () => {
     mainWindow.loadFile(rendererPath);
   }
 };
+
 app.whenReady().then(() => {
   if (process.platform === "darwin") {
     app.dock.hide();
@@ -99,17 +111,11 @@ app.whenReady().then(() => {
     }
   });
 
-  const getIconPath = () => {
-    const ext = process.platform === 'win32' ? 'ico' : 'png';
-    if (app.isPackaged) {
-      return path.join(process.resourcesPath, `assets/icons/icon.${ext}`);
-    }
-    return path.join(__dirname, `../../src/assets/icons/icon.${ext}`);
-  };
-
   try {
-    const icon = nativeImage.createFromPath(getIconPath());
-    const trayIcon = process.platform === 'win32' ? icon : icon.resize({ width: 16, height: 16 });
+    const iconPath = getIconPath();
+    const icon = nativeImage.createFromPath(iconPath);
+    // Always resize specifically for the tray to ensure it fits the OS requirements (usually 16x16 or 32x32)
+    const trayIcon = icon.resize({ width: 16, height: 16 });
     tray = new Tray(trayIcon);
     const contextMenu = Menu.buildFromTemplate([
       {
@@ -225,24 +231,54 @@ ipcMain.handle('get-system-media', async () => {
 
     } else if (platform === 'win32') {
       const psScript = `
-             $media = [Windows.Media.Control.GlobalSystemMediaTransportControls,Windows.Media.Control,ContentType=WindowsRuntime].GetMethod("GetForCurrentView").Invoke($null, $null)
-             $info = $media.GetTimelineProperties()
-             # Note: Direct detailed access without compiled bindings is hard in raw PS. 
-             # Fallback to pure window title checks for simplicity if direct media access fails
-             Get-Process | Where-Object {$_.MainWindowTitle -ne ""} | Select-Object MainWindowTitle | ConvertTo-Json
-             `;
-      exec(`powershell "Get-Process | Where-Object {$_.ProcessName -eq 'Spotify'} | Select-Object MainWindowTitle"`, (error, stdout) => {
-        if (error || !stdout) return resolve(null);
-        const title = stdout.split('\n').find(l => l.includes('-'))?.trim();
-        if (title) {
-          const [artist, song] = title.split(' - ');
-          resolve({
-            name: song || title,
-            artist: artist || "Unknown",
-            state: 'playing',
-            source: 'Spotify'
+        Add-Type -AssemblyName System.Runtime.WindowsRuntime
+        $manager = [Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager, Windows.Media.Control, ContentType = WindowsRuntime]::RequestAsync().GetAwaiter().GetResult()
+        $session = $manager.GetCurrentSession()
+        if ($session) {
+            $props = $session.TryGetMediaPropertiesAsync().GetAwaiter().GetResult()
+            $playback = $session.GetPlaybackInfo()
+            $status = $playback.PlaybackStatus
+            $info = @{
+                Title = $props.Title
+                Artist = $props.Artist
+                Album = $props.AlbumTitle
+                Status = $status.ToString().ToLower()
+                Source = $session.SourceAppId
+            }
+            return $info | ConvertTo-Json
+        }
+        return "null"
+      `;
+      exec(`powershell -Command "${psScript.replace(/"/g, '\\"')}"`, (error, stdout) => {
+        if (error || !stdout || stdout.trim() === "null") {
+          exec(`powershell "Get-Process | Where-Object {$_.ProcessName -eq 'Spotify'} | Select-Object MainWindowTitle"`, (err, out) => {
+            if (err || !out) return resolve(null);
+            const title = out.split('\n').find(l => l.includes('-'))?.trim();
+            if (title) {
+              const [artist, song] = title.split(' - ');
+              resolve({
+                name: song || title,
+                artist: artist || "Unknown",
+                state: 'playing',
+                source: 'Spotify'
+              });
+            } else {
+              resolve(null);
+            }
           });
-        } else {
+          return;
+        }
+
+        try {
+          const data = JSON.parse(stdout);
+          resolve({
+            name: data.Title || "Unknown Title",
+            artist: data.Artist || "Unknown Artist",
+            album: data.Album || "",
+            state: data.Status === 'playing' ? 'playing' : 'paused',
+            source: data.Source || 'System'
+          });
+        } catch (e) {
           resolve(null);
         }
       });
