@@ -119,18 +119,14 @@ app.whenReady().then(() => {
     tray = new Tray(trayIcon);
     const contextMenu = Menu.buildFromTemplate([
       {
-        label: 'Show Ripple',
+        label: 'Show/Hide Ripple',
         click: () => {
           if (mainWindow) {
-            mainWindow.show();
-          }
-        }
-      },
-      {
-        label: 'Hide Ripple',
-        click: () => {
-          if (mainWindow) {
-            mainWindow.hide();
+            if (mainWindow.isVisible()) {
+              mainWindow.hide();
+            } else {
+              mainWindow.show();
+            }
           }
         }
       },
@@ -144,16 +140,6 @@ app.whenReady().then(() => {
     ]);
     tray.setToolTip('Ripple');
     tray.setContextMenu(contextMenu);
-
-    tray.on('click', () => {
-      if (mainWindow) {
-        if (mainWindow.isVisible()) {
-          mainWindow.hide();
-        } else {
-          mainWindow.show();
-        }
-      }
-    });
   } catch (e) {
     console.error('Failed to create tray:', e);
   }
