@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Groq } from "groq-sdk";
 import "./App.css";
+import lowBatteryIcon from "./assets/images/lowbattery.png";
+import chargingIcon from "./assets/images/charging.png";
 
 //Get Date
 function formatDateShort(input) {
@@ -232,7 +234,7 @@ export default function Island() {
   // Battery alerts
   useEffect(() => {
     if (
-      (percent === 20 || percent === 10 || percent === 5 || percent === 2) &&
+      (percent === 20 || percent === 15 || percent === 10 || percent === 5 || percent === 3) &&
       localStorage.getItem("battery-alerts") === "true"
     ) {
       setMode("quick");
@@ -348,10 +350,6 @@ export default function Island() {
       );
     }
   }
-
-  useEffect(() => {
-    getClipboard();
-  })
 
   useEffect(() => {
     getClipboard();
@@ -502,7 +500,7 @@ export default function Island() {
                   color: chargingAlert === true && !alert ? "#6fff7bff" : localStorage.getItem("text-color")
                 }}
               >
-                {alert === true ? `Low Battery` : chargingAlert ? "Charging" : time}
+                {alert === true ? <img src={lowBatteryIcon} alt="low battery" style={{ width: 40, height: 40, objectFit: 'contain', position: 'absolute', transform: 'translate(0%, -50%)' }} /> : chargingAlert ? <img src={chargingIcon} alt="charging" style={{ width: 40, height: 40, objectFit: 'contain', position: 'absolute', transform: 'translate(0%, -50%)' }} /> : time}
               </h1>
               <h1
                 className="text"
