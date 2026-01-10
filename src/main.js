@@ -286,6 +286,43 @@ ipcMain.handle('get-system-media', async () => {
     }
   });
 });
+
+ipcMain.handle('get-bluetooth-status', async () => {
+  return new Promise((resolve) => {
+    const platform = process.platform;
+    if (platform === 'darwin') {
+      exec('system_profiler SPBluetoothDataType -json', (error, stdout) => {
+        if (error) return resolve(false);
+        try {
+          const data = JSON.parse(stdout);
+          const bluetoothData = data.SPBluetoothDataType[0];
+          const hasConnectedDevices = bluetoothData.device_connected && bluetoothData.device_connected.length > 0;
+          resolve(hasConnectedDevices);
+        } catch (e) {
+          resolve(false);
+        }
+      });
+    } else if (platform === 'win32') {
+      const psScript = `
+        Add-Type -AssemblyName System.Runtime.WindowsRuntime
+        $devices = [Windows.Devices.Enumeration.DeviceInformation, Windows.Devices.Enumeration, ContentType = WindowsRuntime]::FindAllAsync('(System.Devices.Aep.ProtocolId:="{e0cbf06c-5021-4943-9112-460f89956c33}") AND (System.Devices.Aep.IsConnected:=$true)').GetAwaiter().GetResult()
+        return $devices.Count > 0
+      `;
+      exec(`powershell -Command "${psScript.replace(/"/g, '\\"')}"`, (error, stdout) => {
+        if (error) return resolve(false);
+        resolve(stdout.trim().toLowerCase() === 'true');
+      });
+    } else if (platform === 'linux') {
+      exec('bluetoothctl devices Connected', (error, stdout) => {
+        if (error) return resolve(false);
+        resolve(stdout.trim().length > 0);
+      });
+    } else {
+      resolve(false);
+    }
+  });
+});
+
 app.on("window-all-closed", () => {
   if (process.platform === 'linux' && !tray) {
     app.quit();

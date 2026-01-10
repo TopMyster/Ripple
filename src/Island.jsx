@@ -48,6 +48,8 @@ export default function Island() {
   const [charging, setCharging] = useState(false);
   const [chargingAlert, setChargingAlert] = useState(false);
   const [spotifyTrack, setSpotifyTrack] = useState(null);
+  const [bluetooth, setBluetooth] = useState(false);
+  const [bluetoothAlert, setBluetoothAlert] = useState(false);
 
   let isPlaying = spotifyTrack?.state === 'playing';
   let width = mode === "large" ? 400 : (mode === "quick" || isPlaying) ? 300 : 175;
@@ -266,6 +268,7 @@ export default function Island() {
     }
   }, [charging]);
 
+
   // Get time
   useEffect((date = new Date()) => {
     let hours = date.getHours();
@@ -280,7 +283,6 @@ export default function Island() {
   });
 
   //Standby Mode 
-
   useEffect(() => {
     if (standbyBorderEnabled && mode === 'still') {
       setMode('quick')
@@ -354,6 +356,38 @@ export default function Island() {
   useEffect(() => {
     getClipboard();
   })
+
+  // Get Bluetooth
+  useEffect(() => {
+    const fetchBluetooth = async () => {
+      if (window.electronAPI?.getBluetoothStatus) {
+        try {
+          const isConnected = await window.electronAPI.getBluetoothStatus();
+          setBluetooth(isConnected);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    };
+
+    fetchBluetooth();
+    const interval = setInterval(fetchBluetooth, 5000); // Check every 5 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (bluetooth === true) {
+      setMode("quick");
+      setBluetoothAlert(true);
+      const timerId = setTimeout(() => {
+        setMode("normal");
+        setBluetoothAlert(false);
+      }, 2000);
+      return () => {
+        clearTimeout(timerId);
+      };
+    }
+  }, [bluetooth]);
 
   // Now Playing
   useEffect(() => {
@@ -500,7 +534,7 @@ export default function Island() {
                   color: chargingAlert === true && !alert ? "#6fff7bff" : localStorage.getItem("text-color")
                 }}
               >
-                {alert === true ? <img src={lowBatteryIcon} alt="low battery" style={{ width: 40, height: 40, objectFit: 'contain', position: 'absolute', transform: 'translate(0%, -50%)' }} /> : chargingAlert ? <img src={chargingIcon} alt="charging" style={{ width: 40, height: 40, objectFit: 'contain', position: 'absolute', transform: 'translate(0%, -50%)' }} /> : time}
+                {alert === true ? <img src={lowBatteryIcon} alt="low battery" style={{ width: 40, height: 40, objectFit: 'contain', position: 'absolute', transform: 'translate(0%, -50%)' }} /> : chargingAlert ? <img src={chargingIcon} alt="charging" style={{ width: 40, height: 40, objectFit: 'contain', position: 'absolute', transform: 'translate(0%, -50%)' }} /> : bluetoothAlert ? "🎧" : time}
               </h1>
               <h1
                 className="text"
