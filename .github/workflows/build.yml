@@ -50,7 +50,7 @@ jobs:
         if: matrix.platform == 'windows'
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build
+          name: Ripple-Windows
           path: out/make/wix/x64/*.msi
           if-no-files-found: error
 
@@ -59,7 +59,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Ripple-macOS
-          path: out/make/zip/darwin/**/*.zip
+          path: |
+            out/make/**/*.dmg
+            out/make/zip/darwin/**/*.zip
           if-no-files-found: error
 
       - name: Upload Linux Artifacts
