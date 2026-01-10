@@ -8,43 +8,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-windows:
-    name: Build for Windows
-    runs-on: windows-latest
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Build Application (Windows)
-        run: npm run make:win
-
-      - name: Upload Windows Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-build
-          path: out/make/**
-          if-no-files-found: error
-
-  build-macos:
-    name: Build for macOS (${{ matrix.arch }})
-    runs-on: macos-latest
+  build:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        arch: [x64, arm64]
-
-    env:
-      ELECTRON_ARCH: ${{ matrix.arch }}
+        os: [macos-latest, windows-latest, ubuntu-latest]
 
     steps:
       - name: Checkout Code
@@ -59,39 +29,37 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Build Application (macOS ${{ matrix.arch }})
-        run: npm run make:mac:${{ matrix.arch }}
+      - name: Build Application (Windows & Linux)
+        if: matrix.os != 'macos-latest'
+        run: npm run make
 
-      - name: Upload macOS Artifacts (${{ matrix.arch }})
+      - name: Build Application (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          npm run make -- --arch=x64
+          npm run make -- --arch=arm64
+
+      - name: Upload Windows Artifacts
+        if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: macos-${{ matrix.arch }}-build
-          path: out/make/**
+          name: windows-build
+          path: out/make/wix/x64/*.msi
           if-no-files-found: error
 
-  build-linux:
-    name: Build for Linux (.deb)
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Build Application (Linux .deb)
-        run: npm run make:deb
-
-      - name: Upload Linux .deb Artifacts
+      - name: Upload macOS Artifacts
+        if: matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: linux-deb-build
-          path: out/make/**
+          name: macos-build
+          path: out/make/zip/darwin/**/*.zip
           if-no-files-found: error
+
+      - name: Upload Linux Artifacts
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: out/make/deb/**/*.deb
+          if-no-files-found: error
+          
