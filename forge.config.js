@@ -41,10 +41,20 @@ module.exports = {
   },
   rebuildConfig: {},
   makers: [
-    // {
-    //   name: '@electron-forge/maker-squirrel',
-    //   config: {},
-    // },
+    {
+      name: '@electron-forge/maker-wix',
+      config: {
+        language: 1033,
+        manufacturer: 'TopMyster',
+        description: 'A Dynamic Island for All',
+        name: 'Ripple',
+        shortcutFolderName: 'Ripple',
+        programFilesFolderName: 'Ripple',
+        ui: {
+          chooseDirectory: true,
+        },
+      },
+    },
     {
       name: '@electron-forge/maker-zip',
       // platforms: ['darwin'], 
