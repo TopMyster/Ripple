@@ -678,7 +678,7 @@ export default function Island() {
                 textAlign: 'left'
               }}>
                 <h2 style={{
-                  margin: '0 20px 0 13px',
+                  margin: '0 30px 0 13px',
                   fontSize: 18,
                   fontWeight: 600,
                   whiteSpace: 'nowrap',
@@ -702,10 +702,10 @@ export default function Island() {
                   {spotifyTrack.artist || "Unknown Artist"}
                 </p>
                 {/* Controls */}
-                <div style={{ display: 'flex', gap: 15, marginTop: 8, alignItems: 'center', marginLeft: 5 }}>
+                <div style={{ display: 'flex', gap: 15, marginTop: 8, alignItems: 'center', marginLeft: 15 }}>
                   <button
                     onClick={() => window.electronAPI.controlSystemMedia('previous')}
-                    style={{ background: 'none', border: 'none', color: localStorage.getItem("text-color"), cursor: 'pointer', fontSize: 28, padding: 0, opacity: 0.8 }}
+                    style={{ background: 'none', border: 'none', color: localStorage.getItem("text-color"), cursor: 'pointer', fontSize: 23, padding: 0, opacity: 0.8 }}
                   >⏮</button>
                   <button
                     onClick={() => window.electronAPI.controlSystemMedia('playpause')}
@@ -715,7 +715,7 @@ export default function Island() {
                   </button>
                   <button
                     onClick={() => window.electronAPI.controlSystemMedia('next')}
-                    style={{ background: 'none', border: 'none', color: localStorage.getItem("text-color"), cursor: 'pointer', fontSize: 28, padding: 0, opacity: 0.8 }}
+                    style={{ background: 'none', border: 'none', color: localStorage.getItem("text-color"), cursor: 'pointer', fontSize: 23, padding: 0, opacity: 0.8 }}
                   >⏭</button>
                 </div>
               </div>

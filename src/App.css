@@ -131,7 +131,7 @@ body {
 }
 
 #userinput {
-  animation: appear .7s forwards;
+  animation: cubic-bezier(0.165, 0.84, 0.44, 1) appear 1s forwards;
   width: 100%;
   height: 78.5%;
   margin: 0;
@@ -157,7 +157,7 @@ body {
   transition: .2s;
   margin: 0 auto;
   padding: 2px;
-  animation: appear 1s forwards;
+  animation: cubic-bezier(0.165, 0.84, 0.44, 1) appear 1s forwards;
   width: 95%;
   font-size: 15px;
   font-weight: bold;
@@ -170,6 +170,8 @@ body {
 
 button:active {
   scale: .9;
+  opacity: .9;
+  filter: blur(2px);
 }
 
 select {
@@ -197,7 +199,7 @@ select {
   margin-bottom: 25px;
   border: 2px solid grey;
   transition: .2s;
-  animation: cubic-bezier(0.165, 0.84, 0.44, 1) appear 1s forwards;
+  animation: cubic-bezier(0.165, 0.84, 0.44, 1) appear 3s forwards;
 }
 
 label {
