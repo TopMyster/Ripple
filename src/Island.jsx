@@ -702,14 +702,28 @@ export default function Island() {
                   {spotifyTrack.artist || "Unknown Artist"}
                 </p>
                 {/* Controls */}
-                <div style={{ display: 'flex', gap: 15, marginTop: 8, alignItems: 'center', marginLeft: 15 }}>
+                <div style={{ display: 'flex', gap: 15, marginTop: 15, alignItems: 'center', marginLeft: 15 }}>
                   <button
                     onClick={() => window.electronAPI.controlSystemMedia('previous')}
                     style={{ background: 'none', border: 'none', color: localStorage.getItem("text-color"), cursor: 'pointer', fontSize: 23, padding: 0, opacity: 0.8 }}
                   >⏮</button>
                   <button
                     onClick={() => window.electronAPI.controlSystemMedia('playpause')}
-                    style={{ background: 'none', border: 'none', color: localStorage.getItem("text-color"), cursor: 'pointer', fontSize: spotifyTrack.state === 'playing' ? 28.1 : 23, padding: 0 }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: localStorage.getItem("text-color"),
+                      cursor: 'pointer',
+                      fontSize: 24,
+                      padding: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transform: spotifyTrack.state === 'playing'
+                        ? 'scale(1.5)'
+                        : 'scale(1)',
+                      transition: 'transform 0.15s ease-out'
+                    }}
                   >
                     {spotifyTrack.state === 'playing' ? '⏸' : '▶'}
                   </button>
