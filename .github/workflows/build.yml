@@ -14,7 +14,14 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        platform: [macos, windows, linux]
+        include:
+          - platform: macos
+            os: macos-latest
+          - platform: windows
+            os: windows-latest
+          - platform: linux
+            os: ubuntu-latest
 
     steps:
       - name: Checkout Code
@@ -30,17 +37,17 @@ jobs:
         run: npm install
 
       - name: Build Application (Windows & Linux)
-        if: matrix.os != 'macos-latest'
+        if: matrix.platform != 'macos'
         run: npm run make
 
       - name: Build Application (macOS)
-        if: matrix.os == 'macos-latest'
+        if: matrix.platform == 'macos'
         run: |
           npm run make -- --arch=x64
           npm run make -- --arch=arm64
 
       - name: Upload Windows Artifacts
-        if: matrix.os == 'windows-latest'
+        if: matrix.platform == 'windows'
         uses: actions/upload-artifact@v4
         with:
           name: windows-build
@@ -48,7 +55,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload macOS Artifacts
-        if: matrix.os == 'macos-latest'
+        if: matrix.platform == 'macos'
         uses: actions/upload-artifact@v4
         with:
           name: macos-build
@@ -56,10 +63,12 @@ jobs:
           if-no-files-found: error
 
       - name: Upload Linux Artifacts
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.platform == 'linux'
         uses: actions/upload-artifact@v4
         with:
           name: linux-build
-          path: out/make/deb/**/*.deb
+          path: |
+            out/make/deb/**/*.deb
+            out/make/rpm/**/*.rpm
           if-no-files-found: error
           

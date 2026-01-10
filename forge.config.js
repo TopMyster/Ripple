@@ -5,6 +5,7 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 module.exports = {
   packagerConfig: {
     asar: true,
+    executableName: 'ripple',
     icon: 'src/assets/icons/icon',
     extendInfo: {
       NSAppleEventsUsageDescription: 'Ripple needs to control media players like Spotify and AppleMusic.',
@@ -63,10 +64,10 @@ module.exports = {
       name: '@electron-forge/maker-deb',
       config: {},
     },
-    // {
-    //   name: '@electron-forge/maker-rpm',
-    //   config: {},
-    // },
+    {
+      name: '@electron-forge/maker-rpm',
+      config: {},
+    },
   ],
   plugins: [
     {
