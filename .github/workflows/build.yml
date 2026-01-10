@@ -8,13 +8,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: Build for ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [macos-latest, windows-latest]
+  build-windows:
+    name: Build for Windows
+    runs-on: windows-latest
 
     steps:
       - name: Checkout Code
@@ -29,19 +25,73 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Build Application
-        run: npm run make
+      - name: Build Application (Windows)
+        run: npm run make:win
 
       - name: Upload Windows Artifacts
-        if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: Ripple-Windows
-          path: out/make/wix/**/*.msi
+          name: windows-build
+          path: out/make/**
+          if-no-files-found: error
 
-      - name: Upload macOS Artifacts
-        if: matrix.os == 'macos-latest'
+  build-macos:
+    name: Build for macOS (${{ matrix.arch }})
+    runs-on: macos-latest
+
+    strategy:
+      matrix:
+        arch: [x64, arm64]
+
+    env:
+      ELECTRON_ARCH: ${{ matrix.arch }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Application (macOS ${{ matrix.arch }})
+        run: npm run make:mac:${{ matrix.arch }}
+
+      - name: Upload macOS Artifacts (${{ matrix.arch }})
         uses: actions/upload-artifact@v4
         with:
-          name: Ripple-macOS
-          path: out/make/zip/darwin/**/*.zip
+          name: macos-${{ matrix.arch }}-build
+          path: out/make/**
+          if-no-files-found: error
+
+  build-linux:
+    name: Build for Linux (.deb)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Application (Linux .deb)
+        run: npm run make:deb
+
+      - name: Upload Linux .deb Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-deb-build
+          path: out/make/**
+          if-no-files-found: error
