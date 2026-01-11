@@ -7,6 +7,9 @@ module.exports = {
     asar: true,
     executableName: 'ripple',
     icon: 'src/assets/icons/icon',
+    extraResource: [
+      path.join(__dirname, 'src/assets/icons/icon.png'),
+    ],
     extendInfo: {
       NSAppleEventsUsageDescription: 'Ripple needs to control media players like Spotify and AppleMusic.',
     },
@@ -68,11 +71,19 @@ module.exports = {
     },
     {
       name: '@electron-forge/maker-deb',
-      config: {},
+      config: {
+        options: {
+          icon: path.join(__dirname, 'src/assets/icons/icon.png')
+        }
+      },
     },
     {
       name: '@electron-forge/maker-rpm',
-      config: {},
+      config: {
+        options: {
+          icon: path.join(__dirname, 'src/assets/icons/icon.png')
+        }
+      },
     },
   ],
   plugins: [

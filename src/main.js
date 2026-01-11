@@ -19,14 +19,16 @@ ipcMain.handle('set-ignore-mouse-events', (event, ignore, forward) => {
 });
 
 const getIconPath = () => {
-  // Both Tray and BrowserWindow on Windows handle PNGs well and it's more reliable for scaling.
-  const ext = process.platform === 'win32' ? 'png' : 'png';
+  const ext = 'png';
   if (app.isPackaged) {
-    // In packaged builds, we should look for the icon in a reliable place.
-    // Note: We need to ensure forge.config.js or build process copies this file.
-    return path.join(process.resourcesPath, `assets/icons/icon.${ext}`);
+    const resPath = path.join(process.resourcesPath, `icon.${ext}`);
+    const assetsPath = path.join(process.resourcesPath, `assets/icons/icon.${ext}`);
+
+    if (fs.existsSync(resPath)) return resPath;
+    if (fs.existsSync(assetsPath)) return assetsPath;
+
+    return resPath;
   }
-  // In dev, look relative to __dirname which is .vite/build/
   return path.join(__dirname, `../../src/assets/icons/icon.${ext}`);
 };
 
