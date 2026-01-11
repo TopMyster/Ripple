@@ -6,23 +6,22 @@ https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
 ### <a href="https://discord.gg/a2xzVkxFVg">Join the Discord</a>
 
 ## Features
- - ✅ Now playing preview and controls<br>
- - ✅ Battery Alerts<br>
- - ✅ Island syncs accross desktops and monitors<br>
- - ✅ AI Ask feature<br>
- - ✅ Themes e.g. Win95, Sleek Black<br>
- - ✅ Shows the Weather<br>
- - ✅ Shows on all desktops<br>
- - ✅ Quick Apps<br>
- - ✅ Browser search<br>
- - ✅ Keyboard Shortcuts<br>
- - ✅ Clipboard<br>
- - ✅ Intructions<br>
- - ✅ Stealth Mode<br>
- - ✅ Charging Alert<br>
- - ✅ Standby Mode<br>
- - ✅ Shows in menu bar & system tray<br>
- - •Fix not working on Ubuntu (https://github.com/TopMyster/Ripple/issues/4)<br>
+- ✅ Island syncs across desktops and monitors
+- ✅ Bluetooth device connected alerts
+- ✅ Now playing preview and controls 
+- ✅ Themes (e.g. Win95, SleekBlack)
+- ✅ Shows on all desktops    
+- ✅ Keyboard shortcuts
+- ✅ Shows the weather    
+- ✅ Charging alerts
+- ✅ AI Ask feature   
+- ✅ Battery alerts
+- ✅ Browser search
+- ✅ Standby mode
+- ✅ Stealth mode
+- ✅ Quick apps
+- ✅ Clipboard
+
 
 <sup>✅ = done, - = Working on, • = Planned, * = Note to self</sup><br>
 <a href="https://github.com/TopMyster/Ripple/blob/main/instructions.md">Further Instructions</a>
