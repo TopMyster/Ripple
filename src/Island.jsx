@@ -242,9 +242,9 @@ export default function Island() {
       setMode("quick");
       setAlert(true);
       const timerId = setTimeout(() => {
-        setMode("normal");
+        setMode("still");
         setAlert(null);
-      }, 2000);
+      }, 3000);
       return () => {
         clearTimeout(timerId);
       };
@@ -259,9 +259,9 @@ export default function Island() {
       setMode("quick");
       setChargingAlert(true);
       const timerId = setTimeout(() => {
-        setMode("normal");
+        setMode("still");
         setChargingAlert(false);
-      }, 2000);
+      }, 3000);
       return () => {
         clearTimeout(timerId);
       };
@@ -380,9 +380,9 @@ export default function Island() {
       setMode("quick");
       setBluetoothAlert(true);
       const timerId = setTimeout(() => {
-        setMode("normal");
+        setMode("still");
         setBluetoothAlert(false);
-      }, 2000);
+      }, 3000);
       return () => {
         clearTimeout(timerId);
       };
@@ -465,7 +465,7 @@ export default function Island() {
         justifyContent: "center",
         overflow: "hidden",
         fontFamily: theme === "win95" ? "w95" : "OpenRunde",
-        border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : islandBorderEnabled ? chargingAlert && !alert ? `1px solid rgba(3, 196, 3, 0.301)` : alert ? `1px solid rgba(255, 38, 0, 0.34)` : hideNotActiveIslandEnabled ? "none" : `1px solid color-mix(in srgb, ${localStorage.getItem("text-color")}, transparent 70%)` : "none",
+        border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : islandBorderEnabled ? alert ? `1px solid rgba(255, 38, 0, 0.34)` : bluetoothAlert ? `1px solid rgba(0, 150, 255, 0.34)` : chargingAlert ? `1px solid rgba(3, 196, 3, 0.301)` : hideNotActiveIslandEnabled ? "none" : `1px solid color-mix(in srgb, ${localStorage.getItem("text-color")}, transparent 70%)` : "none",
         borderColor:
           theme === "win95"
             ? "#FFFFFF #808080 #808080 #FFFFFF"
@@ -486,7 +486,7 @@ export default function Island() {
       {/*Quickview*/}
       {(mode === "quick" || (mode === "still" && isPlaying)) ? (
         <>
-          {isPlaying && !alert && !chargingAlert ? (
+          {isPlaying && !alert && !chargingAlert && !bluetoothAlert ? (
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -531,6 +531,7 @@ export default function Island() {
                   fontSize: 16,
                   fontWeight: 600,
                   margin: 0,
+                  animation: 'appear .3s ease-out',
                   color: chargingAlert === true && !alert ? "#6fff7bff" : localStorage.getItem("text-color")
                 }}
               >
@@ -546,6 +547,7 @@ export default function Island() {
                   fontSize: 16,
                   fontWeight: 600,
                   margin: 0,
+                  animation: 'appear .3s ease-out',
                   color: alert === true
                     ? "#ff3f3fff"
                     : `${localStorage.getItem("text-color")}`
