@@ -289,7 +289,7 @@ export default function Island() {
     } else if (largeStandbyEnabled && mode === 'still') {
       setMode('large')
     }
-  })
+  }, [mode, standbyBorderEnabled, largeStandbyEnabled])
 
   // Get Weather
   useEffect(() => {
@@ -442,7 +442,13 @@ export default function Island() {
         }
       }}
       onMouseLeave={() => {
-        setMode("still");
+        if (standbyBorderEnabled) {
+          setMode("quick");
+        } else if (largeStandbyEnabled) {
+          setMode("large");
+        } else {
+          setMode("still");
+        }
         if (window.electronAPI) {
           window.electronAPI.setIgnoreMouseEvents(true, true);
         }
