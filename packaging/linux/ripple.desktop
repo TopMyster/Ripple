@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Ripple
+Exec=ripple %U
+Terminal=false
+Type=Application
+Icon=ripple
+StartupWMClass=Ripple
+Comment=A Dynamic Island for All
+Categories=Utility;

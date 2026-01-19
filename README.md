@@ -55,3 +55,24 @@ npm run make -- --platform=darwin --arch=x64
 ```
 
 Artifacts will be found in the `out/make` directory.
+
+## Distribution & GNOME Extension
+
+Ripple is expanding to official package managers and the GNOME Shell!
+
+### GNOME Extension (Linux)
+The GNOME extension provides a native "Island" experience in the top bar.
+- Located in: `gnome-extension/`
+- To install locally: 
+  1. `cp -r gnome-extension ~/.local/share/gnome-shell/extensions/ripple@topmyster.github.com`
+  2. Restart GNOME Shell (`Alt+F2`, then type `r` and `Enter`, or logout/login on Wayland)
+  3. Enable via GNOME Extensions app.
+
+### Official Package Managers
+We are preparing Ripple for the following platforms:
+
+- **Flathub (Flatpak)**: Manifest available at `packaging/flatpak/com.github.topmyster.ripple.yaml`
+- **Homebrew (macOS)**: Cask available at `packaging/brew/ripple.rb`
+- **Chocolatey (Windows)**: Nuspec available at `packaging/chocolatey/ripple.nuspec`
+
+Check the `packaging/` directory for integration details.

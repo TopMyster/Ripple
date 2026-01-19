@@ -1,0 +1,36 @@
+.ripple-island-container {
+    background-color: rgba(0, 0, 0, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    margin: 4px 6px;
+    padding: 0 16px;
+    min-width: 90px;
+    height: 34px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.ripple-island-container:hover {
+    background-color: rgba(20, 20, 20, 1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transform: scale(1.02);
+}
+
+.ripple-island-container:active {
+    background-color: rgba(30, 30, 30, 1);
+    transform: scale(0.98);
+}
+
+.ripple-island-label {
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Specific styling for when it's expanded (handled via easing in JS mostly, 
+   but we can define child transitions here) */
+.ripple-island-container>* {
+    transition: opacity 0.2s ease-in-out;
+}
