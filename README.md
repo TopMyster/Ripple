@@ -72,7 +72,6 @@ The GNOME extension provides a native "Island" experience in the top bar.
 We are preparing Ripple for the following platforms:
 
 - **Flathub (Flatpak)**: Manifest available at `packaging/flatpak/com.github.topmyster.ripple.yaml`
-- **Homebrew (macOS)**: Cask available at `packaging/brew/ripple.rb`
 - **Chocolatey (Windows)**: Nuspec available at `packaging/chocolatey/ripple.nuspec`
 
 Check the `packaging/` directory for integration details.
