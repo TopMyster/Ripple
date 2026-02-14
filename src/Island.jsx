@@ -83,8 +83,8 @@ export default function Island() {
   };
 
   let isPlaying = spotifyTrack?.state === 'playing';
-  let width = mode === "large" ? 400 : (mode === "quick" || isPlaying) ? 300 : 175;
-  let height = mode === "large" ? tab === 7 ? 300 : 190 : mode === "quick" ? 43 : 43;
+  let width = mode === "large" ? (tab === 7) ? 450 : 380 : (mode === "quick" || isPlaying) ? 300 : 175;
+  let height = mode === "large" ? (tab === 7) ? 300 : (tab === 6) ? 250 : 190 : mode === "quick" ? 43 : 43;
 
   const [qa1, setQa1] = useState(localStorage.getItem("qa1") || "discord");
   const [qa2, setQa2] = useState(localStorage.getItem("qa2") || "spotify");
@@ -563,9 +563,9 @@ export default function Island() {
       }}
     >
       {/*Quickview*/}
-      {(mode === "quick" || (mode === "still" && isPlaying)) ? (
+      {(mode === "quick" || (mode === "still" && isPlaying)) && !alert && !chargingAlert && !bluetoothAlert ? (
         <>
-          {isPlaying && !alert && !chargingAlert && !bluetoothAlert ? (
+          {isPlaying ? (
             <div style={{
               display: 'flex',
               alignItems: 'center',
