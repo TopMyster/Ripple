@@ -792,7 +792,7 @@ export default function Island() {
                     {spotifyTrack.artwork_url ? (
                       <img src={spotifyTrack.artwork_url} style={{
                         width: 110, height: 110, minWidth: 110,
-                        borderRadius: 13, objectFit: 'cover',
+                        borderRadius: 13, objectFit: 'cover', pointerEvents: 'none',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
                       }} />
                     ) : (
