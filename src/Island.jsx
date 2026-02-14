@@ -55,7 +55,7 @@ export default function Island() {
 
   let isPlaying = spotifyTrack?.state === 'playing';
   let width = mode === "large" ? 400 : (mode === "quick" || isPlaying) ? 300 : 175;
-  let height = mode === "large" ? 190 : mode === "quick" ? 43 : 43;
+  let height = mode === "large" ? tab === 7 ? 300 : 190 : mode === "quick" ? 43 : 43;
 
   const [qa1, setQa1] = useState(localStorage.getItem("qa1") || "discord");
   const [qa2, setQa2] = useState(localStorage.getItem("qa2") || "spotify");
@@ -584,21 +584,18 @@ export default function Island() {
 
       {/*Browser Search*/}
       {mode === "large" && tab === 0 ? (
-        <>
+        <div style={{ width: '100%', display: 'flex', justifyContent: 'center', animation: 'appear 0.5s ease-out' }}>
           <input
             id="browser-searchbar"
-            placeholder="Enter a url or a query"
-            onChange={(e) => {
-              setBrowserSearch(e.target.value);
-            }}
+            placeholder="Search google or enter URL"
+            value={browserSearch}
+            onChange={(e) => setBrowserSearch(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                searchBrowser();
-              }
+              if (e.key === "Enter") searchBrowser();
             }}
             style={{ color: localStorage.getItem("text-color") }}
           />
-        </>
+        </div>
       ) : null}
 
       {/* Quick Apps */}
@@ -906,27 +903,29 @@ export default function Island() {
 
       {/*Clipboard*/}
       {mode === "large" && tab === 5 ? (
-        <>
-          <div id="clipboard">
-            {clipboard.length === 0 ? (<h2 className="clipboard-item"></h2>) : clipboard.map((item, index) => (
-              <>
-                <h3 className="clipboard-item" key={index}>
-                  {item}
-                </h3>
-                <button
-                  onClick={() => copyToClipboard(item)}
-                  className="clipboard-btn"
-                  style={{
-                    backgroundColor: localStorage.getItem("text-color"),
-                    color: localStorage.getItem("bg-color"),
-                  }}
-                >
-                  Copy {index + 1}
-                </button><br></br>
-              </>
-            ))}
-          </div>
-        </>
+        <div id="clipboard">
+          {clipboard.length === 0 ? (
+            <p style={{ opacity: 0.5, textAlign: 'center', marginTop: 30 }}>Clipboard is empty</p>
+          ) : (
+            clipboard.map((item, index) => (
+              <div className="clipboard-row" key={index}>
+                <p className="clipboard-content">{item}</p>
+                <div className="clipboard-footer">
+                  <button
+                    onClick={() => copyToClipboard(item)}
+                    className="copy-btn"
+                    style={{
+                      backgroundColor: localStorage.getItem("text-color"),
+                      color: localStorage.getItem("bg-color"),
+                    }}
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       ) : null}
 
       {/*Tasks*/}
@@ -989,297 +988,143 @@ export default function Island() {
         </>
       ) : null}
 
-      {/*Settings*/}
+      {/*Settings Overhaul*/}
       {mode === "large" && tab === 7 ? (
-        <>
-          <div
-            style={{
-              lineHeight: 2.3,
-              textAlign: "center",
-              width: "90%",
-              maxHeight: "100%",
-              overflowX: "hidden",
-              padding: 12,
-              boxSizing: "border-box"
-            }}
-          >
-            <h1 className="text">Settings</h1>
-            {/*Battery alerts settings*/}
-            <label htmlFor="battery-alerts" className="text">
-              Low Battery Alerts:{" "}
-            </label>
-            <select
-              id="battery-alerts"
-              value={batteryAlertsEnabled ? "true" : "false"}
-              onChange={handleBatteryAlertsChange}
-            >
-              <option value={"true"}>Yes</option>
-              <option value={"false"}>No</option>
-            </select>
-            <br />
-            {/*Background color settings*/}
-            <label htmlFor="bg-color" className="text">
-              Island Color:{" "}
-            </label>
-            <br />
-            <input
-              id="bg-color"
-              className="select-input"
-              placeholder="ex: #000000"
-              onChange={(e) => {
-                localStorage.setItem("bg-color", e.target.value);
-              }}
-            />
-            <br />
-            {/*Text color settings*/}
-            <label htmlFor="text-color" className="text">
-              Text Color:{" "}
-            </label>
-            <br />
-            <input
-              id="text-color"
-              className="select-input"
-              placeholder="ex: #FAFAFA"
-              onChange={(e) => {
-                localStorage.setItem("text-color", e.target.value);
-              }}
-            />
-            <br />
-            {/*API key*/}
-            <label htmlFor="api-key" className="text">
-              API key:{" "}
-            </label>
-            <br />
-            <input
-              id="api-key"
-              className="select-input"
-              placeholder="Enter Groq API Key here"
-              onChange={(e) => {
-                localStorage.setItem("api-key", e.target.value);
-              }}
-            />
-            <br />
-            {/*Location settings*/}
-            <label htmlFor="location" className="text">
-              Location:{" "}
-            </label>
-            <br />
-            <input
-              id="location"
-              className="select-input"
-              placeholder="ex. Trenton, NJ, US"
-              onChange={(e) => {
-                localStorage.setItem("location", e.target.value);
-              }}
-            />
-            <br />
-            <label htmlFor="weather-unit" className="text">
-              Weather Unit:{" "}
-            </label>
-            <select
-              id="weather-unit"
-              value={weatherUnit}
-              onChange={handleWeatherUnitChange}
-            >
-              <option value={"f"}>F</option>
-              <option value={"c"}>C</option>
-            </select>
-            <br />
-            <label htmlFor="theme" className="text">
-              Theme:{" "}
-            </label>
-            <select
-              id="theme"
-              value={theme}
-              onChange={(e) => {
-                setTheme(e.target.value);
-              }}
-            >
-              <option value={"none"}>None</option>
-              <option value={"invisible"}>Invisible</option>
-              <option value={"sleek-black"}>Sleek Black</option>
-              <option value={"win95"}>win95</option>
-            </select>
-            <br />
-            {/*Background image settings*/}
-            <label htmlFor="bg-image" className="text">
-              Background Image:{" "}
-            </label>
-            <br />
-            <input
-              id="bg-image"
-              className="select-input"
-              placeholder="File path or URL"
-              onChange={(e) => {
-                localStorage.setItem("bg-image", e.target.value);
-              }}
-            />
-            <br />
-            {/*Quick app 1*/}
-            <label htmlFor="qa1" className="text">
-              Quick app 1:{" "}
-            </label>
-            <select
-              id="qa1"
-              value={qa1}
-              onChange={(e) => {
-                setQa1(e.target.value);
-                localStorage.setItem("qa1", e.target.value);
-              }}
-            >
-              <option value={"spotify"}>Spotify</option>
-              <option value={"discord"}>Discord</option>
-              <option value={"notion"}>Notion</option>
-              <option value={"mailto"}>Mail</option>
-              <option value={"steam"}>Steam</option>
-              <option value={"tel"}>Phone</option>
-              <option value={"sms"}>Messages</option>
-            </select>
-            <br />
-            {/*Quick app 2*/}
-            <label htmlFor="qa2" className="text">
-              Quick app 2:{" "}
-            </label>
-            <select
-              id="qa2"
-              value={qa2}
-              onChange={(e) => {
-                setQa2(e.target.value);
-                localStorage.setItem("qa2", e.target.value);
-              }}
-            >
-              <option value={"spotify"}>Spotify</option>
-              <option value={"discord"}>Discord</option>
-              <option value={"notion"}>Notion</option>
-              <option value={"mailto"}>Mail</option>
-              <option value={"steam"}>Steam</option>
-              <option value={"tel"}>Phone</option>
-              <option value={"sms"}>Messages</option>
-            </select>
-            <br />
-            {/*Quick app 3*/}
-            <label htmlFor="qa3" className="text">
-              Quick app 3:{" "}
-            </label>
-            <select
-              id="qa3"
-              value={qa3}
-              onChange={(e) => {
-                setQa3(e.target.value);
-                localStorage.setItem("qa3", e.target.value);
-              }}
-            >
-              <option value={"spotify"}>Spotify</option>
-              <option value={"discord"}>Discord</option>
-              <option value={"notion"}>Notion</option>
-              <option value={"mailto"}>Mail</option>
-              <option value={"steam"}>Steam</option>
-              <option value={"tel"}>Phone</option>
-              <option value={"sms"}>Messages</option>
-            </select>
-            <br />
-            {/*Quick app 4*/}
-            <label htmlFor="qa4" className="text">
-              Quick app 4:{" "}
-            </label>
-            <select
-              id="qa4"
-              value={qa4}
-              onChange={(e) => {
-                setQa4(e.target.value);
-                localStorage.setItem("qa4", e.target.value);
-              }}
-            >
-              <option value={"spotify"}>Spotify</option>
-              <option value={"discord"}>Discord</option>
-              <option value={"notion"}>Notion</option>
-              <option value={"mailto"}>Mail</option>
-              <option value={"steam"}>Steam</option>
-              <option value={"tel"}>Phone</option>
-              <option value={"sms"}>Messages</option>
-            </select>
-            <br />
-            {/*Island border settings*/}
-            <label htmlFor="island-border" className="text">
-              Island Border:{" "}
-            </label>
-            <select
-              id="island-border"
-              value={islandBorderEnabled ? "true" : "false"}
-              onChange={handleIslandBorderChange}
-            >
-              <option value={"true"}>Yes</option>
-              <option value={"false"}>No</option>
-            </select>
-            <br />
-            {/*Default tab settings*/}
-            <label htmlFor="default-tab" className="text">
-              Default Tab:{" "}
-            </label>
-            <br />
-            <input
-              id="default-tab"
-              className="select-input"
-              placeholder="ex. 1, 2, 3, 4..."
-              onChange={(e) => {
-                localStorage.setItem("default-tab", e.target.value - 1);
-              }}
-            />
-            <br />
-            {/*Standby mode settings*/}
-            <label htmlFor="standby-mode" className="text">
-              Standby Mode:{" "}
-            </label>
-            <select
-              id="standby-mode"
-              value={standbyBorderEnabled ? "true" : "false"}
-              onChange={handleStandbyChange}
-            >
-              <option value={"true"}>Yes</option>
-              <option value={"false"}>No</option>
-            </select>
-            <br />
-            {/*Hide Island when inactive setting*/}
-            <label htmlFor="hide-island-notactive" className="text">
-              Hide Island when inactive:{" "}
-            </label>
-            <select
-              id="hide-island-notactive"
-              value={hideNotActiveIslandEnabled ? "true" : "false"}
-              onChange={handlehideNotActiveIslandChange}
-            >
-              <option value={"true"}>Yes</option>
-              <option value={"false"}>No</option>
-            </select>
-            <br />
-            {/*12/24 hour format setting*/}
-            <label htmlFor="hour-format" className="text">
-              12/24 hour format:{" "}
-            </label>
-            <select
-              id="hour-format"
-              value={hourFormat ? "12-hr" : "24-hr"}
-              onChange={handleHourFormatChange}
-            >
-              <option value={"12-hr"}>12 hour</option>
-              <option value={"24-hr"}>24 hour</option>
-            </select>
-            <br />
-            {/*Large Standby mode setting*/}
-            <label htmlFor="large-standby-mode" className="text">
-              Large Standby Mode:{" "}
-            </label>
-            <select
-              id="large-standby-mode"
-              value={largeStandbyEnabled ? "true" : "false"}
-              onChange={handleLargeStandbyChange}
-            >
-              <option value={"true"}>Yes</option>
-              <option value={"false"}>No</option>
-            </select>
-            <br />
+        <div id="settings-container">
+          <div className="settings-section">
+            <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>General</h3>
+            <div className="settings-row">
+              <span className="settings-label">12/24 Hour Format</span>
+              <select value={hourFormat ? "12-hr" : "24-hr"} onChange={handleHourFormatChange}>
+                <option value="12-hr">12-hour</option>
+                <option value="24-hr">24-hour</option>
+              </select>
+            </div>
+            <div className="settings-row">
+              <span className="settings-label">Default Tab (1-8)</span>
+              <input
+                className="select-input"
+                style={{ width: '60px', padding: '6px' }}
+                placeholder="2"
+                onChange={(e) => localStorage.setItem("default-tab", e.target.value - 1)}
+              />
+            </div>
           </div>
-        </>
+
+          <div className="settings-section">
+            <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Island Style</h3>
+            <div className="settings-row">
+              <span className="settings-label">Theme</span>
+              <select value={theme} onChange={(e) => setTheme(e.target.value)}>
+                <option value="none">Default</option>
+                <option value="invisible">Invisible</option>
+                <option value="sleek-black">Sleek Black</option>
+                <option value="win95">Windows 95</option>
+              </select>
+            </div>
+            <div className="settings-row">
+              <span className="settings-label">Island Border</span>
+              <select value={islandBorderEnabled ? "true" : "false"} onChange={handleIslandBorderChange}>
+                <option value="true">Show</option>
+                <option value="false">Hide</option>
+              </select>
+            </div>
+            <div className="settings-row">
+              <span className="settings-label">Hide When Inactive</span>
+              <select value={hideNotActiveIslandEnabled ? "true" : "false"} onChange={handlehideNotActiveIslandChange}>
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="settings-section">
+            <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Colors & Assets</h3>
+            <div className="settings-row">
+              <span className="settings-label">Island Color</span>
+              <input
+                className="select-input"
+                style={{ width: '100px' }}
+                placeholder="#000000"
+                onChange={(e) => localStorage.setItem("bg-color", e.target.value)}
+              />
+            </div>
+            <div className="settings-row">
+              <span className="settings-label">Text Color</span>
+              <input
+                className="select-input"
+                style={{ width: '100px' }}
+                placeholder="#FAFAFA"
+                onChange={(e) => localStorage.setItem("text-color", e.target.value)}
+              />
+            </div>
+            <div className="settings-row" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+              <span className="settings-label">Background Image URL</span>
+              <input
+                className="select-input"
+                placeholder="https://..."
+                onChange={(e) => localStorage.setItem("bg-image", e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="settings-section">
+            <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Features</h3>
+            <div className="settings-row">
+              <span className="settings-label">Low Battery Alerts</span>
+              <select value={batteryAlertsEnabled ? "true" : "false"} onChange={handleBatteryAlertsChange}>
+                <option value="true">Enabled</option>
+                <option value="false">Disabled</option>
+              </select>
+            </div>
+            <div className="settings-row">
+              <span className="settings-label">Standby Mode</span>
+              <select value={standbyBorderEnabled ? "true" : "false"} onChange={handleStandbyChange}>
+                <option value="true">Enabled</option>
+                <option value="false">Disabled</option>
+              </select>
+            </div>
+            <div className="settings-row">
+              <span className="settings-label">Large Standby Mode</span>
+              <select value={largeStandbyEnabled ? "true" : "false"} onChange={handleLargeStandbyChange}>
+                <option value="true">Enabled</option>
+                <option value="false">Disabled</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="settings-section">
+            <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Weather</h3>
+            <div className="settings-row">
+              <span className="settings-label">Location</span>
+              <input
+                className="select-input"
+                placeholder="City, ST, Country"
+                onChange={(e) => localStorage.setItem("location", e.target.value)}
+              />
+            </div>
+            <div className="settings-row">
+              <span className="settings-label">Unit</span>
+              <select value={weatherUnit} onChange={handleWeatherUnitChange}>
+                <option value="f">Fahrenheit (°F)</option>
+                <option value="c">Celsius (°C)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="settings-section" style={{ marginBottom: 30 }}>
+            <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Integrations</h3>
+            <div className="settings-row" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+              <span className="settings-label">Groq API Key (for AI)</span>
+              <input
+                className="select-input"
+                type="password"
+                placeholder="gsk_..."
+                onChange={(e) => localStorage.setItem("api-key", e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
       ) : null}
 
     </div>

@@ -21,6 +21,7 @@ https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
 - ✅ Stealth mode
 - ✅ Quick apps
 - ✅ Clipboard
+- ✅ Tasks List
 
 
 <sup>✅ = done, - = Working on, • = Planned, * = Note to self</sup><br>
@@ -68,10 +69,3 @@ The GNOME extension provides a native "Island" experience in the top bar.
   2. Restart GNOME Shell (`Alt+F2`, then type `r` and `Enter`, or logout/login on Wayland)
   3. Enable via GNOME Extensions app.
 
-### Official Package Managers
-We are preparing Ripple for the following platforms:
-
-- **Flathub (Flatpak)**: Manifest available at `packaging/flatpak/com.github.topmyster.ripple.yaml`
-- **Chocolatey (Windows)**: Nuspec available at `packaging/chocolatey/ripple.nuspec`
-
-Check the `packaging/` directory for integration details.
