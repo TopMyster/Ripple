@@ -650,8 +650,8 @@ export default function Island() {
             animate="center"
             exit="exit"
             transition={{
-              x: { type: "spring", stiffness: 300, damping: 30 },
-              opacity: { duration: 0.2 }
+              x: { type: "spring", stiffness: 400, damping: 40 },
+              opacity: { duration: 0.15 }
             }}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
@@ -884,101 +884,128 @@ export default function Island() {
               </div>
             )}
 
-            {/*AI ask*/}
-            {tab === 4 && asked === false && (
-              <div
-                style={{
-                  position: "relative",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "stretch",
-                  justifyContent: "flex-start",
-                  width: "100%",
-                  height: "100%",
-                  padding: "10px",
-                  boxSizing: "border-box"
-                }}
-              >
-                <textarea
-                  id="userinput"
-                  placeholder="Ask Anything"
-                  onChange={(e) => setUserText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.ctrlKey && e.key === "Enter") {
-                      setAsked(true);
-                      askAI();
-                    }
-                  }}
-                  style={{
-                    color: `${localStorage.getItem("text-color")}`,
-                    fontFamily: theme === "win95" ? "w95" : "OpenRunde",
-                    pointerEvents: "auto",
-                    animation: 'none'
-                  }}
-                />
-                <button
-                  id="chatsubmit"
-                  onClick={() => {
-                    setAsked(true);
-                    askAI();
-                  }}
-                  style={{
-                    backgroundColor: localStorage.getItem("text-color"),
-                    color: localStorage.getItem("bg-color"),
-                    fontFamily: theme === "win95" ? "w95" : "OpenRunde",
-                    pointerEvents: "auto",
-                    animation: 'none'
-                  }}
-                >
-                  Ask
-                </button>
-              </div>
-            )}
-
-            {/*AI result*/}
-            {tab === 4 && asked === true && (
-              <div
-                style={{
-                  position: "relative",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "flex-start",
-                  width: "90%",
-                  height: "130%",
-                  padding: "10px",
-                  boxSizing: "border-box"
-                }}
-              >
-                <h4
-                  id="result"
-                  style={{
-                    fontWeight: 400,
-                    fontFamily: theme === "win95" ? "w95" : "OpenRunde",
-                    pointerEvents: "auto",
-                    animation: 'none'
-                  }}
-                >
-                  {aiAnswer}
-                </h4>
-                <button
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={() => {
-                    setAsked(false);
-                    setAIAnswer(null);
-                    setUserText("");
-                  }}
-                  id="Askanotherbtn"
-                  style={{
-                    backgroundColor: localStorage.getItem("text-color"),
-                    color: localStorage.getItem("bg-color"),
-                    fontFamily: theme === "win95" ? "w95" : "OpenRunde",
-                    pointerEvents: "auto",
-                    animation: 'none'
-                  }}
-                >
-                  Ask another
-                </button>
+            {/* AI tab container */}
+            {tab === 4 && (
+              <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                <AnimatePresence mode="wait">
+                  {!asked ? (
+                    <motion.div
+                      key="ask"
+                      initial={{ opacity: 0, filter: "blur(10px)" }}
+                      animate={{ opacity: 1, filter: "blur(0px)" }}
+                      exit={{ opacity: 0, filter: "blur(10px)" }}
+                      transition={{ duration: 0.2 }}
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "stretch",
+                        justifyContent: "flex-start",
+                        padding: "10px",
+                        boxSizing: "border-box"
+                      }}
+                    >
+                      <textarea
+                        id="userinput"
+                        placeholder="Ask Anything"
+                        value={userText}
+                        onChange={(e) => setUserText(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.ctrlKey && e.key === "Enter") {
+                            setAsked(true);
+                            askAI();
+                          }
+                        }}
+                        style={{
+                          color: `${localStorage.getItem("text-color")}`,
+                          fontFamily: theme === "win95" ? "w95" : "OpenRunde",
+                          pointerEvents: "auto",
+                          animation: 'none'
+                        }}
+                      />
+                      <button
+                        id="chatsubmit"
+                        onClick={() => {
+                          setAsked(true);
+                          askAI();
+                        }}
+                        style={{
+                          backgroundColor: localStorage.getItem("text-color"),
+                          color: localStorage.getItem("bg-color"),
+                          fontFamily: theme === "win95" ? "w95" : "OpenRunde",
+                          pointerEvents: "auto",
+                          animation: 'none'
+                        }}
+                      >
+                        Ask
+                      </button>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="result"
+                      initial={{ opacity: 0, filter: "blur(10px)" }}
+                      animate={{ opacity: 1, filter: "blur(0px)" }}
+                      exit={{ opacity: 0, filter: "blur(10px)" }}
+                      transition={{ duration: 0.2 }}
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "stretch",
+                        justifyContent: "flex-start",
+                        padding: "0 10px",
+                        boxSizing: "border-box",
+                        overflow: "hidden"
+                      }}
+                    >
+                      <div
+                        id="result"
+                        style={{
+                          fontWeight: 400,
+                          fontFamily: theme === "win95" ? "w95" : "OpenRunde",
+                          pointerEvents: "auto",
+                          animation: 'none',
+                          margin: 0,
+                          paddingTop: "40px",
+                          paddingBottom: "50px",
+                          maxHeight: "100%",
+                          overflowY: "auto"
+                        }}
+                      >
+                        {aiAnswer || (
+                          <span style={{ opacity: 0.5, fontStyle: "italic" }}>
+                            Thinking...
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={() => {
+                          setAsked(false);
+                          setAIAnswer(null);
+                          setUserText("");
+                        }}
+                        id="Askanotherbtn"
+                        style={{
+                          position: "absolute",
+                          bottom: 15,
+                          right: 15,
+                          backgroundColor: localStorage.getItem("text-color"),
+                          color: localStorage.getItem("bg-color"),
+                          fontFamily: theme === "win95" ? "w95" : "OpenRunde",
+                          pointerEvents: "auto",
+                          animation: 'none',
+                          zIndex: 999,
+                          cursor: "pointer"
+                        }}
+                      >
+                        Ask another
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             )}
 

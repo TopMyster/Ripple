@@ -228,11 +228,10 @@ label {
 
 #Askanotherbtn {
   cursor: pointer;
-  animation: cubic-bezier(0.165, 0.84, 0.44, 1) appear 1s forwards;
   border: none;
   position: absolute;
   right: 0px;
-  bottom: 45px;
+  bottom: 18px;
   padding: 6px 10px;
   font-weight: 700;
   border-radius: 10px;
@@ -252,7 +251,7 @@ label {
   overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
-  padding: 30px 10px;
+  padding: 30px 20px;
   min-height: 0;
   pointer-events: auto;
   word-wrap: break-word;
