@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Groq } from "groq-sdk";
+import { motion, AnimatePresence } from "framer-motion";
 import "./App.css";
 import lowBatteryIcon from "./assets/images/lowbattery.png";
 import chargingIcon from "./assets/images/charging.png";
@@ -28,7 +29,7 @@ function openApp(app) {
 export default function Island() {
   const [time, setTime] = useState(null);
   const [mode, setMode] = useState("still");
-  const [tab, setTab] = useState(Number(localStorage.getItem("default-tab") || 2));
+  const [[tab, direction], setTab] = useState([Number(localStorage.getItem("default-tab") || 2), 0]);
   const [asked, setAsked] = useState(false);
   const [aiAnswer, setAIAnswer] = useState(null);
   const [percent, setPercent] = useState(null);
@@ -52,6 +53,34 @@ export default function Island() {
   const [bluetoothAlert, setBluetoothAlert] = useState(false);
   const [tasks, setTasks] = useState(JSON.parse(localStorage.getItem("tasks") || "[]"));
   const [taskText, setTaskText] = useState("");
+  const [aiProvider, setAiProvider] = useState(localStorage.getItem("ai-provider") || "groq");
+  const [aiModel, setAiModel] = useState(localStorage.getItem("ai-model") || "llama-3.3-70b-versatile");
+
+  const tabVariants = {
+    enter: (direction) => ({
+      x: direction > 0 ? 300 : direction < 0 ? -300 : 0,
+      opacity: 0,
+      scale: 0.95,
+      filter: "blur(10px)"
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      scale: 1,
+      filter: "blur(0px)"
+    },
+    exit: (direction) => ({
+      x: direction < 0 ? 300 : direction > 0 ? -300 : 0,
+      opacity: 0,
+      scale: 0.95,
+      filter: "blur(10px)"
+    })
+  };
+
+  const swipeConfidenceThreshold = 10000;
+  const swipePower = (offset, velocity) => {
+    return Math.abs(offset) * velocity;
+  };
 
   let isPlaying = spotifyTrack?.state === 'playing';
   let width = mode === "large" ? 400 : (mode === "quick" || isPlaying) ? 300 : 175;
@@ -160,50 +189,79 @@ export default function Island() {
   async function askAI() {
     try {
       const apiKey = (localStorage.getItem("api-key") || "").trim();
+      const provider = localStorage.getItem("ai-provider") || "groq";
+      const model = localStorage.getItem("ai-model") || (provider === "groq" ? "llama-3.3-70b-versatile" : "meta-llama/llama-3.3-70b-instruct");
 
       if (!apiKey) {
         setAIAnswer("Enter your API key in settings");
         return;
       }
 
-      const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
-
       setAIAnswer("");
 
-      const stream = await groq.chat.completions.create({
-        model: "openai/gpt-oss-20b",
-        messages: [
-          {
-            role: "user",
-            content: ` Users question: ${userText}. Answer the users question in a short paragraph, 3-4 sentences. If the question is straight forward answer the question in a short 2 sentences.`
-          }
-        ],
-        temperature: 1,
-        max_completion_tokens: 8192,
-        top_p: 1,
-        stream: true,
-        stop: null
+      const baseUrl = provider === "groq" ? "https://api.groq.com/openai/v1" : "https://openrouter.ai/api/v1";
+
+      const response = await fetch(`${baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`,
+          ...(provider === "openrouter" && {
+            "HTTP-Referer": "https://github.com/TopMyster/Ripple",
+            "X-Title": "Ripple"
+          })
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            {
+              role: "user",
+              content: ` Users question: ${userText}. Answer the users question in a short paragraph, 3-4 sentences. If the question is straight forward answer the question in a short 2 sentences.`
+            }
+          ],
+          temperature: 1,
+          stream: true
+        })
       });
 
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
       let fullText = "";
 
-      for await (const chunk of stream) {
-        const delta = chunk?.choices?.[0]?.delta?.content || "";
-        if (delta) {
-          fullText += delta;
-          setAIAnswer((prev) => (prev ? prev + delta : delta));
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            if (line.includes("[DONE]")) break;
+            try {
+              const data = JSON.parse(line.slice(6));
+              const delta = data.choices[0]?.delta?.content || "";
+              if (delta) {
+                fullText += delta;
+                setAIAnswer((prev) => (prev ? prev + delta : delta));
+              }
+            } catch (e) {
+              // Ignore parse errors for partial chunks
+            }
+          }
         }
       }
 
       if (!fullText) {
-        setAIAnswer("No response streamed. Try again or check your model/params.");
+        setAIAnswer("No response received. Check your settings.");
       }
     } catch (err) {
-      const message =
-        err?.message ||
-        (typeof err === "string" ? err : "Unexpected error occurred.");
-      setAIAnswer(`Error: ${message}`);
-      alert("askAI error:", err);
+      setAIAnswer(`Error: ${err.message}`);
+      console.error("askAI error:", err);
     }
   }
 
@@ -432,13 +490,13 @@ export default function Island() {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "ArrowRight") {
-        setTab((prev) => Math.min(7, prev + 1));
+        setTab(([prev]) => [Math.min(7, prev + 1), 1]);
       } else if (e.key === "ArrowLeft") {
-        setTab((prev) => Math.max(0, prev - 1));
+        setTab(([prev]) => [Math.max(0, prev - 1), -1]);
       } else if (e.ctrlKey && e.key >= "1" && e.key <= "8") {
         const tabNum = parseInt(e.key) - 1;
         setMode("large");
-        setTab(tabNum);
+        setTab(([prev]) => [tabNum, tabNum > prev ? 1 : -1]);
       }
     };
     document.addEventListener("keydown", handleKeyDown);
@@ -582,550 +640,603 @@ export default function Island() {
         </>
       ) : null}
 
-      {/*Browser Search*/}
-      {mode === "large" && tab === 0 ? (
-        <div style={{ width: '100%', display: 'flex', justifyContent: 'center', animation: 'appear 0.5s ease-out' }}>
-          <input
-            id="browser-searchbar"
-            placeholder="Search google or enter URL"
-            value={browserSearch}
-            onChange={(e) => setBrowserSearch(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") searchBrowser();
+      <AnimatePresence custom={direction} mode="popLayout">
+        {mode === "large" && (
+          <motion.div
+            key={tab}
+            custom={direction}
+            variants={tabVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
+              x: { type: "spring", stiffness: 300, damping: 30 },
+              opacity: { duration: 0.2 }
             }}
-            style={{ color: localStorage.getItem("text-color") }}
-          />
-        </div>
-      ) : null}
-
-      {/* Quick Apps */}
-      {mode === "large" && tab === 1 ? (
-        <>
-          <div id="quick-apps">
-            <button
-              className="qa-app"
-              onClick={() => {
-                openApp(qa1);
-              }}
-              style={{
-                color: localStorage.getItem("bg-color"),
-                backgroundColor: localStorage.getItem("text-color"),
-                fontFamily: theme === "win95" ? "w95" : "OpenRunde"
-              }}
-            >
-              {qa1}
-            </button>
-            <button
-              className="qa-app"
-              onClick={() => {
-                openApp(qa2);
-              }}
-              style={{
-                color: localStorage.getItem("bg-color"),
-                backgroundColor: localStorage.getItem("text-color"),
-                fontFamily: theme === "win95" ? "w95" : "OpenRunde"
-              }}
-            >
-              {qa2}
-            </button>
-            <button
-              className="qa-app"
-              onClick={() => {
-                openApp(qa3);
-              }}
-              style={{
-                color: localStorage.getItem("bg-color"),
-                backgroundColor: localStorage.getItem("text-color"),
-                fontFamily: theme === "win95" ? "w95" : "OpenRunde"
-              }}
-            >
-              {qa3}
-            </button>
-            <button
-              className="qa-app"
-              onClick={() => {
-                openApp(qa4);
-              }}
-              style={{
-                color: localStorage.getItem("bg-color"),
-                backgroundColor: localStorage.getItem("text-color"),
-                fontFamily: theme === "win95" ? "w95" : "OpenRunde"
-              }}
-            >
-              {qa4}
-            </button>
-          </div>
-        </>
-      ) : null}
-
-      {/*Overview tab*/}
-      {mode === "large" && tab === 2 ? (
-        <>
-          <div id="battery">
-            <div
-              id="battery-bar"
-              style={{
-                backgroundColor: localStorage.getItem('text-color'),
-                color: localStorage.getItem("bg-color")
-              }}
-            >
-              <h1 className="text">{charging ? "⚡︎" : null}{`${percent}%`}</h1>
-            </div>
-          </div>
-          <h1
-            className="text"
-            style={{
-              fontSize: 15,
-              left: 25,
-              top: 14,
-              position: "absolute"
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.4}
+            onDragEnd={(e, { offset, velocity }) => {
+              const swipe = swipePower(offset.x, velocity.x);
+              if (swipe < -swipeConfidenceThreshold) {
+                setTab(([prev]) => [Math.min(7, prev + 1), 1]);
+              } else if (swipe > swipeConfidenceThreshold) {
+                setTab(([prev]) => [Math.max(0, prev - 1), -1]);
+              }
             }}
-          >{`${weather ? weather : "??"}º`}</h1>
-          <div id="date">
-            <h1 className="text" style={{ fontSize: 50 }}>
-              {time}
-            </h1>
-            <h2 className="text" style={{ fontSize: 15 }}>
-              {formatDateShort()}
-            </h2>
-          </div>
-        </>
-      ) : null}
-
-      {/* Now Playing*/}
-      {mode === "large" && tab === 3 ? (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '90%',
-          height: '100%',
-          gap: '15px',
-          userSelect: 'none',
-          animation: 'cubic-bezier(0.165, 0.84, 0.44, 1) appear .7s forwards'
-        }}>
-          {spotifyTrack ? (
-            <>
-              {spotifyTrack.artwork_url ? (
-                <img src={spotifyTrack.artwork_url} style={{
-                  width: 110, height: 110, minWidth: 110,
-                  borderRadius: 13, objectFit: 'cover',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-                }} />
-              ) : (
-                <div style={{
-                  width: 110, height: 110, minWidth: 110,
-                  borderRadius: 12, background: 'rgba(255,255,255,0.1)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 24
-                }}>
-                  🎵
-                </div>
-              )}
-
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                maxWidth: '220px',
-                justifyContent: 'center',
-                textAlign: 'left'
-              }}>
-                <h2 style={{
-                  margin: '0 30px 0 13px',
-                  fontSize: 18,
-                  fontWeight: 600,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  color: localStorage.getItem("text-color"),
-                  fontFamily: theme === "win95" ? "w95" : "OpenRunde"
-                }}>
-                  {spotifyTrack.name || "Unknown Title"}
-                </h2>
-                <p style={{
-                  margin: '4px 0 0 13px',
-                  fontSize: 13,
-                  opacity: 0.8,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  color: localStorage.getItem("text-color"),
-                  fontFamily: theme === "win95" ? "w95" : "OpenRunde"
-                }}>
-                  {spotifyTrack.artist || "Unknown Artist"}
-                </p>
-                {/* Controls */}
-                <div style={{ display: 'flex', gap: 15, marginTop: 15, alignItems: 'center', marginLeft: 15 }}>
-                  <button
-                    onClick={() => window.electronAPI.controlSystemMedia('previous')}
-                    style={{ background: 'none', border: 'none', color: localStorage.getItem("text-color"), cursor: 'pointer', fontSize: 23, padding: 0, opacity: 0.8 }}
-                  >⏮</button>
-                  <button
-                    onClick={() => window.electronAPI.controlSystemMedia('playpause')}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: localStorage.getItem("text-color"),
-                      cursor: 'pointer',
-                      fontSize: 24,
-                      padding: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transform: spotifyTrack.state === 'playing'
-                        ? 'scale(1.5)'
-                        : 'scale(1)',
-                      transition: 'transform 0.15s ease-out'
-                    }}
-                  >
-                    {spotifyTrack.state === 'playing' ? '⏸' : '▶'}
-                  </button>
-                  <button
-                    onClick={() => window.electronAPI.controlSystemMedia('next')}
-                    style={{ background: 'none', border: 'none', color: localStorage.getItem("text-color"), cursor: 'pointer', fontSize: 23, padding: 0, opacity: 0.8 }}
-                  >⏭</button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div style={{
-              width: '100%',
-              textAlign: 'center',
-              color: localStorage.getItem("text-color"),
-              fontFamily: theme === "win95" ? "w95" : "OpenRunde"
-            }}>
-              <h3 style={{ margin: 0, fontSize: 16 }}>Nothing Playing</h3>
-              <p style={{ margin: '5px 0 0 0', opacity: 0.7, fontSize: 13 }}>Play music on Spotify or Apple Music</p>
-            </div>
-          )}
-        </div>
-      ) : null}
-
-      {/*AI ask*/}
-      {mode === "large" && tab === 4 && asked === false ? (
-        <>
-          <div
             style={{
-              position: "relative",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "stretch",
-              justifyContent: "flex-start",
               width: "100%",
               height: "100%",
-              padding: "10px",
-              boxSizing: "border-box"
-            }}
-          >
-            <textarea
-              id="userinput"
-              type="text"
-              placeholder="Ask Anything"
-              onChange={(e) => {
-                setUserText(e.target.value);
-              }}
-              onKeyDown={(e) => {
-                if (e.ctrlKey && e.key === "Enter") {
-                  setAsked(true);
-                  askAI();
-                }
-              }}
-              style={{
-                color: `${localStorage.getItem("text-color")}`,
-                fontFamily: theme === "win95" ? "w95" : "OpenRunde",
-                pointerEvents: "auto"
-              }}
-            />
-            <button
-              id="chatsubmit"
-              onClick={() => {
-                setAsked(true);
-                askAI();
-              }}
-              style={{
-                backgroundColor: localStorage.getItem("text-color"),
-                color: localStorage.getItem("bg-color"),
-                fontFamily: theme === "win95" ? "w95" : "OpenRunde",
-                pointerEvents: "auto"
-              }}
-            >
-              Ask
-            </button>
-          </div>
-        </>
-      ) : null}
-
-      {/*AI result*/}
-      {mode === "large" && tab === 4 && asked === true ? (
-        <>
-          <div
-            style={{
-              position: "relative",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              justifyContent: "flex-start",
-              width: "90%",
-              height: "130%",
-              padding: "10px",
-              boxSizing: "border-box"
+              justifyContent: "center",
+              position: "absolute",
+              cursor: "grab"
             }}
           >
-            <h4
-              id="result"
-              style={{
-                fontWeight: 400,
-                fontFamily: theme === "win95" ? "w95" : "OpenRunde",
-                pointerEvents: "auto"
-              }}
-            >
-              {aiAnswer}
-            </h4>
-            <button
-              onClick={() => {
-                setAsked(false);
-                setAIAnswer(null);
-              }}
-              id="Askanotherbtn"
-              style={{
-                backgroundColor: localStorage.getItem("text-color"),
-                color: localStorage.getItem("bg-color"),
-                fontFamily: theme === "win95" ? "w95" : "OpenRunde",
-                pointerEvents: "auto"
-              }}
-            >
-              Ask another
-            </button>
-          </div>
-        </>
-      ) : null}
+            {/*Browser Search*/}
+            {tab === 0 && (
+              <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <input
+                  id="browser-searchbar"
+                  placeholder="Search google or enter URL"
+                  value={browserSearch}
+                  onChange={(e) => setBrowserSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") searchBrowser();
+                  }}
+                  style={{ color: localStorage.getItem("text-color") }}
+                />
+              </div>
+            )}
 
-      {/*Clipboard*/}
-      {mode === "large" && tab === 5 ? (
-        <div id="clipboard">
-          {clipboard.length === 0 ? (
-            <p style={{ opacity: 0.5, textAlign: 'center', marginTop: 30 }}>Clipboard is empty</p>
-          ) : (
-            clipboard.map((item, index) => (
-              <div className="clipboard-row" key={index}>
-                <p className="clipboard-content">{item}</p>
-                <div className="clipboard-footer">
+            {/* Quick Apps */}
+            {tab === 1 && (
+              <div id="quick-apps" style={{ animation: 'none' }}>
+                <button
+                  className="qa-app"
+                  onClick={() => openApp(qa1)}
+                  style={{
+                    color: localStorage.getItem("bg-color"),
+                    backgroundColor: localStorage.getItem("text-color"),
+                    fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+                  }}
+                >
+                  {qa1}
+                </button>
+                <button
+                  className="qa-app"
+                  onClick={() => openApp(qa2)}
+                  style={{
+                    color: localStorage.getItem("bg-color"),
+                    backgroundColor: localStorage.getItem("text-color"),
+                    fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+                  }}
+                >
+                  {qa2}
+                </button>
+                <button
+                  className="qa-app"
+                  onClick={() => openApp(qa3)}
+                  style={{
+                    color: localStorage.getItem("bg-color"),
+                    backgroundColor: localStorage.getItem("text-color"),
+                    fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+                  }}
+                >
+                  {qa3}
+                </button>
+                <button
+                  className="qa-app"
+                  onClick={() => openApp(qa4)}
+                  style={{
+                    color: localStorage.getItem("bg-color"),
+                    backgroundColor: localStorage.getItem("text-color"),
+                    fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+                  }}
+                >
+                  {qa4}
+                </button>
+              </div>
+            )}
+
+            {/*Overview tab*/}
+            {tab === 2 && (
+              <>
+                <div id="battery" style={{ animation: 'none' }}>
+                  <div
+                    id="battery-bar"
+                    style={{
+                      backgroundColor: localStorage.getItem('text-color'),
+                      color: localStorage.getItem("bg-color")
+                    }}
+                  >
+                    <h1 className="text" style={{ animation: 'none' }}>{charging ? "⚡︎" : null}{`${percent}%`}</h1>
+                  </div>
+                </div>
+                <h1
+                  className="text"
+                  style={{
+                    fontSize: 15,
+                    left: 25,
+                    top: 14,
+                    position: "absolute",
+                    animation: 'none'
+                  }}
+                >{`${weather ? weather : "??"}º`}</h1>
+                <div id="date">
+                  <h1 className="text" style={{ fontSize: 50, animation: 'none' }}>
+                    {time}
+                  </h1>
+                  <h2 className="text" style={{ fontSize: 15, animation: 'none' }}>
+                    {formatDateShort()}
+                  </h2>
+                </div>
+              </>
+            )}
+
+            {/* Now Playing*/}
+            {tab === 3 && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '90%',
+                height: '100%',
+                gap: '15px',
+                userSelect: 'none'
+              }}>
+                {spotifyTrack ? (
+                  <>
+                    {spotifyTrack.artwork_url ? (
+                      <img src={spotifyTrack.artwork_url} style={{
+                        width: 110, height: 110, minWidth: 110,
+                        borderRadius: 13, objectFit: 'cover',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                      }} />
+                    ) : (
+                      <div style={{
+                        width: 110, height: 110, minWidth: 110,
+                        borderRadius: 12, background: 'rgba(255,255,255,0.1)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 24
+                      }}>
+                        🎵
+                      </div>
+                    )}
+
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      overflow: 'hidden',
+                      maxWidth: '220px',
+                      justifyContent: 'center',
+                      textAlign: 'left'
+                    }}>
+                      <h2 style={{
+                        margin: '0 30px 0 13px',
+                        fontSize: 18,
+                        fontWeight: 600,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        color: localStorage.getItem("text-color"),
+                        fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+                      }}>
+                        {spotifyTrack.name || "Unknown Title"}
+                      </h2>
+                      <p style={{
+                        margin: '4px 0 0 13px',
+                        fontSize: 13,
+                        opacity: 0.8,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        color: localStorage.getItem("text-color"),
+                        fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+                      }}>
+                        {spotifyTrack.artist || "Unknown Artist"}
+                      </p>
+                      <div style={{ display: 'flex', gap: 15, marginTop: 15, alignItems: 'center', marginLeft: 15 }}>
+                        <button
+                          onClick={() => window.electronAPI.controlSystemMedia('previous')}
+                          style={{ background: 'none', border: 'none', color: localStorage.getItem("text-color"), cursor: 'pointer', fontSize: 23, padding: 0, opacity: 0.8 }}
+                        >⏮</button>
+                        <button
+                          onClick={() => window.electronAPI.controlSystemMedia('playpause')}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: localStorage.getItem("text-color"),
+                            cursor: 'pointer',
+                            fontSize: 24,
+                            padding: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transform: spotifyTrack.state === 'playing'
+                              ? 'scale(1.5)'
+                              : 'scale(1)',
+                            transition: 'transform 0.15s ease-out'
+                          }}
+                        >
+                          {spotifyTrack.state === 'playing' ? '⏸' : '▶'}
+                        </button>
+                        <button
+                          onClick={() => window.electronAPI.controlSystemMedia('next')}
+                          style={{ background: 'none', border: 'none', color: localStorage.getItem("text-color"), cursor: 'pointer', fontSize: 23, padding: 0, opacity: 0.8 }}
+                        >⏭</button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{
+                    width: '100%',
+                    textAlign: 'center',
+                    color: localStorage.getItem("text-color"),
+                    fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+                  }}>
+                    <h3 style={{ margin: 0, fontSize: 16 }}>Nothing Playing</h3>
+                    <p style={{ margin: '5px 0 0 0', opacity: 0.7, fontSize: 13 }}>Play music on Spotify or Apple Music</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/*AI ask*/}
+            {tab === 4 && asked === false && (
+              <div
+                style={{
+                  position: "relative",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "stretch",
+                  justifyContent: "flex-start",
+                  width: "100%",
+                  height: "100%",
+                  padding: "10px",
+                  boxSizing: "border-box"
+                }}
+              >
+                <textarea
+                  id="userinput"
+                  placeholder="Ask Anything"
+                  onChange={(e) => setUserText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.ctrlKey && e.key === "Enter") {
+                      setAsked(true);
+                      askAI();
+                    }
+                  }}
+                  style={{
+                    color: `${localStorage.getItem("text-color")}`,
+                    fontFamily: theme === "win95" ? "w95" : "OpenRunde",
+                    pointerEvents: "auto",
+                    animation: 'none'
+                  }}
+                />
+                <button
+                  id="chatsubmit"
+                  onClick={() => {
+                    setAsked(true);
+                    askAI();
+                  }}
+                  style={{
+                    backgroundColor: localStorage.getItem("text-color"),
+                    color: localStorage.getItem("bg-color"),
+                    fontFamily: theme === "win95" ? "w95" : "OpenRunde",
+                    pointerEvents: "auto",
+                    animation: 'none'
+                  }}
+                >
+                  Ask
+                </button>
+              </div>
+            )}
+
+            {/*AI result*/}
+            {tab === 4 && asked === true && (
+              <div
+                style={{
+                  position: "relative",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                  width: "90%",
+                  height: "130%",
+                  padding: "10px",
+                  boxSizing: "border-box"
+                }}
+              >
+                <h4
+                  id="result"
+                  style={{
+                    fontWeight: 400,
+                    fontFamily: theme === "win95" ? "w95" : "OpenRunde",
+                    pointerEvents: "auto",
+                    animation: 'none'
+                  }}
+                >
+                  {aiAnswer}
+                </h4>
+                <button
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={() => {
+                    setAsked(false);
+                    setAIAnswer(null);
+                    setUserText("");
+                  }}
+                  id="Askanotherbtn"
+                  style={{
+                    backgroundColor: localStorage.getItem("text-color"),
+                    color: localStorage.getItem("bg-color"),
+                    fontFamily: theme === "win95" ? "w95" : "OpenRunde",
+                    pointerEvents: "auto",
+                    animation: 'none'
+                  }}
+                >
+                  Ask another
+                </button>
+              </div>
+            )}
+
+            {/*Clipboard*/}
+            {tab === 5 && (
+              <div id="clipboard" style={{ animation: 'none' }}>
+                {clipboard.length === 0 ? (
+                  <p style={{ opacity: 0.5, textAlign: 'center', marginTop: 30 }}>Clipboard is empty</p>
+                ) : (
+                  clipboard.map((item, index) => (
+                    <div className="clipboard-row" key={index}>
+                      <p className="clipboard-content">{item}</p>
+                      <div className="clipboard-footer">
+                        <button
+                          onClick={() => copyToClipboard(item)}
+                          className="copy-btn"
+                          style={{
+                            backgroundColor: localStorage.getItem("text-color"),
+                            color: localStorage.getItem("bg-color"),
+                          }}
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/*Tasks*/}
+            {tab === 6 && (
+              <div id="tasks-container" style={{ animation: 'none' }}>
+                <div id="task-list">
+                  {tasks.length === 0 ? (
+                    <p style={{ opacity: 0.5, textAlign: 'center', marginTop: 30 }}>No tasks yet. Add one below!</p>
+                  ) : (
+                    tasks.map((task, index) => (
+                      <div className="task-row" key={index}>
+                        <input
+                          type="checkbox"
+                          onChange={() => removeTask(index)}
+                          className="task-checkbox"
+                        />
+                        <h3 className="task-item" style={{ flex: 1, margin: 0 }}>{task}</h3>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div id="task-input-container">
+                  <input
+                    type="text"
+                    placeholder="New task..."
+                    value={taskText}
+                    onChange={(e) => setTaskText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") addTask();
+                    }}
+                    className="task-input"
+                    style={{
+                      backgroundColor: 'rgba(255,255,255,0.05)',
+                      color: localStorage.getItem("text-color"),
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '12px',
+                      padding: '8px 12px',
+                      outline: 'none',
+                      flex: 1
+                    }}
+                  />
                   <button
-                    onClick={() => copyToClipboard(item)}
-                    className="copy-btn"
+                    onClick={addTask}
+                    className="task-add-btn"
                     style={{
                       backgroundColor: localStorage.getItem("text-color"),
                       color: localStorage.getItem("bg-color"),
+                      border: 'none',
+                      borderRadius: '12px',
+                      padding: '8px 16px',
+                      fontWeight: 600,
+                      cursor: 'pointer'
                     }}
                   >
-                    Copy
+                    Add
                   </button>
                 </div>
               </div>
-            ))
-          )}
-        </div>
-      ) : null}
+            )}
 
-      {/*Tasks*/}
-      {mode === "large" && tab === 6 ? (
-        <>
-          <div id="tasks-container">
-            <div id="task-list">
-              {tasks.length === 0 ? (
-                <p style={{ opacity: 0.5, textAlign: 'center', marginTop: 30 }}>No tasks yet. Add one below!</p>
-              ) : (
-                tasks.map((task, index) => (
-                  <div className="task-row" key={index}>
-                    <input
-                      type="checkbox"
-                      onChange={() => removeTask(index)}
-                      className="task-checkbox"
-                    />
-                    <h3 className="task-item" style={{ flex: 1, margin: 0 }}>{task}</h3>
+            {/*Settings Overhaul*/}
+            {tab === 7 && (
+              <div id="settings-container">
+                <div className="settings-section">
+                  <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>General</h3>
+                  <div className="settings-row">
+                    <span className="settings-label">12/24 Hour Format</span>
+                    <select value={hourFormat ? "12-hr" : "24-hr"} onChange={handleHourFormatChange}>
+                      <option value="12-hr">12-hour</option>
+                      <option value="24-hr">24-hour</option>
+                    </select>
                   </div>
-                ))
-              )}
-            </div>
-            <div id="task-input-container">
-              <input
-                type="text"
-                placeholder="New task..."
-                value={taskText}
-                onChange={(e) => setTaskText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") addTask();
-                }}
-                className="task-input"
-                style={{
-                  backgroundColor: 'rgba(255,255,255,0.05)',
-                  color: localStorage.getItem("text-color"),
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '12px',
-                  padding: '8px 12px',
-                  outline: 'none',
-                  flex: 1
-                }}
-              />
-              <button
-                onClick={addTask}
-                className="task-add-btn"
-                style={{
-                  backgroundColor: localStorage.getItem("text-color"),
-                  color: localStorage.getItem("bg-color"),
-                  border: 'none',
-                  borderRadius: '12px',
-                  padding: '8px 16px',
-                  fontWeight: 600,
-                  cursor: 'pointer'
-                }}
-              >
-                Add
-              </button>
-            </div>
-          </div>
-        </>
-      ) : null}
+                  <div className="settings-row">
+                    <span className="settings-label">Default Tab (1-8)</span>
+                    <input
+                      className="select-input"
+                      style={{ width: '60px', padding: '6px' }}
+                      placeholder="2"
+                      onChange={(e) => localStorage.setItem("default-tab", e.target.value - 1)}
+                    />
+                  </div>
+                </div>
 
-      {/*Settings Overhaul*/}
-      {mode === "large" && tab === 7 ? (
-        <div id="settings-container">
-          <div className="settings-section">
-            <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>General</h3>
-            <div className="settings-row">
-              <span className="settings-label">12/24 Hour Format</span>
-              <select value={hourFormat ? "12-hr" : "24-hr"} onChange={handleHourFormatChange}>
-                <option value="12-hr">12-hour</option>
-                <option value="24-hr">24-hour</option>
-              </select>
-            </div>
-            <div className="settings-row">
-              <span className="settings-label">Default Tab (1-8)</span>
-              <input
-                className="select-input"
-                style={{ width: '60px', padding: '6px' }}
-                placeholder="2"
-                onChange={(e) => localStorage.setItem("default-tab", e.target.value - 1)}
-              />
-            </div>
-          </div>
+                <div className="settings-section">
+                  <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Island Style</h3>
+                  <div className="settings-row">
+                    <span className="settings-label">Theme</span>
+                    <select value={theme} onChange={(e) => setTheme(e.target.value)}>
+                      <option value="none">Default</option>
+                      <option value="invisible">Invisible</option>
+                      <option value="sleek-black">Sleek Black</option>
+                      <option value="win95">Windows 95</option>
+                    </select>
+                  </div>
+                  <div className="settings-row">
+                    <span className="settings-label">Island Border</span>
+                    <select value={islandBorderEnabled ? "true" : "false"} onChange={handleIslandBorderChange}>
+                      <option value="true">Show</option>
+                      <option value="false">Hide</option>
+                    </select>
+                  </div>
+                  <div className="settings-row">
+                    <span className="settings-label">Hide When Inactive</span>
+                    <select value={hideNotActiveIslandEnabled ? "true" : "false"} onChange={handlehideNotActiveIslandChange}>
+                      <option value="true">Yes</option>
+                      <option value="false">No</option>
+                    </select>
+                  </div>
+                </div>
 
-          <div className="settings-section">
-            <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Island Style</h3>
-            <div className="settings-row">
-              <span className="settings-label">Theme</span>
-              <select value={theme} onChange={(e) => setTheme(e.target.value)}>
-                <option value="none">Default</option>
-                <option value="invisible">Invisible</option>
-                <option value="sleek-black">Sleek Black</option>
-                <option value="win95">Windows 95</option>
-              </select>
-            </div>
-            <div className="settings-row">
-              <span className="settings-label">Island Border</span>
-              <select value={islandBorderEnabled ? "true" : "false"} onChange={handleIslandBorderChange}>
-                <option value="true">Show</option>
-                <option value="false">Hide</option>
-              </select>
-            </div>
-            <div className="settings-row">
-              <span className="settings-label">Hide When Inactive</span>
-              <select value={hideNotActiveIslandEnabled ? "true" : "false"} onChange={handlehideNotActiveIslandChange}>
-                <option value="true">Yes</option>
-                <option value="false">No</option>
-              </select>
-            </div>
-          </div>
+                <div className="settings-section">
+                  <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Colors & Assets</h3>
+                  <div className="settings-row">
+                    <span className="settings-label">Island Color</span>
+                    <input
+                      className="select-input"
+                      style={{ width: '100px' }}
+                      placeholder="#000000"
+                      onChange={(e) => localStorage.setItem("bg-color", e.target.value)}
+                    />
+                  </div>
+                  <div className="settings-row">
+                    <span className="settings-label">Text Color</span>
+                    <input
+                      className="select-input"
+                      style={{ width: '100px' }}
+                      placeholder="#FAFAFA"
+                      onChange={(e) => localStorage.setItem("text-color", e.target.value)}
+                    />
+                  </div>
+                  <div className="settings-row" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <span className="settings-label">Background Image URL</span>
+                    <input
+                      className="select-input"
+                      placeholder="https://..."
+                      onChange={(e) => localStorage.setItem("bg-image", e.target.value)}
+                    />
+                  </div>
+                </div>
 
-          <div className="settings-section">
-            <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Colors & Assets</h3>
-            <div className="settings-row">
-              <span className="settings-label">Island Color</span>
-              <input
-                className="select-input"
-                style={{ width: '100px' }}
-                placeholder="#000000"
-                onChange={(e) => localStorage.setItem("bg-color", e.target.value)}
-              />
-            </div>
-            <div className="settings-row">
-              <span className="settings-label">Text Color</span>
-              <input
-                className="select-input"
-                style={{ width: '100px' }}
-                placeholder="#FAFAFA"
-                onChange={(e) => localStorage.setItem("text-color", e.target.value)}
-              />
-            </div>
-            <div className="settings-row" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-              <span className="settings-label">Background Image URL</span>
-              <input
-                className="select-input"
-                placeholder="https://..."
-                onChange={(e) => localStorage.setItem("bg-image", e.target.value)}
-              />
-            </div>
-          </div>
+                <div className="settings-section">
+                  <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Features</h3>
+                  <div className="settings-row">
+                    <span className="settings-label">Low Battery Alerts</span>
+                    <select value={batteryAlertsEnabled ? "true" : "false"} onChange={handleBatteryAlertsChange}>
+                      <option value="true">Enabled</option>
+                      <option value="false">Disabled</option>
+                    </select>
+                  </div>
+                  <div className="settings-row">
+                    <span className="settings-label">Standby Mode</span>
+                    <select value={standbyBorderEnabled ? "true" : "false"} onChange={handleStandbyChange}>
+                      <option value="true">Enabled</option>
+                      <option value="false">Disabled</option>
+                    </select>
+                  </div>
+                  <div className="settings-row">
+                    <span className="settings-label">Large Standby Mode</span>
+                    <select value={largeStandbyEnabled ? "true" : "false"} onChange={handleLargeStandbyChange}>
+                      <option value="true">Enabled</option>
+                      <option value="false">Disabled</option>
+                    </select>
+                  </div>
+                </div>
 
-          <div className="settings-section">
-            <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Features</h3>
-            <div className="settings-row">
-              <span className="settings-label">Low Battery Alerts</span>
-              <select value={batteryAlertsEnabled ? "true" : "false"} onChange={handleBatteryAlertsChange}>
-                <option value="true">Enabled</option>
-                <option value="false">Disabled</option>
-              </select>
-            </div>
-            <div className="settings-row">
-              <span className="settings-label">Standby Mode</span>
-              <select value={standbyBorderEnabled ? "true" : "false"} onChange={handleStandbyChange}>
-                <option value="true">Enabled</option>
-                <option value="false">Disabled</option>
-              </select>
-            </div>
-            <div className="settings-row">
-              <span className="settings-label">Large Standby Mode</span>
-              <select value={largeStandbyEnabled ? "true" : "false"} onChange={handleLargeStandbyChange}>
-                <option value="true">Enabled</option>
-                <option value="false">Disabled</option>
-              </select>
-            </div>
-          </div>
+                <div className="settings-section">
+                  <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Weather</h3>
+                  <div className="settings-row">
+                    <span className="settings-label">Location</span>
+                    <input
+                      className="select-input"
+                      placeholder="City, ST, Country"
+                      onChange={(e) => localStorage.setItem("location", e.target.value)}
+                    />
+                  </div>
+                  <div className="settings-row">
+                    <span className="settings-label">Unit</span>
+                    <select value={weatherUnit} onChange={handleWeatherUnitChange}>
+                      <option value="f">Fahrenheit (°F)</option>
+                      <option value="c">Celsius (°C)</option>
+                    </select>
+                  </div>
+                </div>
 
-          <div className="settings-section">
-            <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Weather</h3>
-            <div className="settings-row">
-              <span className="settings-label">Location</span>
-              <input
-                className="select-input"
-                placeholder="City, ST, Country"
-                onChange={(e) => localStorage.setItem("location", e.target.value)}
-              />
-            </div>
-            <div className="settings-row">
-              <span className="settings-label">Unit</span>
-              <select value={weatherUnit} onChange={handleWeatherUnitChange}>
-                <option value="f">Fahrenheit (°F)</option>
-                <option value="c">Celsius (°C)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="settings-section" style={{ marginBottom: 30 }}>
-            <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Integrations</h3>
-            <div className="settings-row" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-              <span className="settings-label">Groq API Key (for AI)</span>
-              <input
-                className="select-input"
-                type="password"
-                placeholder="gsk_..."
-                onChange={(e) => localStorage.setItem("api-key", e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-      ) : null}
+                <div className="settings-section" style={{ marginBottom: 30 }}>
+                  <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Integrations</h3>
+                  <div className="settings-row">
+                    <span className="settings-label">AI Provider</span>
+                    <select
+                      value={aiProvider}
+                      onChange={(e) => {
+                        setAiProvider(e.target.value);
+                        localStorage.setItem("ai-provider", e.target.value);
+                        // Default models
+                        const model = e.target.value === "groq" ? "llama-3.3-70b-versatile" : "meta-llama/llama-3.3-70b-instruct";
+                        setAiModel(model);
+                        localStorage.setItem("ai-model", model);
+                      }}
+                    >
+                      <option value="groq">Groq</option>
+                      <option value="openrouter">OpenRouter</option>
+                    </select>
+                  </div>
+                  <div className="settings-row" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <span className="settings-label">AI Model</span>
+                    <input
+                      className="select-input"
+                      value={aiModel}
+                      placeholder={aiProvider === "groq" ? "llama-3.3-70b-versatile" : "meta-llama/llama-3.3-70b-instruct"}
+                      onChange={(e) => {
+                        setAiModel(e.target.value);
+                        localStorage.setItem("ai-model", e.target.value);
+                      }}
+                    />
+                  </div>
+                  <div className="settings-row" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <span className="settings-label">API Key</span>
+                    <input
+                      className="select-input"
+                      type="password"
+                      placeholder={aiProvider === "groq" ? "gsk_..." : "sk-or-..."}
+                      onChange={(e) => localStorage.setItem("api-key", e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

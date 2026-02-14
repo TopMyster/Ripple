@@ -36,6 +36,7 @@
   "dependencies": {
     "@vitejs/plugin-react": "^4.5.2",
     "electron-squirrel-startup": "^1.0.1",
+    "framer-motion": "^12.34.0",
     "groq-sdk": "^0.34.0",
     "node-powershell": "^5.0.1",
     "react": "^19.2.0",
