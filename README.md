@@ -22,7 +22,7 @@ https://github.com/user-attachments/assets/a7b9ed8a-97b5-4603-bad7-6f4c4bef1f5d
 - ✅ Stealth mode
 - ✅ Quick apps
 - ✅ Clipboard
-- ✅ Tasks List
+- ✅ Tasks List <sup>*Idea from ali120b*</sup>
 
 
 <sup>✅ = done, - = Working on, • = Planned, * = Note to self</sup><br>
