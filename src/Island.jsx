@@ -50,6 +50,8 @@ export default function Island() {
   const [spotifyTrack, setSpotifyTrack] = useState(null);
   const [bluetooth, setBluetooth] = useState(false);
   const [bluetoothAlert, setBluetoothAlert] = useState(false);
+  const [tasks, setTasks] = useState(JSON.parse(localStorage.getItem("tasks") || "[]"));
+  const [taskText, setTaskText] = useState("");
 
   let isPlaying = spotifyTrack?.state === 'playing';
   let width = mode === "large" ? 400 : (mode === "quick" || isPlaying) ? 300 : 175;
@@ -407,20 +409,33 @@ export default function Island() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => localStorage.setItem("tasks", JSON.stringify(tasks)), [tasks]);
+
   function copyToClipboard(text) {
     if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
       return navigator.clipboard.writeText(text);
     }
   }
 
+  function addTask() {
+    if (taskText.trim()) {
+      setTasks((prev) => [...prev, taskText.trim()]);
+      setTaskText("");
+    }
+  }
+
+  function removeTask(index) {
+    setTasks((prev) => prev.filter((_, i) => i !== index));
+  }
+
   // Keyboard Shortcuts and Navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "ArrowRight") {
-        setTab((prev) => Math.min(6, prev + 1));
+        setTab((prev) => Math.min(7, prev + 1));
       } else if (e.key === "ArrowLeft") {
         setTab((prev) => Math.max(0, prev - 1));
-      } else if (e.ctrlKey && e.key >= "1" && e.key <= "7") {
+      } else if (e.ctrlKey && e.key >= "1" && e.key <= "8") {
         const tabNum = parseInt(e.key) - 1;
         setMode("large");
         setTab(tabNum);
@@ -914,8 +929,68 @@ export default function Island() {
         </>
       ) : null}
 
-      {/*Settings*/}
+      {/*Tasks*/}
       {mode === "large" && tab === 6 ? (
+        <>
+          <div id="tasks-container">
+            <div id="task-list">
+              {tasks.length === 0 ? (
+                <p style={{ opacity: 0.5, textAlign: 'center', marginTop: 30 }}>No tasks yet. Add one below!</p>
+              ) : (
+                tasks.map((task, index) => (
+                  <div className="task-row" key={index}>
+                    <input
+                      type="checkbox"
+                      onChange={() => removeTask(index)}
+                      className="task-checkbox"
+                    />
+                    <h3 className="task-item" style={{ flex: 1, margin: 0 }}>{task}</h3>
+                  </div>
+                ))
+              )}
+            </div>
+            <div id="task-input-container">
+              <input
+                type="text"
+                placeholder="New task..."
+                value={taskText}
+                onChange={(e) => setTaskText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") addTask();
+                }}
+                className="task-input"
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.05)',
+                  color: localStorage.getItem("text-color"),
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '12px',
+                  padding: '8px 12px',
+                  outline: 'none',
+                  flex: 1
+                }}
+              />
+              <button
+                onClick={addTask}
+                className="task-add-btn"
+                style={{
+                  backgroundColor: localStorage.getItem("text-color"),
+                  color: localStorage.getItem("bg-color"),
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '8px 16px',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </>
+      ) : null}
+
+      {/*Settings*/}
+      {mode === "large" && tab === 7 ? (
         <>
           <div
             style={{

@@ -109,6 +109,7 @@ body {
     -webkit-filter: blur(0px);
     filter: blur(0px);
     opacity: 1;
+    translateY: 50%;
   }
 }
 
@@ -370,4 +371,119 @@ label {
 
 .clipboard-btn:active {
   transform: scale(.8);
+}
+
+#tasks-container {
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  height: 100%;
+  padding: 15px;
+  box-sizing: border-box;
+  animation: appear 0.6s forwards;
+}
+
+#task-list {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 15px;
+  padding-right: 5px;
+}
+
+#task-list::-webkit-scrollbar {
+  display: block;
+  width: 4px;
+}
+
+#task-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  transition: 0.2s;
+}
+
+.task-row:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.task-item {
+  color: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#task-input-container {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: inherit;
+  margin-top: auto;
+}
+
+.task-input {
+  font-family: inherit;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.task-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 5px;
+  cursor: pointer;
+  position: relative;
+  transition: 0.2s;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.task-checkbox:checked {
+  background: #34c759;
+  border-color: #34c759;
+}
+
+.task-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.task-checkbox:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.task-add-btn {
+  transition: 0.2s;
+}
+
+
+.task-add-btn:hover {
+  filter: brightness(0.9);
+  transform: scale(1.02);
+}
+
+.task-add-btn:active {
+  transform: scale(0.95);
 }
