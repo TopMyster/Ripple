@@ -53,6 +53,9 @@ export default function Island() {
   const [bluetoothAlert, setBluetoothAlert] = useState(false);
   const [tasks, setTasks] = useState(JSON.parse(localStorage.getItem("tasks") || "[]"));
   const [taskText, setTaskText] = useState("");
+  const [workflows, setWorkflows] = useState(JSON.parse(localStorage.getItem("workflows") || "[]"));
+  const [workflowName, setWorkflowName] = useState("");
+  const [workflowUrls, setWorkflowUrls] = useState("");
   const [aiProvider, setAiProvider] = useState(localStorage.getItem("ai-provider") || "groq");
   const [aiModel, setAiModel] = useState(localStorage.getItem("ai-model") || "llama-3.3-70b-versatile");
   const [isHovered, setIsHovered] = useState(false);
@@ -487,6 +490,35 @@ export default function Island() {
     setTasks((prev) => prev.filter((_, i) => i !== index));
   }
 
+  function openWorkflow(workflow) {
+    if (!workflow || !workflow.urls) return;
+    workflow.urls.forEach(url => {
+      const trimmedUrl = url.trim();
+      if (!trimmedUrl) return;
+      const hasProtocol = /^https?:\/\//i.test(trimmedUrl);
+      const urlToOpen = hasProtocol ? trimmedUrl : `https://${trimmedUrl}`;
+      window.electronAPI?.openExternal(urlToOpen);
+    });
+  }
+
+  function addWorkflow() {
+    if (workflowName.trim() && workflowUrls.trim()) {
+      const urls = workflowUrls.split(",").map(url => url.trim()).filter(url => url);
+      const newWorkflow = { name: workflowName.trim(), urls: urls };
+      const updatedWorkflows = [...workflows, newWorkflow];
+      setWorkflows(updatedWorkflows);
+      localStorage.setItem("workflows", JSON.stringify(updatedWorkflows));
+      setWorkflowName("");
+      setWorkflowUrls("");
+    }
+  }
+
+  function removeWorkflow(index) {
+    const updatedWorkflows = workflows.filter((_, i) => i !== index);
+    setWorkflows(updatedWorkflows);
+    localStorage.setItem("workflows", JSON.stringify(updatedWorkflows));
+  }
+
   // Keyboard Shortcuts and Navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -717,54 +749,109 @@ export default function Island() {
                 />
               </div>
             )}
-
-            {/* Quick Apps */}
+            {/* Workflows & Quick Apps */}
             {tab === 1 && (
-              <div id="quick-apps" style={{ animation: 'none' }}>
-                <button
-                  className="qa-app"
-                  onClick={() => openApp(qa1)}
-                  style={{
-                    color: localStorage.getItem("bg-color"),
-                    backgroundColor: localStorage.getItem("text-color"),
-                    fontFamily: theme === "win95" ? "w95" : "OpenRunde"
-                  }}
-                >
-                  {qa1}
-                </button>
-                <button
-                  className="qa-app"
-                  onClick={() => openApp(qa2)}
-                  style={{
-                    color: localStorage.getItem("bg-color"),
-                    backgroundColor: localStorage.getItem("text-color"),
-                    fontFamily: theme === "win95" ? "w95" : "OpenRunde"
-                  }}
-                >
-                  {qa2}
-                </button>
-                <button
-                  className="qa-app"
-                  onClick={() => openApp(qa3)}
-                  style={{
-                    color: localStorage.getItem("bg-color"),
-                    backgroundColor: localStorage.getItem("text-color"),
-                    fontFamily: theme === "win95" ? "w95" : "OpenRunde"
-                  }}
-                >
-                  {qa3}
-                </button>
-                <button
-                  className="qa-app"
-                  onClick={() => openApp(qa4)}
-                  style={{
-                    color: localStorage.getItem("bg-color"),
-                    backgroundColor: localStorage.getItem("text-color"),
-                    fontFamily: theme === "win95" ? "w95" : "OpenRunde"
-                  }}
-                >
-                  {qa4}
-                </button>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                width: '100%',
+                height: '100%',
+                overflow: 'hidden'
+              }}>
+                <div id="workflows" style={{
+                  animation: 'none',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                  width: '95%',
+                  flex: 1,
+                  overflowY: 'auto',
+                  padding: '15px 0',
+                  margin: '0 auto'
+                }}>
+                  {workflows.length === 0 ? (
+                    <p style={{ opacity: 0.5, textAlign: 'center', fontSize: 13, marginTop: 20 }}>No workflows yet. Add them in settings!</p>
+                  ) : (
+                    workflows.map((workflow, i) => (
+                      <button
+                        key={i}
+                        className="workflow-item"
+                        onClick={() => openWorkflow(workflow)}
+                        style={{
+                          width: '96%',
+                          color: localStorage.getItem("bg-color"),
+                          backgroundColor: localStorage.getItem("text-color"),
+                          fontFamily: theme === "win95" ? "w95" : "OpenRunde",
+                          borderRadius: '12px',
+                          fontSize: 14,
+                          fontWeight: 600,
+                          textAlign: 'left',
+                          boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                          alignSelf: 'center',
+                          marginBottom: 2
+                        }}
+                      >
+                        {workflow.name} <span style={{ opacity: 0.6, fontWeight: 400, marginLeft: 5 }}>({workflow.urls.length} sites)</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+
+                <div style={{
+                  paddingTop: '12px',
+                  paddingBottom: '12px',
+                  borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+                  width: '100%',
+                  marginTop: 'auto',
+                  background: 'rgba(255, 255, 255, 0.02)'
+                }}>
+                  <div id="quick-apps" style={{ animation: 'none', margin: 0 }}>
+                    <button
+                      className="qa-app"
+                      onClick={() => openApp(qa1)}
+                      style={{
+                        color: localStorage.getItem("bg-color"),
+                        backgroundColor: localStorage.getItem("text-color"),
+                        fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+                      }}
+                    >
+                      {qa1}
+                    </button>
+                    <button
+                      className="qa-app"
+                      onClick={() => openApp(qa2)}
+                      style={{
+                        color: localStorage.getItem("bg-color"),
+                        backgroundColor: localStorage.getItem("text-color"),
+                        fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+                      }}
+                    >
+                      {qa2}
+                    </button>
+                    <button
+                      className="qa-app"
+                      onClick={() => openApp(qa3)}
+                      style={{
+                        color: localStorage.getItem("bg-color"),
+                        backgroundColor: localStorage.getItem("text-color"),
+                        fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+                      }}
+                    >
+                      {qa3}
+                    </button>
+                    <button
+                      className="qa-app"
+                      onClick={() => openApp(qa4)}
+                      style={{
+                        color: localStorage.getItem("bg-color"),
+                        backgroundColor: localStorage.getItem("text-color"),
+                        fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+                      }}
+                    >
+                      {qa4}
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -1285,6 +1372,58 @@ export default function Island() {
                       placeholder={aiProvider === "groq" ? "gsk_..." : "sk-or-..."}
                       onChange={(e) => localStorage.setItem("api-key", e.target.value)}
                     />
+                  </div>
+                </div>
+
+                <div className="settings-section" style={{ marginBottom: 30 }}>
+                  <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Manage Workflows</h3>
+
+                  <div id="add-workflow-form" style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
+                    <input
+                      className="select-input"
+                      style={{ width: '100%' }}
+                      placeholder="Workflow Name (e.g. Work Tools)"
+                      value={workflowName}
+                      onChange={(e) => setWorkflowName(e.target.value)}
+                    />
+                    <textarea
+                      className="select-input"
+                      style={{ width: '100%', minHeight: '60px', padding: '10px' }}
+                      placeholder="URLs (comma separated): google.com, github.com"
+                      value={workflowUrls}
+                      onChange={(e) => setWorkflowUrls(e.target.value)}
+                    />
+                    <button
+                      onClick={addWorkflow}
+                      style={{
+                        backgroundColor: localStorage.getItem("text-color"),
+                        color: localStorage.getItem("bg-color"),
+                        border: 'none',
+                        borderRadius: '12px',
+                        padding: '10px',
+                        fontWeight: 600,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Add Workflow
+                    </button>
+                  </div>
+
+                  <div id="workflows-list" style={{ marginTop: '15px' }}>
+                    {workflows.map((wf, idx) => (
+                      <div key={idx} className="settings-row" style={{ justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontWeight: 600 }}>{wf.name}</span>
+                          <span style={{ fontSize: 11, opacity: 0.5 }}>{wf.urls.length} URLs</span>
+                        </div>
+                        <button
+                          onClick={() => removeWorkflow(idx)}
+                          style={{ color: '#ff4d4d', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

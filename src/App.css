@@ -320,12 +320,29 @@ label {
 }
 
 .qa-app:hover {
-  transform: scale(1.5);
+  transform: scale(1.35);
   z-index: 1;
 }
 
 .qa-app:active {
   transform: scale(1.3);
+}
+
+.workflow-item {
+  transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+  user-select: none;
+  border: none;
+  padding: 10px 15px;
+}
+
+.workflow-item:hover {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
+.workflow-item:active {
+  transform: scale(0.98);
 }
 
 #browser-searchbar {
@@ -595,24 +612,7 @@ label {
 
 /* Global scrollbar for all scrollable areas */
 #task-list::-webkit-scrollbar,
-#settings-container::-webkit-scrollbar,
 #clipboard::-webkit-scrollbar,
-#result::-webkit-scrollbar {
-  display: block;
-  width: 5px;
-}
-
-#task-list::-webkit-scrollbar-thumb,
-#settings-container::-webkit-scrollbar-thumb,
-#clipboard::-webkit-scrollbar-thumb,
-#result::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-}
-
-#task-list::-webkit-scrollbar-track,
-#settings-container::-webkit-scrollbar-track,
-#clipboard::-webkit-scrollbar-track,
-#result::-webkit-scrollbar-track {
-  background: transparent;
+#settings-container::-webkit-scrollbar {
+  display: none;
 }
