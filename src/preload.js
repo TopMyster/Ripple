@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   getSystemMedia: () => ipcRenderer.invoke('get-system-media'),
   getBluetoothStatus: () => ipcRenderer.invoke('get-bluetooth-status'),
-  controlSystemMedia: (command) => ipcRenderer.invoke('control-system-media', command)
+  controlSystemMedia: (command) => ipcRenderer.invoke('control-system-media', command),
+  openExternal: (url) => ipcRenderer.invoke('open-external', url)
 });
 

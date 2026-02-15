@@ -100,7 +100,7 @@ export default function Island() {
 
     if (localStorage.getItem('newuser') === 'true') {
       const timer = setTimeout(() => {
-        window.open("https://github.com/TopMyster/Ripple/blob/main/instructions.md", '_blank');
+        window.electronAPI?.openExternal ? window.electronAPI.openExternal("https://github.com/TopMyster/Ripple/blob/main/instructions.md") : window.open("https://github.com/TopMyster/Ripple/blob/main/instructions.md", "_blank");
         localStorage.setItem('newuser', 'false');
       }, 3000);
       return () => clearTimeout(timer);
@@ -390,10 +390,10 @@ export default function Island() {
     if (trimmedSearch.includes(".")) {
       const hasProtocol = /^https?:\/\//i.test(trimmedSearch);
       const urlToOpen = hasProtocol ? trimmedSearch : `https://${trimmedSearch}`;
-      window.open(urlToOpen, "_blank");
+      window.electronAPI?.openExternal ? window.electronAPI.openExternal(urlToOpen) : window.open(urlToOpen, "_blank");
     } else {
       const encodedQuery = encodeURIComponent(trimmedSearch);
-      window.open(`https://www.google.com/search?q=${encodedQuery}`, "_blank");
+      window.electronAPI?.openExternal ? window.electronAPI.openExternal(`https://www.google.com/search?q=${encodedQuery}`) : window.open(`https://www.google.com/search?q=${encodedQuery}`, "_blank");
     }
   }
 

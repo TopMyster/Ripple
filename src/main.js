@@ -18,6 +18,10 @@ ipcMain.handle('set-ignore-mouse-events', (event, ignore, forward) => {
   }
 });
 
+ipcMain.handle('open-external', async (event, url) => {
+  await shell.openExternal(url);
+});
+
 const getIconPath = () => {
   const ext = 'png';
   if (app.isPackaged) {
