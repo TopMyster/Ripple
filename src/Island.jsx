@@ -547,7 +547,7 @@ export default function Island() {
         justifyContent: "center",
         overflow: "hidden",
         fontFamily: theme === "win95" ? "w95" : "OpenRunde",
-        border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : islandBorderEnabled ? alert ? `1px solid rgba(255, 38, 0, 0.34)` : bluetoothAlert ? `1px solid rgba(0, 150, 255, 0.34)` : chargingAlert ? `1px solid rgba(3, 196, 3, 0.301)` : hideNotActiveIslandEnabled ? "none" : `1px solid color-mix(in srgb, ${localStorage.getItem("text-color")}, transparent 70%)` : "none",
+        border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : islandBorderEnabled ? (charging || chargingAlert) ? `1px solid rgba(111, 255, 123, 0.5)` : (percent <= 20 || alert) ? `1px solid rgba(255, 63, 63, 0.5)` : bluetoothAlert ? `1px solid rgba(0, 150, 255, 0.34)` : hideNotActiveIslandEnabled ? "none" : `1px solid color-mix(in srgb, ${localStorage.getItem("text-color")}, transparent 70%)` : "none",
         borderColor:
           theme === "win95"
             ? "#FFFFFF #808080 #808080 #FFFFFF"
@@ -629,10 +629,14 @@ export default function Island() {
                   fontWeight: 600,
                   margin: 0,
                   animation: 'appear .3s ease-out',
-                  color: chargingAlert === true && !alert ? "#6fff7bff" : localStorage.getItem("text-color")
+                  color: chargingAlert ? "#6fff7bff" : alert ? "#ff3f3fff" : localStorage.getItem("text-color")
                 }}
               >
-                {alert === true ? <img src={lowBatteryIcon} alt="low battery" style={{ width: 40, height: 40, objectFit: 'contain', position: 'absolute', transform: 'translate(0%, -50%)' }} /> : chargingAlert ? <img src={chargingIcon} alt="charging" style={{ width: 40, height: 40, objectFit: 'contain', position: 'absolute', transform: 'translate(0%, -50%)' }} /> : bluetoothAlert ? "🎧" : time}
+                {chargingAlert ? (
+                  <img src={chargingIcon} alt="charging" style={{ width: 25, height: 25, objectFit: 'contain', position: 'absolute', transform: 'translate(0%, -50%)' }} />
+                ) : alert ? (
+                  <img src={lowBatteryIcon} alt="low battery" style={{ width: 25, height: 25, objectFit: 'contain', position: 'absolute', transform: 'translate(0%, -50%)' }} />
+                ) : bluetoothAlert ? "🎧" : time}
               </h1>
               <h1
                 className="text"
@@ -645,9 +649,11 @@ export default function Island() {
                   fontWeight: 600,
                   margin: 0,
                   animation: 'appear .3s ease-out',
-                  color: alert === true
-                    ? "#ff3f3fff"
-                    : `${localStorage.getItem("text-color")}`
+                  color: chargingAlert
+                    ? "#6fff7bff"
+                    : alert
+                      ? "#ff3f3fff"
+                      : `${localStorage.getItem("text-color")}`
 
                 }}
               >
