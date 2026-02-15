@@ -55,6 +55,7 @@ export default function Island() {
   const [taskText, setTaskText] = useState("");
   const [aiProvider, setAiProvider] = useState(localStorage.getItem("ai-provider") || "groq");
   const [aiModel, setAiModel] = useState(localStorage.getItem("ai-model") || "llama-3.3-70b-versatile");
+  const [isHovered, setIsHovered] = useState(false);
 
   const tabVariants = {
     enter: (direction) => ({
@@ -509,12 +510,14 @@ export default function Island() {
     <div
       id="Island"
       onMouseEnter={() => {
+        setIsHovered(true);
         if (mode !== "large") setMode("quick");
         if (window.electronAPI) {
           window.electronAPI.setIgnoreMouseEvents(false, false);
         }
       }}
       onMouseLeave={() => {
+        setIsHovered(false);
         if (standbyBorderEnabled) {
           setMode("quick");
         } else if (largeStandbyEnabled) {
@@ -563,9 +566,9 @@ export default function Island() {
       }}
     >
       {/*Quickview*/}
-      {(mode === "quick" || (mode === "still" && isPlaying)) && !alert && !chargingAlert && !bluetoothAlert ? (
+      {(mode === "quick" || (mode === "still" && isPlaying) || alert || chargingAlert || bluetoothAlert) ? (
         <>
-          {isPlaying ? (
+          {isPlaying && !alert && !chargingAlert && !bluetoothAlert ? (
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -594,8 +597,23 @@ export default function Island() {
                   {spotifyTrack?.name} <span style={{ opacity: 0.7, fontWeight: 400 }}> • {spotifyTrack?.artist}</span>
                 </div>
               </div>
-              <div style={{ marginLeft: 8, opacity: 0.5, userSelect: 'none' }}>
-
+              <div style={{
+                marginLeft: 6,
+                marginRight: 6,
+                opacity: isHovered ? 1 : 0,
+                userSelect: 'none',
+                fontSize: 16,
+                fontWeight: 600,
+                flexShrink: 0,
+                transition: 'opacity 0.2s ease-in-out',
+                cursor: 'pointer'
+              }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.electronAPI.controlSystemMedia('playpause');
+                }}
+              >
+                {spotifyTrack.state === 'playing' ? '⏸' : '▶'}
               </div>
             </div>
           ) : (
@@ -684,7 +702,10 @@ export default function Island() {
                   value={browserSearch}
                   onChange={(e) => setBrowserSearch(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") searchBrowser();
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      searchBrowser();
+                    }
                   }}
                   style={{ color: localStorage.getItem("text-color") }}
                 />
@@ -912,7 +933,8 @@ export default function Island() {
                         value={userText}
                         onChange={(e) => setUserText(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.ctrlKey && e.key === "Enter") {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
                             setAsked(true);
                             askAI();
                           }
