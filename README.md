@@ -1,7 +1,8 @@
 # Ripple
 ### Dynamic Island for All
 ##### Apple's Dynamic Island on your computer
-https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
+
+https://github.com/user-attachments/assets/a7b9ed8a-97b5-4603-bad7-6f4c4bef1f5d
 
 ### <a href="https://discord.gg/a2xzVkxFVg">Join the Discord</a>
 
@@ -21,7 +22,7 @@ https://github.com/user-attachments/assets/2a142434-0812-4e2f-adfd-3fed0500153a
 - ✅ Stealth mode
 - ✅ Quick apps
 - ✅ Clipboard
-- ✅ Tasks List
+- ✅ Tasks List <sup>*Idea from ali120b*</sup>
 
 
 <sup>✅ = done, - = Working on, • = Planned, * = Note to self</sup><br>
