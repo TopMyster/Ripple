@@ -22,6 +22,17 @@ ipcMain.handle('open-external', async (event, url) => {
   await shell.openExternal(url);
 });
 
+ipcMain.handle('launch-app', async (event, appName) => {
+  const platform = process.platform;
+  if (platform === 'darwin') {
+    exec(`open -a "${appName}"`);
+  } else if (platform === 'win32') {
+    exec(`start "" "${appName}"`);
+  } else {
+    exec(appName);
+  }
+});
+
 const getIconPath = () => {
   const ext = 'png';
   if (app.isPackaged) {

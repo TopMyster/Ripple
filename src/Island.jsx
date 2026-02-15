@@ -19,10 +19,15 @@ function formatDateShort(input) {
 
 function openApp(app) {
   if (!app) return;
-  try {
-    window.location.href = `${app}://`;
-  } catch (e) {
-    window.alert("Failed to open app:", app, e);
+  const trimmedApp = app.trim();
+  const hasProtocol = /^[a-z0-9-]+:\/\//i.test(trimmedApp);
+  const isUrl = /^https?:\/\//i.test(trimmedApp) || trimmedApp.includes('.');
+
+  if (hasProtocol || isUrl) {
+    const target = (isUrl && !hasProtocol) ? `https://${trimmedApp}` : trimmedApp;
+    window.electronAPI?.openExternal(target);
+  } else {
+    window.electronAPI?.launchApp(trimmedApp);
   }
 }
 
@@ -90,10 +95,8 @@ export default function Island() {
   let width = mode === "large" ? (tab === 7) ? 450 : 380 : (mode === "quick" || isPlaying) ? 300 : 175;
   let height = mode === "large" ? (tab === 7) ? 300 : (tab === 6) ? 250 : 190 : mode === "quick" ? 43 : 43;
 
-  const [qa1, setQa1] = useState(localStorage.getItem("qa1") || "discord");
-  const [qa2, setQa2] = useState(localStorage.getItem("qa2") || "spotify");
-  const [qa3, setQa3] = useState(localStorage.getItem("qa3") || "sms");
-  const [qa4, setQa4] = useState(localStorage.getItem("qa4") || "tel");
+  const [quickApps, setQuickApps] = useState(JSON.parse(localStorage.getItem("quick-apps") || '["Notes", "Spotify", "Calculator", "Terminal"]'));
+  const [newQuickApp, setNewQuickApp] = useState("");
 
   //User age
   useEffect(() => {
@@ -187,6 +190,28 @@ export default function Island() {
     const value = e.target.value === "c" ? "c" : "f";
     setweatherUnit(value);
     localStorage.setItem("weather-unit", value);
+  };
+
+  const handleQaChange = (index, value) => {
+    const updatedApps = [...quickApps];
+    updatedApps[index] = value;
+    setQuickApps(updatedApps);
+    localStorage.setItem("quick-apps", JSON.stringify(updatedApps));
+  };
+
+  const addQuickApp = () => {
+    if (newQuickApp.trim()) {
+      const updatedApps = [...quickApps, newQuickApp.trim()];
+      setQuickApps(updatedApps);
+      localStorage.setItem("quick-apps", JSON.stringify(updatedApps));
+      setNewQuickApp("");
+    }
+  };
+
+  const removeQuickApp = (index) => {
+    const updatedApps = quickApps.filter((_, i) => i !== index);
+    setQuickApps(updatedApps);
+    localStorage.setItem("quick-apps", JSON.stringify(updatedApps));
   };
 
   // AI feature 
@@ -803,53 +828,32 @@ export default function Island() {
                   borderTop: '1px solid rgba(255, 255, 255, 0.1)',
                   width: '100%',
                   marginTop: 'auto',
-                  background: 'rgba(255, 255, 255, 0.02)'
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  overflowX: 'auto'
                 }}>
-                  <div id="quick-apps" style={{ animation: 'none', margin: 0 }}>
-                    <button
-                      className="qa-app"
-                      onClick={() => openApp(qa1)}
-                      style={{
-                        color: localStorage.getItem("bg-color"),
-                        backgroundColor: localStorage.getItem("text-color"),
-                        fontFamily: theme === "win95" ? "w95" : "OpenRunde"
-                      }}
-                    >
-                      {qa1}
-                    </button>
-                    <button
-                      className="qa-app"
-                      onClick={() => openApp(qa2)}
-                      style={{
-                        color: localStorage.getItem("bg-color"),
-                        backgroundColor: localStorage.getItem("text-color"),
-                        fontFamily: theme === "win95" ? "w95" : "OpenRunde"
-                      }}
-                    >
-                      {qa2}
-                    </button>
-                    <button
-                      className="qa-app"
-                      onClick={() => openApp(qa3)}
-                      style={{
-                        color: localStorage.getItem("bg-color"),
-                        backgroundColor: localStorage.getItem("text-color"),
-                        fontFamily: theme === "win95" ? "w95" : "OpenRunde"
-                      }}
-                    >
-                      {qa3}
-                    </button>
-                    <button
-                      className="qa-app"
-                      onClick={() => openApp(qa4)}
-                      style={{
-                        color: localStorage.getItem("bg-color"),
-                        backgroundColor: localStorage.getItem("text-color"),
-                        fontFamily: theme === "win95" ? "w95" : "OpenRunde"
-                      }}
-                    >
-                      {qa4}
-                    </button>
+                  <div id="quick-apps" style={{
+                    animation: 'none',
+                    margin: 0,
+                    display: 'flex',
+                    gap: '12px',
+                    padding: '0 15px',
+                    width: 'max-content'
+                  }}>
+                    {quickApps.map((app, i) => (
+                      <button
+                        key={i}
+                        className="qa-app"
+                        onClick={() => openApp(app)}
+                        style={{
+                          color: localStorage.getItem("bg-color"),
+                          backgroundColor: localStorage.getItem("text-color"),
+                          fontFamily: theme === "win95" ? "w95" : "OpenRunde",
+                          flexShrink: 0
+                        }}
+                      >
+                        {app}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -1330,6 +1334,51 @@ export default function Island() {
                       <option value="f">Fahrenheit (°F)</option>
                       <option value="c">Celsius (°C)</option>
                     </select>
+                  </div>
+                </div>
+
+                <div className="settings-section">
+                  <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Quick Apps</h3>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                    <input
+                      className="select-input"
+                      style={{ flex: 1 }}
+                      value={newQuickApp}
+                      placeholder="Add app (e.g. Mail)"
+                      onChange={(e) => setNewQuickApp(e.target.value)}
+                    />
+                    <button
+                      onClick={addQuickApp}
+                      style={{
+                        backgroundColor: localStorage.getItem("text-color"),
+                        color: localStorage.getItem("bg-color"),
+                        border: 'none',
+                        borderRadius: '12px',
+                        padding: '0 15px',
+                        fontWeight: 900,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    {quickApps.map((app, idx) => (
+                      <div key={idx} className="settings-row" style={{ justifyContent: 'space-between', padding: '5px 0' }}>
+                        <input
+                          className="select-input"
+                          style={{ flex: 1, border: 'none', background: 'transparent', padding: 0 }}
+                          value={app}
+                          onChange={(e) => handleQaChange(idx, e.target.value)}
+                        />
+                        <button
+                          onClick={() => removeQuickApp(idx)}
+                          style={{ color: '#ff4d4d', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 </div>
 

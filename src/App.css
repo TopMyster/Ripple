@@ -311,7 +311,7 @@ label {
   border-radius: 15px;
   font-size: 17px;
   font-weight: 500;
-  margin-right: 8px;
+  margin-right: 2px;
   transition: .3s;
   cursor: pointer;
   box-shadow: 2px 2px 30px rgba(0, 0, 0, 0.148);
