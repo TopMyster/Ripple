@@ -11,9 +11,10 @@ https://github.com/user-attachments/assets/a7b9ed8a-97b5-4603-bad7-6f4c4bef1f5d
 - ✅ Bluetooth device connected alerts
 - ✅ Now playing preview and controls 
 - ✅ Themes (e.g. Win95, SleekBlack)
-- ✅ Shows on all desktops    
+- ✅ Shows on all desktops  
+- ✅ Workflows shortcuts  
 - ✅ Keyboard shortcuts
-- ✅ Shows the weather    
+- ✅ Shows the weather   
 - ✅ Charging alerts
 - ✅ AI Ask feature   
 - ✅ Battery alerts
