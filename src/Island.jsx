@@ -91,6 +91,44 @@ export default function Island() {
     return Math.abs(offset) * velocity;
   };
 
+  const wheelSwipeThreshold = 50;
+  const wheelAccumulator = useRef({ x: 0, y: 0, lastTime: 0 });
+  const wheelTimeout = useRef(null);
+
+  const handleWheelSwipe = (e) => {
+    const now = Date.now();
+    const timeDelta = now - wheelAccumulator.current.lastTime;
+    
+    if (timeDelta > 150) {
+      wheelAccumulator.current.x = 0;
+      wheelAccumulator.current.y = 0;
+    }
+    
+    wheelAccumulator.current.x += e.deltaX;
+    wheelAccumulator.current.y += e.deltaY;
+    wheelAccumulator.current.lastTime = now;
+    
+    if (Math.abs(wheelAccumulator.current.y) > Math.abs(wheelAccumulator.current.x) * 1.5) {
+      return;
+    }
+    
+    if (wheelTimeout.current) {
+      clearTimeout(wheelTimeout.current);
+    }
+    
+    wheelTimeout.current = setTimeout(() => {
+      if (Math.abs(wheelAccumulator.current.x) > wheelSwipeThreshold) {
+        if (wheelAccumulator.current.x > 0) {
+          setTab(([prev]) => [Math.max(0, prev - 1), -1]);
+        } else {
+          setTab(([prev]) => [Math.min(7, prev + 1), 1]);
+        }
+      }
+      wheelAccumulator.current.x = 0;
+      wheelAccumulator.current.y = 0;
+    }, 50);
+  };
+
   let isPlaying = spotifyTrack?.state === 'playing';
   let width = mode === "large" ? (tab === 7) ? 450 : 380 : (mode === "quick" || isPlaying) ? 300 : 175;
   let height = mode === "large" ? (tab === 7) ? 300 : (tab === 6) ? 250 : 190 : mode === "quick" ? 43 : 43;
@@ -745,6 +783,7 @@ export default function Island() {
                 setTab(([prev]) => [Math.max(0, prev - 1), -1]);
               }
             }}
+            onWheel={handleWheelSwipe}
             style={{
               width: "100%",
               height: "100%",
