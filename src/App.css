@@ -255,6 +255,8 @@ label {
   min-height: 0;
   pointer-events: auto;
   word-wrap: break-word;
+  scrollbar-color: color-mix(in srgb, currentColor, transparent 70%) transparent;
+  scrollbar-width: thin;
 }
 
 #result::-webkit-scrollbar {
@@ -277,11 +279,6 @@ label {
 
 #result::-webkit-scrollbar-button {
   display: none;
-}
-
-#result {
-  scrollbar-color: color-mix(in srgb, currentColor, transparent 70%) transparent;
-  scrollbar-width: thin;
 }
 
 #battery {
