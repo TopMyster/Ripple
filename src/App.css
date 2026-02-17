@@ -255,12 +255,30 @@ label {
   min-height: 0;
   pointer-events: auto;
   word-wrap: break-word;
+  scrollbar-color: color-mix(in srgb, currentColor, transparent 70%) transparent;
   scrollbar-width: thin;
 }
 
 #result::-webkit-scrollbar {
-  display: block;
-  width: 4px;
+  display: block !important;
+  width: 6px;
+}
+
+#result::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#result::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, currentColor, transparent 70%);
+  border-radius: 10px;
+}
+
+#result::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, currentColor, transparent 50%);
+}
+
+#result::-webkit-scrollbar-button {
+  display: none;
 }
 
 #result p {
