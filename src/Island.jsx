@@ -67,6 +67,7 @@ export default function Island() {
   const [aiProvider, setAiProvider] = useState(localStorage.getItem("ai-provider") || "groq");
   const [aiModel, setAiModel] = useState(localStorage.getItem("ai-model") || "llama-3.3-70b-versatile");
   const [isHovered, setIsHovered] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const tabVariants = {
     enter: (direction) => ({
@@ -94,42 +95,37 @@ export default function Island() {
     return Math.abs(offset) * velocity;
   };
 
-  const wheelSwipeThreshold = 50;
-  const wheelAccumulator = useRef({ x: 0, y: 0, lastTime: 0 });
-  const wheelTimeout = useRef(null);
+  const wheelSwipeThreshold = 60;
+  const wheelLockout = useRef(false);
+  const wheelAccumulator = useRef(0);
+  const wheelResetTimeout = useRef(null);
 
   const handleWheelSwipe = (e) => {
-    const now = Date.now();
-    const timeDelta = now - wheelAccumulator.current.lastTime;
-    
-    if (timeDelta > 150) {
-      wheelAccumulator.current.x = 0;
-      wheelAccumulator.current.y = 0;
-    }
-    
-    wheelAccumulator.current.x += e.deltaX;
-    wheelAccumulator.current.y += e.deltaY;
-    wheelAccumulator.current.lastTime = now;
-    
-    if (Math.abs(wheelAccumulator.current.y) > Math.abs(wheelAccumulator.current.x) * 1.5) {
-      return;
-    }
-    
-    if (wheelTimeout.current) {
-      clearTimeout(wheelTimeout.current);
-    }
-    
-    wheelTimeout.current = setTimeout(() => {
-      if (Math.abs(wheelAccumulator.current.x) > wheelSwipeThreshold) {
-        if (wheelAccumulator.current.x > 0) {
-          setTab(([prev]) => [Math.max(0, prev - 1), -1]);
-        } else {
-          setTab(([prev]) => [Math.min(7, prev + 1), 1]);
-        }
+    if (wheelLockout.current || mode !== "large" || isDragging) return;
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) return;
+    let delta = e.deltaX;
+    if (e.deltaMode === 1) delta *= 40;
+    if (e.deltaMode === 2) delta *= 800;
+    wheelAccumulator.current += delta;
+    if (wheelResetTimeout.current) clearTimeout(wheelResetTimeout.current);
+    wheelResetTimeout.current = setTimeout(() => {
+      wheelAccumulator.current = 0;
+    }, 150);
+
+    if (Math.abs(wheelAccumulator.current) >= wheelSwipeThreshold) {
+      const isNext = wheelAccumulator.current > 0;
+      wheelLockout.current = true;
+      wheelAccumulator.current = 0;
+
+      if (isNext) {
+        setTab(([prev]) => [Math.min(7, prev + 1), 1]);
+      } else {
+        setTab(([prev]) => [Math.max(0, prev - 1), -1]);
       }
-      wheelAccumulator.current.x = 0;
-      wheelAccumulator.current.y = 0;
-    }, 50);
+      setTimeout(() => {
+        wheelLockout.current = false;
+      }, 800);
+    }
   };
 
   let isPlaying = spotifyTrack?.state === 'playing';
@@ -646,6 +642,7 @@ export default function Island() {
           window.electronAPI.setIgnoreMouseEvents(false, false);
         }
       }}
+      onWheel={handleWheelSwipe}
       style={{
         width: `${width}px`,
         height: `${height}px`,
@@ -791,7 +788,9 @@ export default function Island() {
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.4}
+            onDragStart={() => setIsDragging(true)}
             onDragEnd={(e, { offset, velocity }) => {
+              setIsDragging(false);
               const swipe = swipePower(offset.x, velocity.x);
               if (swipe < -swipeConfidenceThreshold) {
                 setTab(([prev]) => [Math.min(7, prev + 1), 1]);
@@ -799,7 +798,6 @@ export default function Island() {
                 setTab(([prev]) => [Math.max(0, prev - 1), -1]);
               }
             }}
-            onWheel={handleWheelSwipe}
             style={{
               width: "100%",
               height: "100%",
