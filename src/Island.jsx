@@ -50,6 +50,8 @@ export default function Island() {
   const [weather, setWeather] = useState("");
   const [weatherUnit, setweatherUnit] = useState(localStorage.getItem("weather-unit") || "f");
   const [theme, setTheme] = useState("default");
+  const [bgColor, setBgColor] = useState(localStorage.getItem("bg-color") || "#000000");
+  const [textColor, setTextColor] = useState(localStorage.getItem("text-color") || "#FAFAFA");
   const [browserSearch, setBrowserSearch] = useState("");
   const [clipboard, setClipboard] = useState([]);
   const [charging, setCharging] = useState(false);
@@ -440,15 +442,28 @@ export default function Island() {
     if (theme === "sleek-black") {
       localStorage.setItem("bg-color", "rgba(0, 0, 0, 0.64)");
       localStorage.setItem("text-color", "rgba(255, 255, 255)");
+      setBgColor("rgba(0, 0, 0, 0.64)");
+      setTextColor("rgba(255, 255, 255)");
     } else if (theme === "win95") {
       localStorage.setItem("bg-color", "rgba(195, 195, 195)");
       localStorage.setItem("text-color", "rgba(0, 0, 0)");
+      setBgColor("rgba(195, 195, 195)");
+      setTextColor("rgba(0, 0, 0)");
     } else if (theme === "invisible") {
       localStorage.setItem("bg-image", "none");
       localStorage.setItem("bg-color", "rgba(255, 255, 255, 0)");
+      localStorage.setItem("text-color", "rgba(0, 0, 0, 0)");
+      setBgColor("rgba(255, 255, 255, 0)");
+      setTextColor("rgba(0, 0, 0, 0)");
     } else if (theme === "none") {
+      const defaultBg = "#000000";
+      const defaultText = "#FAFAFA";
+      localStorage.setItem("bg-color", defaultBg);
+      localStorage.setItem("text-color", defaultText);
+      setBgColor(defaultBg);
+      setTextColor(defaultText);
     }
-  });
+  }, [theme]);
 
   // Browser Search Feature
   function searchBrowser() {
@@ -643,7 +658,7 @@ export default function Island() {
         justifyContent: "center",
         overflow: "hidden",
         fontFamily: theme === "win95" ? "w95" : "OpenRunde",
-        border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : islandBorderEnabled ? (charging || chargingAlert) ? `1px solid rgba(111, 255, 123, 0.5)` : (percent <= 20 || alert) ? `1px solid rgba(255, 63, 63, 0.5)` : bluetoothAlert ? `1px solid rgba(0, 150, 255, 0.34)` : hideNotActiveIslandEnabled ? "none" : `1px solid color-mix(in srgb, ${localStorage.getItem("text-color")}, transparent 70%)` : "none",
+        border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : islandBorderEnabled ? (charging || chargingAlert) ? `1px solid rgba(111, 255, 123, 0.5)` : (percent <= 20 || alert) ? `1px solid rgba(255, 63, 63, 0.5)` : bluetoothAlert ? `1px solid rgba(0, 150, 255, 0.34)` : hideNotActiveIslandEnabled ? "none" : `1px solid color-mix(in srgb, ${textColor}, transparent 70%)` : "none",
         borderColor:
           theme === "win95"
             ? "#FFFFFF #808080 #808080 #FFFFFF"
@@ -657,8 +672,8 @@ export default function Island() {
                 ? 0
                 : 16,
         boxShadow: hideNotActiveIslandEnabled && mode === 'still' ? "none" : isHovered ? '0 5px 20px rgba(0, 0, 0, 0.28)' : '2px 2px 30px rgba(0, 0, 0, 0.07)',
-        backgroundColor: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : localStorage.getItem("bg-color"),
-        color: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : localStorage.getItem("text-color")
+        backgroundColor: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : bgColor,
+        color: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : textColor
       }}
     >
       {/*Quickview*/}
@@ -687,7 +702,7 @@ export default function Island() {
                   textOverflow: 'ellipsis',
                   fontSize: 13,
                   fontWeight: 600,
-                  color: localStorage.getItem("text-color"),
+                  color: textColor,
                   maxWidth: '250px'
                 }}>
                   {spotifyTrack?.name} <span style={{ opacity: 0.7, fontWeight: 400 }}> • {spotifyTrack?.artist}</span>
@@ -725,7 +740,7 @@ export default function Island() {
                   fontWeight: 600,
                   margin: 0,
                   animation: 'appear .3s ease-out',
-                  color: chargingAlert ? "#6fff7bff" : alert ? "#ff3f3fff" : localStorage.getItem("text-color")
+                  color: chargingAlert ? "#6fff7bff" : alert ? "#ff3f3fff" : textColor
                 }}
               >
                 {chargingAlert ? (
@@ -749,7 +764,7 @@ export default function Island() {
                     ? "#6fff7bff"
                     : alert
                       ? "#ff3f3fff"
-                      : `${localStorage.getItem("text-color")}`
+                      : `${textColor}`
 
                 }}
               >
@@ -810,7 +825,7 @@ export default function Island() {
                       searchBrowser();
                     }
                   }}
-                  style={{ color: localStorage.getItem("text-color") }}
+                  style={{ color: textColor }}
                 />
               </div>
             )}
@@ -844,8 +859,8 @@ export default function Island() {
                         onClick={() => openWorkflow(workflow)}
                         style={{
                           width: '96%',
-                          color: localStorage.getItem("bg-color"),
-                          backgroundColor: localStorage.getItem("text-color"),
+                          color: bgColor,
+                          backgroundColor: textColor,
                           fontFamily: theme === "win95" ? "w95" : "OpenRunde",
                           borderRadius: '12px',
                           fontSize: 14,
@@ -885,8 +900,8 @@ export default function Island() {
                         className="qa-app"
                         onClick={() => openApp(app)}
                         style={{
-                          color: localStorage.getItem("bg-color"),
-                          backgroundColor: localStorage.getItem("text-color"),
+                          color: bgColor,
+                          backgroundColor: textColor,
                           fontFamily: theme === "win95" ? "w95" : "OpenRunde",
                           flexShrink: 0
                         }}
@@ -907,7 +922,7 @@ export default function Island() {
                     id="battery-bar"
                     style={{
                       backgroundColor: localStorage.getItem('text-color'),
-                      color: localStorage.getItem("bg-color")
+                      color: bgColor
                     }}
                   >
                     <h1 className="text" style={{ animation: 'none' }}>{charging ? "⚡︎" : null}{`${percent}%`}</h1>
@@ -979,7 +994,7 @@ export default function Island() {
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        color: localStorage.getItem("text-color"),
+                        color: textColor,
                         fontFamily: theme === "win95" ? "w95" : "OpenRunde"
                       }}>
                         {spotifyTrack.name || "Unknown Title"}
@@ -991,7 +1006,7 @@ export default function Island() {
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        color: localStorage.getItem("text-color"),
+                        color: textColor,
                         fontFamily: theme === "win95" ? "w95" : "OpenRunde"
                       }}>
                         {spotifyTrack.artist || "Unknown Artist"}
@@ -999,14 +1014,14 @@ export default function Island() {
                       <div style={{ display: 'flex', gap: 15, marginTop: 15, alignItems: 'center', marginLeft: 15 }}>
                         <button
                           onClick={() => window.electronAPI.controlSystemMedia('previous')}
-                          style={{ background: 'none', border: 'none', color: localStorage.getItem("text-color"), cursor: 'pointer', fontSize: 23, padding: 0, opacity: 0.8 }}
+                          style={{ background: 'none', border: 'none', color: textColor, cursor: 'pointer', fontSize: 23, padding: 0, opacity: 0.8 }}
                         >⏮</button>
                         <button
                           onClick={() => window.electronAPI.controlSystemMedia('playpause')}
                           style={{
                             background: 'none',
                             border: 'none',
-                            color: localStorage.getItem("text-color"),
+                            color: textColor,
                             cursor: 'pointer',
                             fontSize: 24,
                             padding: 0,
@@ -1023,7 +1038,7 @@ export default function Island() {
                         </button>
                         <button
                           onClick={() => window.electronAPI.controlSystemMedia('next')}
-                          style={{ background: 'none', border: 'none', color: localStorage.getItem("text-color"), cursor: 'pointer', fontSize: 23, padding: 0, opacity: 0.8 }}
+                          style={{ background: 'none', border: 'none', color: textColor, cursor: 'pointer', fontSize: 23, padding: 0, opacity: 0.8 }}
                         >⏭</button>
                       </div>
                     </div>
@@ -1032,7 +1047,7 @@ export default function Island() {
                   <div style={{
                     width: '100%',
                     textAlign: 'center',
-                    color: localStorage.getItem("text-color"),
+                    color: textColor,
                     fontFamily: theme === "win95" ? "w95" : "OpenRunde"
                   }}>
                     <h3 style={{ margin: 0, fontSize: 16 }}>Nothing Playing</h3>
@@ -1077,7 +1092,7 @@ export default function Island() {
                           }
                         }}
                         style={{
-                          color: `${localStorage.getItem("text-color")}`,
+                          color: `${textColor}`,
                           fontFamily: theme === "win95" ? "w95" : "OpenRunde",
                           pointerEvents: "auto",
                           animation: 'none'
@@ -1090,8 +1105,8 @@ export default function Island() {
                           askAI();
                         }}
                         style={{
-                          backgroundColor: localStorage.getItem("text-color"),
-                          color: localStorage.getItem("bg-color"),
+                          backgroundColor: textColor,
+                          color: bgColor,
                           fontFamily: theme === "win95" ? "w95" : "OpenRunde",
                           pointerEvents: "auto",
                           animation: 'none'
@@ -1153,8 +1168,8 @@ export default function Island() {
                           position: "absolute",
                           bottom: 15,
                           right: 15,
-                          backgroundColor: localStorage.getItem("text-color"),
-                          color: localStorage.getItem("bg-color"),
+                          backgroundColor: textColor,
+                          color: bgColor,
                           fontFamily: theme === "win95" ? "w95" : "OpenRunde",
                           pointerEvents: "auto",
                           animation: 'none',
@@ -1184,8 +1199,8 @@ export default function Island() {
                           onClick={() => copyToClipboard(item)}
                           className="copy-btn"
                           style={{
-                            backgroundColor: localStorage.getItem("text-color"),
-                            color: localStorage.getItem("bg-color"),
+                            backgroundColor: textColor,
+                            color: bgColor,
                           }}
                         >
                           Copy
@@ -1228,7 +1243,7 @@ export default function Island() {
                     className="task-input"
                     style={{
                       backgroundColor: 'rgba(255,255,255,0.05)',
-                      color: localStorage.getItem("text-color"),
+                      color: textColor,
                       border: '1px solid rgba(255,255,255,0.1)',
                       borderRadius: '12px',
                       padding: '8px 12px',
@@ -1240,8 +1255,8 @@ export default function Island() {
                     onClick={addTask}
                     className="task-add-btn"
                     style={{
-                      backgroundColor: localStorage.getItem("text-color"),
-                      color: localStorage.getItem("bg-color"),
+                      backgroundColor: textColor,
+                      color: bgColor,
                       border: 'none',
                       borderRadius: '12px',
                       padding: '8px 16px',
@@ -1392,8 +1407,8 @@ export default function Island() {
                     <button
                       onClick={addQuickApp}
                       style={{
-                        backgroundColor: localStorage.getItem("text-color"),
-                        color: localStorage.getItem("bg-color"),
+                        backgroundColor: textColor,
+                        color: bgColor,
                         border: 'none',
                         borderRadius: '12px',
                         padding: '0 15px',
@@ -1487,8 +1502,8 @@ export default function Island() {
                     <button
                       onClick={addWorkflow}
                       style={{
-                        backgroundColor: localStorage.getItem("text-color"),
-                        color: localStorage.getItem("bg-color"),
+                        backgroundColor: textColor,
+                        color: bgColor,
                         border: 'none',
                         borderRadius: '12px',
                         padding: '10px',
