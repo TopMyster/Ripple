@@ -263,6 +263,61 @@ label {
   width: 4px;
 }
 
+#result p {
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+}
+
+#result ul, #result ol {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+#result li {
+  margin: 4px 0;
+  line-height: 1.4;
+}
+
+#result code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+#result pre {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+#result pre code {
+  background: none;
+  padding: 0;
+}
+
+#result strong {
+  font-weight: 600;
+}
+
+#result em {
+  font-style: italic;
+}
+
+#result h1, #result h2, #result h3, #result h4, #result h5, #result h6 {
+  margin: 16px 0 8px 0;
+  font-weight: 600;
+}
+
+#result a {
+  color: inherit;
+  text-decoration: underline;
+  opacity: 0.9;
+}
+
 #battery {
   animation: cubic-bezier(0.165, 0.84, 0.44, 1) appear 1s forwards;
   position: absolute;

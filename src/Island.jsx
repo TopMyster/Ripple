@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Groq } from "groq-sdk";
 import { motion, AnimatePresence } from "framer-motion";
+import ReactMarkdown from "react-markdown";
 import "./App.css";
 import lowBatteryIcon from "./assets/images/lowbattery.png";
 import chargingIcon from "./assets/images/charging.png";
@@ -1093,7 +1094,9 @@ export default function Island() {
                           overflowY: "auto"
                         }}
                       >
-                        {aiAnswer || (
+                        {aiAnswer ? (
+                          <ReactMarkdown>{aiAnswer}</ReactMarkdown>
+                        ) : (
                           <span style={{ opacity: 0.5, fontStyle: "italic" }}>
                             Thinking...
                           </span>
