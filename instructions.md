@@ -1,5 +1,3 @@
-Ripple
-
 ## 👋 Welcome to Ripple
 
 ### Island
