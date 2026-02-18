@@ -52,6 +52,7 @@ export default function Island() {
   const [theme, setTheme] = useState("default");
   const [bgColor, setBgColor] = useState(localStorage.getItem("bg-color") || "#000000");
   const [textColor, setTextColor] = useState(localStorage.getItem("text-color") || "#FAFAFA");
+  const [bgImage, setBgImage] = useState(localStorage.getItem("bg-image") || "none");
   const [browserSearch, setBrowserSearch] = useState("");
   const [clipboard, setClipboard] = useState([]);
   const [charging, setCharging] = useState(false);
@@ -229,6 +230,24 @@ export default function Island() {
     localStorage.setItem("weather-unit", value);
   };
 
+  const handleBgColorChange = (e) => {
+    const value = e.target.value;
+    setBgColor(value);
+    localStorage.setItem("bg-color", value);
+  };
+
+  const handleTextColorChange = (e) => {
+    const value = e.target.value;
+    setTextColor(value);
+    localStorage.setItem("text-color", value);
+  };
+
+  const handleBgImageChange = (e) => {
+    const value = e.target.value;
+    setBgImage(value);
+    localStorage.setItem("bg-image", value);
+  };
+
   const handleQaChange = (index, value) => {
     const updatedApps = [...quickApps];
     updatedApps[index] = value;
@@ -281,8 +300,12 @@ export default function Island() {
           model: model,
           messages: [
             {
+              role: "system",
+              content: "You are Ripple, a sleek and helpful desktop AI assistant. Your goal is to provide accurate, concise, and beautifully formatted answers that fit well in a compact desktop widget. \n- For general inquiries: Keep it to 2-4 sentences.\n- For complex or code-related questions: Provide detailed answers with Markdown code blocks, but stay as efficient as possible.\n- Use Markdown for bolding, lists, and headers to make information easy to scan."
+            },
+            {
               role: "user",
-              content: ` Users question: ${userText}. Answer the users question in a short paragraph, 3-4 sentences. If the question is straight forward answer the question in a short 2 sentences.`
+              content: userText
             }
           ],
           temperature: 1,
@@ -447,6 +470,7 @@ export default function Island() {
       setTextColor("rgba(0, 0, 0)");
     } else if (theme === "invisible") {
       localStorage.setItem("bg-image", "none");
+      setBgImage("none");
       localStorage.setItem("bg-color", "rgba(255, 255, 255, 0)");
       localStorage.setItem("text-color", "rgba(0, 0, 0, 0)");
       setBgColor("rgba(255, 255, 255, 0)");
@@ -648,7 +672,7 @@ export default function Island() {
         height: `${height}px`,
         display: "flex",
         alignItems: "center",
-        backgroundImage: `url('${localStorage.getItem("bg-image")}')`,
+        backgroundImage: `url('${bgImage}')`,
         backgroundRepeat: "no-repeat",
         backgroundPosition: "center",
         backgroundSize: "cover",
@@ -670,7 +694,9 @@ export default function Island() {
                 : 16,
         boxShadow: hideNotActiveIslandEnabled && mode === 'still' ? "none" : isHovered ? '0 5px 20px rgba(0, 0, 0, 0.28)' : '2px 2px 30px rgba(0, 0, 0, 0.07)',
         backgroundColor: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : bgColor,
-        color: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : textColor
+        color: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : textColor,
+        '--island-text-color': textColor,
+        '--island-bg-color': bgColor
       }}
     >
       {/*Quickview*/}
@@ -878,10 +904,10 @@ export default function Island() {
                 <div style={{
                   paddingTop: '12px',
                   paddingBottom: '12px',
-                  borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderTop: `1px solid color-mix(in srgb, ${textColor}, transparent 90%)`,
                   width: '100%',
                   marginTop: 'auto',
-                  background: 'rgba(255, 255, 255, 0.02)',
+                  background: `color-mix(in srgb, ${textColor}, transparent 98%)`,
                   overflowX: 'auto'
                 }}>
                   <div id="quick-apps" style={{
@@ -1240,9 +1266,9 @@ export default function Island() {
                     }}
                     className="task-input"
                     style={{
-                      backgroundColor: 'rgba(255,255,255,0.05)',
+                      backgroundColor: `color-mix(in srgb, ${textColor}, transparent 95%)`,
                       color: textColor,
-                      border: '1px solid rgba(255,255,255,0.1)',
+                      border: `1px solid color-mix(in srgb, ${textColor}, transparent 90%)`,
                       borderRadius: '12px',
                       padding: '8px 12px',
                       outline: 'none',
@@ -1326,7 +1352,8 @@ export default function Island() {
                       className="select-input"
                       style={{ width: '100px' }}
                       placeholder="#000000"
-                      onChange={(e) => localStorage.setItem("bg-color", e.target.value)}
+                      value={bgColor}
+                      onChange={handleBgColorChange}
                     />
                   </div>
                   <div className="settings-row">
@@ -1335,7 +1362,8 @@ export default function Island() {
                       className="select-input"
                       style={{ width: '100px' }}
                       placeholder="#FAFAFA"
-                      onChange={(e) => localStorage.setItem("text-color", e.target.value)}
+                      value={textColor}
+                      onChange={handleTextColorChange}
                     />
                   </div>
                   <div className="settings-row" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
@@ -1343,7 +1371,8 @@ export default function Island() {
                     <input
                       className="select-input"
                       placeholder="https://..."
-                      onChange={(e) => localStorage.setItem("bg-image", e.target.value)}
+                      value={bgImage}
+                      onChange={handleBgImageChange}
                     />
                   </div>
                 </div>
@@ -1446,7 +1475,6 @@ export default function Island() {
                       onChange={(e) => {
                         setAiProvider(e.target.value);
                         localStorage.setItem("ai-provider", e.target.value);
-                        // Default models
                         const model = e.target.value === "groq" ? "llama-3.3-70b-versatile" : "meta-llama/llama-3.3-70b-instruct";
                         setAiModel(model);
                         localStorage.setItem("ai-model", model);
@@ -1515,7 +1543,7 @@ export default function Island() {
 
                   <div id="workflows-list" style={{ marginTop: '15px' }}>
                     {workflows.map((wf, idx) => (
-                      <div key={idx} className="settings-row" style={{ justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <div key={idx} className="settings-row" style={{ justifyContent: 'space-between', padding: '8px 0', borderBottom: `1px solid color-mix(in srgb, ${textColor}, transparent 95%)` }}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ fontWeight: 600 }}>{wf.name}</span>
                           <span style={{ fontSize: 11, opacity: 0.5 }}>{wf.urls.length} URLs</span>

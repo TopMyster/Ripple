@@ -155,7 +155,7 @@ body {
 
 #userinput::placeholder {
   opacity: .7;
-  color: inherit;
+  color: var(--island-text-color);
 }
 
 #chatsubmit {
@@ -182,11 +182,11 @@ button:active {
 
 select {
   cursor: pointer;
-  color: #FAFAFA;
-  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--island-text-color);
+  background-color: color-mix(in srgb, var(--island-text-color), transparent 95%);
   border-radius: 12px;
   outline: none;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid color-mix(in srgb, var(--island-text-color), transparent 90%);
   transition: 0.2s;
   padding: 6px 12px;
   font-size: 14px;
@@ -194,30 +194,31 @@ select {
 }
 
 select:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background-color: color-mix(in srgb, var(--island-text-color), transparent 90%);
+  border-color: color-mix(in srgb, var(--island-text-color), transparent 80%);
 }
 
 .select-input {
   width: 100%;
   padding: 10px 14px;
-  color: inherit;
-  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--island-text-color);
+  background-color: color-mix(in srgb, var(--island-text-color), transparent 95%);
   border-radius: 12px;
   outline: none;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid color-mix(in srgb, var(--island-text-color), transparent 90%);
   transition: 0.2s;
   font-family: inherit;
   font-size: 14px;
 }
 
 .select-input:focus {
-  background-color: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.3);
+  background-color: color-mix(in srgb, var(--island-text-color), transparent 92%);
+  border-color: color-mix(in srgb, var(--island-text-color), transparent 70%);
 }
 
 .select-input::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--island-text-color);
+  opacity: 0.4;
 }
 
 label {
@@ -286,7 +287,8 @@ label {
   line-height: 1.5;
 }
 
-#result ul, #result ol {
+#result ul,
+#result ol {
   margin: 8px 0;
   padding-left: 20px;
 }
@@ -297,7 +299,7 @@ label {
 }
 
 #result code {
-  background: rgba(255, 255, 255, 0.1);
+  background: color-mix(in srgb, var(--island-text-color), transparent 90%);
   padding: 2px 6px;
   border-radius: 4px;
   font-family: monospace;
@@ -305,7 +307,7 @@ label {
 }
 
 #result pre {
-  background: rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--island-text-color), transparent 92%);
   padding: 12px;
   border-radius: 8px;
   overflow-x: auto;
@@ -325,7 +327,12 @@ label {
   font-style: italic;
 }
 
-#result h1, #result h2, #result h3, #result h4, #result h5, #result h6 {
+#result h1,
+#result h2,
+#result h3,
+#result h4,
+#result h5,
+#result h6 {
   margin: 16px 0 8px 0;
   font-weight: 600;
 }
@@ -431,7 +438,8 @@ label {
 }
 
 #browser-searchbar::placeholder {
-  opacity: .9;
+  color: var(--island-text-color);
+  opacity: 0.6;
 }
 
 #clipboard {
@@ -506,7 +514,7 @@ label {
 }
 
 #task-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: color-mix(in srgb, var(--island-text-color), transparent 80%);
   border-radius: 10px;
 }
 
@@ -515,14 +523,14 @@ label {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--island-text-color), transparent 95%);
   border-radius: 12px;
   margin-bottom: 8px;
   transition: 0.2s;
 }
 
 .task-row:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--island-text-color), transparent 90%);
 }
 
 .task-item {
@@ -538,7 +546,7 @@ label {
   display: flex;
   gap: 8px;
   padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid color-mix(in srgb, var(--island-text-color), transparent 90%);
   background: inherit;
   margin-top: auto;
 }
@@ -554,7 +562,7 @@ label {
   -webkit-appearance: none;
   width: 18px;
   height: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid color-mix(in srgb, var(--island-text-color), transparent 70%);
   border-radius: 5px;
   cursor: pointer;
   position: relative;
@@ -637,12 +645,12 @@ label {
   display: flex;
   flex-direction: column;
   width: 100%;
-  background: rgba(255, 255, 255, 0.04);
+  background: color-mix(in srgb, var(--island-text-color), transparent 96%);
   border-radius: 12px;
   padding: 12px;
   margin-bottom: 15px;
   gap: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid color-mix(in srgb, var(--island-text-color), transparent 95%);
 }
 
 .clipboard-content {
