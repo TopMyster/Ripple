@@ -33,6 +33,33 @@ ipcMain.handle('launch-app', async (event, appName) => {
   }
 });
 
+ipcMain.handle('get-displays', () => {
+  const displays = screen.getAllDisplays();
+  return displays.map(d => ({
+    id: d.id,
+    label: d.label || `Display ${d.id}`,
+    bounds: d.bounds
+  }));
+});
+
+ipcMain.handle('set-display', (event, displayId) => {
+  if (mainWindow) {
+    const displays = screen.getAllDisplays();
+    const targetDisplay = displays.find(d => d.id.toString() === displayId.toString()) || screen.getPrimaryDisplay();
+
+    const { x, y, width, height } = targetDisplay.bounds;
+
+    mainWindow.setFullScreen(false);
+    mainWindow.setBounds({ x, y, width, height });
+
+    if (process.platform !== 'linux') {
+      mainWindow.setFullScreen(true);
+    }
+
+    mainWindow.show();
+  }
+});
+
 const getIconPath = () => {
   const ext = 'png';
   if (app.isPackaged) {

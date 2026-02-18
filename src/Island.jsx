@@ -69,6 +69,8 @@ export default function Island() {
   const [aiModel, setAiModel] = useState(localStorage.getItem("ai-model") || "llama-3.3-70b-versatile");
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [displays, setDisplays] = useState([]);
+  const [currentDisplayId, setCurrentDisplayId] = useState(localStorage.getItem("display-id") || "");
 
   const tabVariants = {
     enter: (direction) => ({
@@ -136,8 +138,14 @@ export default function Island() {
   const [quickApps, setQuickApps] = useState(JSON.parse(localStorage.getItem("quick-apps") || '["Notes", "Spotify", "Calculator", "Terminal"]'));
   const [newQuickApp, setNewQuickApp] = useState("");
 
-  //User age
   useEffect(() => {
+    // Restore display
+    const savedDisplayId = localStorage.getItem("display-id");
+    if (savedDisplayId && window.electronAPI?.setDisplay) {
+      window.electronAPI.setDisplay(savedDisplayId);
+    }
+
+    // User age/Intro
     if (!localStorage.getItem('newuser')) {
       localStorage.setItem('newuser', 'true');
     }
@@ -241,6 +249,21 @@ export default function Island() {
     setTextColor(value);
     localStorage.setItem("text-color", value);
   };
+
+  const handleDisplayChange = (e) => {
+    const displayId = e.target.value;
+    setCurrentDisplayId(displayId);
+    localStorage.setItem("display-id", displayId);
+    if (window.electronAPI?.setDisplay) {
+      window.electronAPI.setDisplay(displayId);
+    }
+  };
+
+  useEffect(() => {
+    if (tab === 7 && window.electronAPI?.getDisplays) {
+      window.electronAPI.getDisplays().then(setDisplays);
+    }
+  }, [tab]);
 
   const handleBgImageChange = (e) => {
     const value = e.target.value;
@@ -1397,6 +1420,16 @@ export default function Island() {
                       onChange={(e) => localStorage.setItem("default-tab", e.target.value - 1)}
                     />
                   </div>
+                  {displays.length > 0 && (
+                    <div className="settings-row">
+                      <span className="settings-label">Target Display</span>
+                      <select value={currentDisplayId} onChange={handleDisplayChange}>
+                        {displays.map(d => (
+                          <option key={d.id} value={d.id}>{d.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
 
                 <div className="settings-section">

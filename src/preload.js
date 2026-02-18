@@ -8,5 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getBluetoothStatus: () => ipcRenderer.invoke('get-bluetooth-status'),
   controlSystemMedia: (command) => ipcRenderer.invoke('control-system-media', command),
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
-  launchApp: (appName) => ipcRenderer.invoke('launch-app', appName)
+  launchApp: (appName) => ipcRenderer.invoke('launch-app', appName),
+  getDisplays: () => ipcRenderer.invoke('get-displays'),
+  setDisplay: (displayId) => ipcRenderer.invoke('set-display', displayId)
 });
