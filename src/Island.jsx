@@ -1173,7 +1173,70 @@ export default function Island() {
                         }}
                       >
                         {aiAnswer ? (
-                          <ReactMarkdown>{aiAnswer}</ReactMarkdown>
+                          <ReactMarkdown
+                            components={{
+                              pre: ({ node, children, ...props }) => {
+                                const codeContent = node.children[0]?.children[0]?.value || "";
+                                return (
+                                  <div style={{
+                                    position: 'relative',
+                                    margin: '10px 0',
+                                    backgroundColor: `color-mix(in srgb, ${textColor}, transparent 92%)`,
+                                    borderRadius: '8px',
+                                    border: `1px solid color-mix(in srgb, ${textColor}, transparent 90%)`
+                                  }}>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigator.clipboard.writeText(codeContent);
+                                        const btn = e.currentTarget;
+                                        const originalText = btn.innerText;
+                                        btn.innerText = "Copied!";
+                                        btn.style.backgroundColor = 'rgba(52, 199, 89, 0.4)';
+                                        setTimeout(() => {
+                                          btn.innerText = originalText;
+                                          btn.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+                                        }, 2000);
+                                      }}
+                                      style={{
+                                        position: 'absolute',
+                                        top: '6px',
+                                        right: '6px',
+                                        zIndex: 10,
+                                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                                        border: 'none',
+                                        borderRadius: '5px',
+                                        color: textColor,
+                                        fontSize: '10px',
+                                        padding: '3px 7px',
+                                        cursor: 'pointer',
+                                        backdropFilter: 'blur(4px)',
+                                        fontWeight: 600,
+                                        transition: 'all 0.2s ease'
+                                      }}
+                                    >
+                                      Copy
+                                    </button>
+                                    <pre {...props} style={{ margin: 0, padding: '12px', background: 'none' }}>{children}</pre>
+                                  </div>
+                                );
+                              },
+                              code: ({ node, inline, ...props }) => (
+                                <code
+                                  {...props}
+                                  style={{
+                                    backgroundColor: inline ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                                    padding: inline ? '2px 5px' : '0',
+                                    borderRadius: inline ? '4px' : '0',
+                                    fontFamily: 'monospace',
+                                    fontSize: inline ? '0.9em' : '1em'
+                                  }}
+                                />
+                              )
+                            }}
+                          >
+                            {aiAnswer}
+                          </ReactMarkdown>
                         ) : (
                           <span style={{ opacity: 0.5, fontStyle: "italic" }}>
                             Thinking...

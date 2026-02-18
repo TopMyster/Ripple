@@ -307,11 +307,13 @@ label {
 }
 
 #result pre {
-  background: color-mix(in srgb, var(--island-text-color), transparent 92%);
-  padding: 12px;
-  border-radius: 8px;
+  padding: 0;
+  border-radius: 0;
   overflow-x: auto;
-  margin: 12px 0;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: none;
 }
 
 #result pre code {
