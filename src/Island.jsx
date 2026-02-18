@@ -896,32 +896,45 @@ export default function Island() {
                   padding: '15px 0',
                   margin: '0 auto'
                 }}>
-                  {workflows.length === 0 ? (
-                    <p style={{ opacity: 0.5, textAlign: 'center', fontSize: 13, marginTop: 20 }}>No workflows yet. Add them in settings!</p>
-                  ) : (
-                    workflows.map((workflow, i) => (
-                      <button
-                        key={i}
-                        className="workflow-item"
-                        onClick={() => openWorkflow(workflow)}
-                        style={{
-                          width: '96%',
-                          color: bgColor,
-                          backgroundColor: textColor,
-                          fontFamily: theme === "win95" ? "w95" : "OpenRunde",
-                          borderRadius: '12px',
-                          fontSize: 14,
-                          fontWeight: 600,
-                          textAlign: 'left',
-                          boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-                          alignSelf: 'center',
-                          marginBottom: 2
-                        }}
+                  <AnimatePresence>
+                    {workflows.length === 0 ? (
+                      <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.5 }}
+                        exit={{ opacity: 0 }}
+                        style={{ textAlign: 'center', fontSize: 13, marginTop: 20 }}
                       >
-                        {workflow.name} <span style={{ opacity: 0.6, fontWeight: 400, marginLeft: 5 }}>({workflow.urls.length} sites)</span>
-                      </button>
-                    ))
-                  )}
+                        No workflows yet. Add them in settings!
+                      </motion.p>
+                    ) : (
+                      workflows.map((workflow, i) => (
+                        <motion.button
+                          key={`main-wf-${workflow.name}-${i}`}
+                          className="workflow-item"
+                          onClick={() => openWorkflow(workflow)}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.9, height: 0, padding: 0, marginBottom: 0 }}
+                          style={{
+                            width: '96%',
+                            color: bgColor,
+                            backgroundColor: textColor,
+                            fontFamily: theme === "win95" ? "w95" : "OpenRunde",
+                            borderRadius: '12px',
+                            fontSize: 14,
+                            fontWeight: 600,
+                            textAlign: 'left',
+                            boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                            alignSelf: 'center',
+                            marginBottom: 2
+                          }}
+                          layout
+                        >
+                          {workflow.name} <span style={{ opacity: 0.6, fontWeight: 400, marginLeft: 5 }}>({workflow.urls.length} sites)</span>
+                        </motion.button>
+                      ))
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 <div style={{
@@ -941,21 +954,27 @@ export default function Island() {
                     padding: '0 15px',
                     width: 'max-content'
                   }}>
-                    {quickApps.map((app, i) => (
-                      <button
-                        key={i}
-                        className="qa-app"
-                        onClick={() => openApp(app)}
-                        style={{
-                          color: bgColor,
-                          backgroundColor: textColor,
-                          fontFamily: theme === "win95" ? "w95" : "OpenRunde",
-                          flexShrink: 0
-                        }}
-                      >
-                        {app}
-                      </button>
-                    ))}
+                    <AnimatePresence>
+                      {quickApps.map((app, i) => (
+                        <motion.button
+                          key={`main-qa-${app}-${i}`}
+                          className="qa-app"
+                          onClick={() => openApp(app)}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8, width: 0, padding: 0, margin: 0 }}
+                          style={{
+                            color: bgColor,
+                            backgroundColor: textColor,
+                            fontFamily: theme === "win95" ? "w95" : "OpenRunde",
+                            flexShrink: 0
+                          }}
+                          layout
+                        >
+                          {app}
+                        </motion.button>
+                      ))}
+                    </AnimatePresence>
                   </div>
                 </div>
               </div>
@@ -1345,20 +1364,37 @@ export default function Island() {
             {tab === 6 && (
               <div id="tasks-container" style={{ animation: 'none' }}>
                 <div id="task-list">
-                  {tasks.length === 0 ? (
-                    <p style={{ opacity: 0.5, textAlign: 'center', marginTop: 30 }}>No tasks yet. Add one below!</p>
-                  ) : (
-                    tasks.map((task, index) => (
-                      <div className="task-row" key={index}>
-                        <input
-                          type="checkbox"
-                          onChange={() => removeTask(index)}
-                          className="task-checkbox"
-                        />
-                        <h3 className="task-item" style={{ flex: 1, margin: 0 }}>{task}</h3>
-                      </div>
-                    ))
-                  )}
+                  <AnimatePresence>
+                    {tasks.length === 0 ? (
+                      <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.5 }}
+                        exit={{ opacity: 0 }}
+                        style={{ textAlign: 'center', marginTop: 30 }}
+                      >
+                        No tasks yet. Add one below!
+                      </motion.p>
+                    ) : (
+                      tasks.map((task, index) => (
+                        <motion.div
+                          className="task-row"
+                          key={`task-${task}-${index}`}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 20, height: 0, marginBottom: 0, padding: 0 }}
+                          transition={{ duration: 0.2 }}
+                          layout
+                        >
+                          <input
+                            type="checkbox"
+                            onChange={() => removeTask(index)}
+                            className="task-checkbox"
+                          />
+                          <h3 className="task-item" style={{ flex: 1, margin: 0 }}>{task}</h3>
+                        </motion.div>
+                      ))
+                    )}
+                  </AnimatePresence>
                 </div>
                 <div id="task-input-container">
                   <input
@@ -1562,22 +1598,33 @@ export default function Island() {
                     </button>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    {quickApps.map((app, idx) => (
-                      <div key={idx} className="settings-row" style={{ justifyContent: 'space-between', padding: '5px 0' }}>
-                        <input
-                          className="select-input"
-                          style={{ flex: 1, border: 'none', background: 'transparent', padding: 0 }}
-                          value={app}
-                          onChange={(e) => handleQaChange(idx, e.target.value)}
-                        />
-                        <button
-                          onClick={() => removeQuickApp(idx)}
-                          style={{ color: '#ff4d4d', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}
+                    <AnimatePresence>
+                      {quickApps.map((app, idx) => (
+                        <motion.div
+                          key={`qa-${app}-${idx}`}
+                          className="settings-row"
+                          style={{ justifyContent: 'space-between', padding: '5px 0' }}
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, x: -20, height: 0, padding: 0 }}
+                          transition={{ duration: 0.2 }}
+                          layout
                         >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
+                          <input
+                            className="select-input"
+                            style={{ flex: 1, border: 'none', background: 'transparent', padding: 0 }}
+                            value={app}
+                            onChange={(e) => handleQaChange(idx, e.target.value)}
+                          />
+                          <button
+                            onClick={() => removeQuickApp(idx)}
+                            style={{ color: '#ff4d4d', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}
+                          >
+                            ✕
+                          </button>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
                   </div>
                 </div>
 
@@ -1657,20 +1704,31 @@ export default function Island() {
                   </div>
 
                   <div id="workflows-list" style={{ marginTop: '15px' }}>
-                    {workflows.map((wf, idx) => (
-                      <div key={idx} className="settings-row" style={{ justifyContent: 'space-between', padding: '8px 0', borderBottom: `1px solid color-mix(in srgb, ${textColor}, transparent 95%)` }}>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontWeight: 600 }}>{wf.name}</span>
-                          <span style={{ fontSize: 11, opacity: 0.5 }}>{wf.urls.length} URLs</span>
-                        </div>
-                        <button
-                          onClick={() => removeWorkflow(idx)}
-                          style={{ color: '#ff4d4d', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}
+                    <AnimatePresence>
+                      {workflows.map((wf, idx) => (
+                        <motion.div
+                          key={`wf-${wf.name}-${idx}`}
+                          className="settings-row"
+                          style={{ justifyContent: 'space-between', padding: '8px 0', borderBottom: `1px solid color-mix(in srgb, ${textColor}, transparent 95%)` }}
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, x: -20, height: 0, padding: 0 }}
+                          transition={{ duration: 0.2 }}
+                          layout
                         >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
+                          <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ fontWeight: 600 }}>{wf.name}</span>
+                            <span style={{ fontSize: 11, opacity: 0.5 }}>{wf.urls.length} URLs</span>
+                          </div>
+                          <button
+                            onClick={() => removeWorkflow(idx)}
+                            style={{ color: '#ff4d4d', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}
+                          >
+                            Remove
+                          </button>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
                   </div>
                 </div>
               </div>
