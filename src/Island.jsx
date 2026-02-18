@@ -1280,19 +1280,38 @@ export default function Island() {
                 ) : (
                   clipboard.map((item, index) => (
                     <div className="clipboard-row" key={index}>
-                      <p className="clipboard-content">{item}</p>
-                      <div className="clipboard-footer">
-                        <button
-                          onClick={() => copyToClipboard(item)}
-                          className="copy-btn"
-                          style={{
-                            backgroundColor: textColor,
-                            color: bgColor,
-                          }}
-                        >
-                          Copy
-                        </button>
-                      </div>
+                      <p className="clipboard-content" style={{ paddingRight: '45px' }}>{item}</p>
+                      <button
+                        onClick={(e) => {
+                          copyToClipboard(item);
+                          const btn = e.currentTarget;
+                          const originalText = btn.innerText;
+                          btn.innerText = "Copied!";
+                          btn.style.backgroundColor = 'rgba(52, 199, 89, 0.4)';
+                          setTimeout(() => {
+                            btn.innerText = originalText;
+                            btn.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+                          }, 2000);
+                        }}
+                        style={{
+                          position: 'absolute',
+                          top: '10px',
+                          right: '10px',
+                          zIndex: 10,
+                          backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                          border: 'none',
+                          borderRadius: '5px',
+                          color: textColor,
+                          fontSize: '10px',
+                          padding: '3px 7px',
+                          cursor: 'pointer',
+                          backdropFilter: 'blur(4px)',
+                          fontWeight: 600,
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        Copy
+                      </button>
                     </div>
                   ))
                 )}

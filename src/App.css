@@ -653,6 +653,7 @@ label {
   margin-bottom: 15px;
   gap: 10px;
   border: 1px solid color-mix(in srgb, var(--island-text-color), transparent 95%);
+  position: relative;
 }
 
 .clipboard-content {
