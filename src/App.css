@@ -68,10 +68,8 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  min-width: fit-content;
-  min-height: fit-content;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
 }
 
 #app {
@@ -87,7 +85,6 @@ body {
   position: fixed;
   transform-origin: center;
   z-index: 9999;
-  transition: 0.59s cubic-bezier(0.175, 0.885, 0.32, 1.2);
   scrollbar-width: none;
 }
 

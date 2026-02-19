@@ -68,12 +68,12 @@ ipcMain.handle('set-display', (event, displayId) => {
 
 ipcMain.handle('update-window-position', (event, xPerc, yPx) => {
   if (mainWindow && process.platform === 'linux') {
-    const primaryDisplay = screen.getPrimaryDisplay();
-    const { x, y, width, height } = primaryDisplay.bounds;
+    const currentDisplay = screen.getDisplayMatching(mainWindow.getBounds());
+    const { x, y, width, height } = currentDisplay.bounds;
 
     const winWidth = 500;
     const winHeight = 400;
-    const targetX = x + Math.floor((width * (xPerc / 100)) - (winWidth / 2));
+    const targetX = x + Math.round((width * (xPerc / 100)) - (winWidth / 2));
     const targetY = y + yPx;
 
     mainWindow.setBounds({ x: targetX, y: targetY, width: winWidth, height: winHeight });

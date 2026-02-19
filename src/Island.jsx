@@ -72,8 +72,18 @@ export default function Island() {
   const [displays, setDisplays] = useState([]);
   const [currentDisplayId, setCurrentDisplayId] = useState(localStorage.getItem("display-id") || "");
   const [weatherLocation, setWeatherLocation] = useState(localStorage.getItem("location") || "");
-  const [islandX, setIslandX] = useState(Number(localStorage.getItem("island-x") || 50));
-  const [islandY, setIslandY] = useState(Number(localStorage.getItem("island-y") || 20));
+
+  const [islandX, setIslandX] = useState(() => {
+    const saved = localStorage.getItem("island-x");
+    const num = Number(saved);
+    return (saved !== null && !isNaN(num)) ? Math.max(0, Math.min(100, num)) : 50;
+  });
+
+  const [islandY, setIslandY] = useState(() => {
+    const saved = localStorage.getItem("island-y");
+    const num = Number(saved);
+    return (saved !== null && !isNaN(num)) ? Math.max(0, Math.min(1000, num)) : 20;
+  });
 
   const tabVariants = {
     enter: (direction) => ({
@@ -192,6 +202,14 @@ export default function Island() {
     localStorage.setItem("hour-format", "12-hr");
   }
 
+  if (!localStorage.getItem("island-x")) {
+    localStorage.setItem("island-x", "50");
+  }
+
+  if (!localStorage.getItem("island-y")) {
+    localStorage.setItem("island-y", "20");
+  }
+
   if (!localStorage.getItem("bg-color")) {
     localStorage.setItem("bg-color", "#000000");
   }
@@ -270,15 +288,18 @@ export default function Island() {
   const handleIslandXChange = (e) => {
     const value = Number(e.target.value);
     setIslandX(value);
-    localStorage.setItem("island-x", value);
     window.electronAPI?.updateWindowPosition?.(value, islandY);
   };
 
   const handleIslandYChange = (e) => {
     const value = Number(e.target.value);
     setIslandY(value);
-    localStorage.setItem("island-y", value);
     window.electronAPI?.updateWindowPosition?.(islandX, value);
+  };
+
+  const savePosition = () => {
+    localStorage.setItem("island-x", islandX);
+    localStorage.setItem("island-y", islandY);
   };
 
   useEffect(() => {
@@ -683,7 +704,7 @@ export default function Island() {
   }, []);
 
   return (
-    <div
+    <motion.div
       id="Island"
       onMouseEnter={() => {
         setIsHovered(true);
@@ -712,9 +733,28 @@ export default function Island() {
         }
       }}
       onWheel={handleWheelSwipe}
-      style={{
+      initial={{
+        x: "-50%",
+        left: window.electronAPI?.platform === 'linux' ? '50%' : `${islandX}%`,
+        top: window.electronAPI?.platform === 'linux' ? '0px' : `${islandY}px`,
+      }}
+      animate={{
         width: `${width}px`,
         height: `${height}px`,
+        left: window.electronAPI?.platform === 'linux' ? '50%' : `${islandX}%`,
+        top: window.electronAPI?.platform === 'linux' ? '0px' : `${islandY}px`,
+        backgroundColor: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : bgColor,
+        color: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : textColor,
+        scale: isHovered ? 1.05 : 1,
+        x: "-50%",
+      }}
+      transition={{
+        type: "spring",
+        stiffness: 400,
+        damping: 40,
+        x: { duration: .15 }
+      }}
+      style={{
         display: "flex",
         alignItems: "center",
         backgroundImage: `url('${bgImage}')`,
@@ -738,14 +778,9 @@ export default function Island() {
                 ? 0
                 : 16,
         boxShadow: hideNotActiveIslandEnabled && mode === 'still' ? "none" : isHovered ? '0 5px 20px rgba(0, 0, 0, 0.28)' : '2px 2px 30px rgba(0, 0, 0, 0.07)',
-        backgroundColor: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : bgColor,
-        color: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : textColor,
         '--island-text-color': textColor,
         '--island-bg-color': bgColor,
         position: 'fixed',
-        left: window.electronAPI?.platform === 'linux' ? '50%' : `${islandX}%`,
-        top: window.electronAPI?.platform === 'linux' ? '0px' : `${islandY}px`,
-        transform: `translateX(-50%) ${isHovered ? 'scale(1.04)' : 'scale(1)'}`,
         margin: 0
       }}
     >
@@ -1507,13 +1542,15 @@ export default function Island() {
                     </select>
                   </div>
                   <div className="settings-row">
-                    <span className="settings-label">Position X ({islandX}%)</span>
+                    <span className="settings-label">Position X ({Math.round(islandX)}%)</span>
                     <input
                       type="range"
                       min="0"
                       max="100"
+                      step="0.01"
                       value={islandX}
                       onChange={handleIslandXChange}
+                      onPointerUp={savePosition}
                       style={{ flex: 1, accentColor: textColor }}
                     />
                   </div>
@@ -1525,6 +1562,7 @@ export default function Island() {
                       max="500"
                       value={islandY}
                       onChange={handleIslandYChange}
+                      onPointerUp={savePosition}
                       style={{ flex: 1, accentColor: textColor }}
                     />
                   </div>
@@ -1790,6 +1828,6 @@ export default function Island() {
         )}
       </AnimatePresence>
 
-    </div>
+    </motion.div>
   );
 }
