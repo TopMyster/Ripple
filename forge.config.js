@@ -42,6 +42,45 @@ module.exports = {
         }
       }
     },
+
+    postMake: async (forgeConfig, makeResults) => {
+      const fs = require('fs');
+      const path = require('path');
+      const { version } = require('./package.json');
+
+      const platformLabel = {
+        darwin: 'macOS',
+        win32: 'Windows',
+        linux: 'Linux',
+      };
+
+      for (const result of makeResults) {
+        const os = platformLabel[result.platform] || result.platform;
+        const renamedArtifacts = [];
+
+        for (const artifactPath of result.artifacts) {
+          const ext = path.extname(artifactPath);
+          // Skip non-installer files (e.g. blockmap, yml)
+          if (!['.dmg', '.msi', '.deb', '.rpm', '.zip'].includes(ext)) {
+            renamedArtifacts.push(artifactPath);
+            continue;
+          }
+
+          // macOS gets arch suffix (x64/arm64), others don't need it
+          const archSuffix = result.platform === 'darwin' ? `-${result.arch}` : '';
+          const newName = `Ripple-${os}${archSuffix}-v${version}${ext}`;
+          const newPath = path.join(path.dirname(artifactPath), newName);
+
+          fs.renameSync(artifactPath, newPath);
+          console.log(`Renamed: ${path.basename(artifactPath)} → ${newName}`);
+          renamedArtifacts.push(newPath);
+        }
+
+        result.artifacts = renamedArtifacts;
+      }
+
+      return makeResults;
+    },
   },
   rebuildConfig: {},
   makers: [
