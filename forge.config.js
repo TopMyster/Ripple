@@ -91,6 +91,7 @@ module.exports = {
         manufacturer: 'TopMyster',
         description: 'A Dynamic Island for All',
         name: 'Ripple',
+        icon: path.join(__dirname, 'src/assets/icons/icon.ico'),
         shortcutFolderName: 'Ripple',
         programFilesFolderName: 'Ripple',
         ui: {

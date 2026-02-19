@@ -98,11 +98,16 @@ const createWindow = () => {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { x, y, width, height } = primaryDisplay.bounds;
   const isLinux = process.platform === 'linux';
+  const isWindows = process.platform === 'win32';
+  const isMac = process.platform === 'darwin';
 
   const winWidth = isLinux ? 500 : width;
   const winHeight = isLinux ? 400 : height;
   const winX = isLinux ? x + Math.floor((width - winWidth) / 2) : x;
   const winY = isLinux ? y : y;
+
+  // 'type' option is only supported on macOS ('toolbar') and Linux ('dock'); not Windows
+  const windowType = isWindows ? undefined : (isLinux ? 'dock' : 'toolbar');
 
   mainWindow = new BrowserWindow({
     width: winWidth,
@@ -114,12 +119,15 @@ const createWindow = () => {
     alwaysOnTop: true,
     resizable: false,
     frame: false,
-    thickFrame: false,
+    // thickFrame: false breaks transparent windows on Windows
+    ...(isWindows ? {} : { thickFrame: false }),
     hasShadow: false,
     skipTaskbar: true,
     icon: getIconPath(),
-    hiddenInMissionControl: true,
-    type: isLinux ? 'dock' : 'toolbar',
+    // hiddenInMissionControl is a macOS-only option
+    ...(isMac ? { hiddenInMissionControl: true } : {}),
+    // type is not supported on Windows
+    ...(windowType ? { type: windowType } : {}),
     fullscreen: false,
     visibleOnFullScreen: true,
     webPreferences: {
