@@ -10,5 +10,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
   launchApp: (appName) => ipcRenderer.invoke('launch-app', appName),
   getDisplays: () => ipcRenderer.invoke('get-displays'),
-  setDisplay: (displayId) => ipcRenderer.invoke('set-display', displayId)
+  setDisplay: (displayId) => ipcRenderer.invoke('set-display', displayId),
+  updateWindowPosition: (xPerc, yPx) => ipcRenderer.invoke('update-window-position', xPerc, yPx),
+  platform: process.platform
 });

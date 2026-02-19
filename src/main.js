@@ -52,8 +52,8 @@ ipcMain.handle('set-display', (event, displayId) => {
     mainWindow.setFullScreen(false);
 
     if (isLinux) {
-      const winWidth = 800;
-      const winHeight = 600;
+      const winWidth = 500;
+      const winHeight = 400;
       const winX = x + Math.floor((width - winWidth) / 2);
       const winY = y;
       mainWindow.setBounds({ x: winX, y: winY, width: winWidth, height: winHeight });
@@ -63,6 +63,20 @@ ipcMain.handle('set-display', (event, displayId) => {
     }
 
     mainWindow.show();
+  }
+});
+
+ipcMain.handle('update-window-position', (event, xPerc, yPx) => {
+  if (mainWindow && process.platform === 'linux') {
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const { x, y, width, height } = primaryDisplay.bounds;
+
+    const winWidth = 500;
+    const winHeight = 400;
+    const targetX = x + Math.floor((width * (xPerc / 100)) - (winWidth / 2));
+    const targetY = y + yPx;
+
+    mainWindow.setBounds({ x: targetX, y: targetY, width: winWidth, height: winHeight });
   }
 });
 
@@ -82,13 +96,13 @@ const getIconPath = () => {
 
 const createWindow = () => {
   const primaryDisplay = screen.getPrimaryDisplay();
-  const { width, height } = primaryDisplay.size;
+  const { x, y, width, height } = primaryDisplay.bounds;
   const isLinux = process.platform === 'linux';
 
-  const winWidth = isLinux ? 800 : width;
-  const winHeight = isLinux ? 600 : height;
-  const winX = isLinux ? Math.floor((width - winWidth) / 2) : 0;
-  const winY = 0;
+  const winWidth = isLinux ? 500 : width;
+  const winHeight = isLinux ? 400 : height;
+  const winX = isLinux ? x + Math.floor((width - winWidth) / 2) : x;
+  const winY = isLinux ? y : y;
 
   mainWindow = new BrowserWindow({
     width: winWidth,
@@ -105,7 +119,7 @@ const createWindow = () => {
     skipTaskbar: true,
     icon: getIconPath(),
     hiddenInMissionControl: true,
-    type: isLinux ? 'utility' : 'toolbar',
+    type: isLinux ? 'dock' : 'toolbar',
     fullscreen: false,
     visibleOnFullScreen: true,
     webPreferences: {
@@ -119,7 +133,7 @@ const createWindow = () => {
     mainWindow.setFullScreen(true);
   }
 
-  mainWindow.setIgnoreMouseEvents(true, { forward: !isLinux });
+  mainWindow.setIgnoreMouseEvents(true, { forward: true });
 
   const showDelay = isLinux ? 500 : 0;
 

@@ -85,17 +85,10 @@ body {
 
 #Island {
   position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
   transform-origin: center;
   z-index: 9999;
   transition: 0.59s cubic-bezier(0.175, 0.885, 0.32, 1.2);
   scrollbar-width: none;
-}
-
-#Island:hover {
-  transform: translateX(-50%) scale(1.04);
 }
 
 @keyframes appear {

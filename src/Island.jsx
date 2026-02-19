@@ -71,6 +71,9 @@ export default function Island() {
   const [isDragging, setIsDragging] = useState(false);
   const [displays, setDisplays] = useState([]);
   const [currentDisplayId, setCurrentDisplayId] = useState(localStorage.getItem("display-id") || "");
+  const [weatherLocation, setWeatherLocation] = useState(localStorage.getItem("location") || "");
+  const [islandX, setIslandX] = useState(Number(localStorage.getItem("island-x") || 50));
+  const [islandY, setIslandY] = useState(Number(localStorage.getItem("island-y") || 20));
 
   const tabVariants = {
     enter: (direction) => ({
@@ -143,6 +146,11 @@ export default function Island() {
     const savedDisplayId = localStorage.getItem("display-id");
     if (savedDisplayId && window.electronAPI?.setDisplay) {
       window.electronAPI.setDisplay(savedDisplayId);
+    }
+
+    // Restore Position (especially for Linux)
+    if (window.electronAPI?.updateWindowPosition) {
+      window.electronAPI.updateWindowPosition(islandX, islandY);
     }
 
     // User age/Intro
@@ -257,6 +265,20 @@ export default function Island() {
     if (window.electronAPI?.setDisplay) {
       window.electronAPI.setDisplay(displayId);
     }
+  };
+
+  const handleIslandXChange = (e) => {
+    const value = Number(e.target.value);
+    setIslandX(value);
+    localStorage.setItem("island-x", value);
+    window.electronAPI?.updateWindowPosition?.(value, islandY);
+  };
+
+  const handleIslandYChange = (e) => {
+    const value = Number(e.target.value);
+    setIslandY(value);
+    localStorage.setItem("island-y", value);
+    window.electronAPI?.updateWindowPosition?.(islandX, value);
   };
 
   useEffect(() => {
@@ -719,7 +741,12 @@ export default function Island() {
         backgroundColor: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : bgColor,
         color: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : textColor,
         '--island-text-color': textColor,
-        '--island-bg-color': bgColor
+        '--island-bg-color': bgColor,
+        position: 'fixed',
+        left: window.electronAPI?.platform === 'linux' ? '50%' : `${islandX}%`,
+        top: window.electronAPI?.platform === 'linux' ? '0px' : `${islandY}px`,
+        transform: `translateX(-50%) ${isHovered ? 'scale(1.04)' : 'scale(1)'}`,
+        margin: 0
       }}
     >
       {/*Quickview*/}
@@ -1480,6 +1507,28 @@ export default function Island() {
                     </select>
                   </div>
                   <div className="settings-row">
+                    <span className="settings-label">Position X ({islandX}%)</span>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={islandX}
+                      onChange={handleIslandXChange}
+                      style={{ flex: 1, accentColor: textColor }}
+                    />
+                  </div>
+                  <div className="settings-row">
+                    <span className="settings-label">Position Y ({islandY}px)</span>
+                    <input
+                      type="range"
+                      min="0"
+                      max="500"
+                      value={islandY}
+                      onChange={handleIslandYChange}
+                      style={{ flex: 1, accentColor: textColor }}
+                    />
+                  </div>
+                  <div className="settings-row">
                     <span className="settings-label">Island Border</span>
                     <select value={islandBorderEnabled ? "true" : "false"} onChange={handleIslandBorderChange}>
                       <option value="true">Show</option>
@@ -1560,7 +1609,11 @@ export default function Island() {
                     <input
                       className="select-input"
                       placeholder="City, ST, Country"
-                      onChange={(e) => localStorage.setItem("location", e.target.value)}
+                      value={weatherLocation}
+                      onChange={(e) => {
+                        setWeatherLocation(e.target.value);
+                        localStorage.setItem("location", e.target.value);
+                      }}
                     />
                   </div>
                   <div className="settings-row">
