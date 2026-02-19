@@ -9,19 +9,30 @@ on:
 
 jobs:
   build:
-    name: Build for ${{ matrix.os }}
+    name: Build for ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        platform: [macos, windows, linux]
         include:
-          - platform: macos
+          - name: macOS (x64)
             os: macos-latest
-          - platform: windows
+            platform: macos
+            arch: x64
+            os-label: macOS-x64
+          - name: macOS (arm64)
+            os: macos-latest
+            platform: macos
+            arch: arm64
+            os-label: macOS-arm64
+          - name: Windows
             os: windows-latest
-          - platform: linux
+            platform: windows
+            os-label: Windows
+          - name: Linux
             os: ubuntu-latest
+            platform: linux
+            os-label: Linux
 
     steps:
       - name: Checkout Code
@@ -33,6 +44,11 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Get version from package.json
+        id: pkg
+        run: node -p "\"version=\" + require('./package.json').version" >> $GITHUB_OUTPUT
+        shell: bash
+
       - name: Install system dependencies (Linux)
         if: matrix.platform == 'linux'
         run: |
@@ -42,49 +58,41 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      - name: Build Application (macOS)
+        if: matrix.platform == 'macos'
+        run: npm run make -- --arch=${{ matrix.arch }}
+
       - name: Package Application (Windows & Linux)
         if: matrix.platform != 'macos'
         run: npm run package
 
-      - name: Make Distributables (Windows)
-        if: matrix.platform == 'windows'
+      - name: Make Distributables (Windows & Linux)
+        if: matrix.platform != 'macos'
         run: npm run make -- --skip-package
-
-      - name: Make Distributables (Linux)
-        if: matrix.platform == 'linux'
-        run: npm run make -- --skip-package
-
-      - name: Build Application (macOS x64)
-        if: matrix.platform == 'macos'
-        run: npm run make -- --arch=x64
-
-      - name: Build Application (macOS arm64)
-        if: matrix.platform == 'macos'
-        run: npm run make -- --arch=arm64
-
-      - name: Upload Windows Artifacts
-        if: matrix.platform == 'windows'
-        uses: actions/upload-artifact@v4
-        with:
-          name: Ripple-Windows
-          path: out/make/wix/x64/*.msi
-          if-no-files-found: error
 
       - name: Upload macOS Artifacts
         if: matrix.platform == 'macos'
         uses: actions/upload-artifact@v4
         with:
-          name: Ripple-macOS
+          name: Ripple-${{ matrix.os-label }}-v${{ steps.pkg.outputs.version }}
           path: |
             out/make/**/*.dmg
             out/make/zip/darwin/**/*.zip
+          if-no-files-found: error
+
+      - name: Upload Windows Artifacts
+        if: matrix.platform == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ripple-${{ matrix.os-label }}-v${{ steps.pkg.outputs.version }}
+          path: out/make/wix/x64/*.msi
           if-no-files-found: error
 
       - name: Upload Linux Artifacts
         if: matrix.platform == 'linux'
         uses: actions/upload-artifact@v4
         with:
-          name: Ripple-Linux
+          name: Ripple-${{ matrix.os-label }}-v${{ steps.pkg.outputs.version }}
           path: |
             out/make/deb/**/*.deb
             out/make/rpm/**/*.rpm
