@@ -10,9 +10,11 @@ module.exports = {
     extraResource: [
       path.join(__dirname, 'src/assets/icons/icon.png'),
     ],
-    extendInfo: {
-      NSAppleEventsUsageDescription: 'Ripple needs to control media players like Spotify and AppleMusic.',
-    },
+    ...(process.platform === 'darwin' ? {
+      extendInfo: {
+        NSAppleEventsUsageDescription: 'Ripple needs to control media players like Spotify and AppleMusic.',
+      },
+    } : {}),
   },
   hooks: {
     postPackage: async (forgeConfig, options) => {
@@ -64,14 +66,18 @@ module.exports = {
     {
       name: '@electron-forge/maker-dmg',
       config: {
-        format: 'ULFO'
+        name: 'Ripple',
+        format: 'UDZO',
+        overwrite: true
       }
     },
     {
       name: '@electron-forge/maker-deb',
       config: {
         options: {
-          icon: path.join(__dirname, 'src/assets/icons/icon.png')
+          icon: path.join(__dirname, 'src/assets/icons/icon.png'),
+          executableName: 'ripple',
+          name: 'ripple',
         }
       },
     },
@@ -79,7 +85,8 @@ module.exports = {
       name: '@electron-forge/maker-rpm',
       config: {
         options: {
-          icon: path.join(__dirname, 'src/assets/icons/icon.png')
+          icon: path.join(__dirname, 'src/assets/icons/icon.png'),
+          name: 'ripple',
         }
       },
     },
@@ -107,6 +114,10 @@ module.exports = {
           },
         ],
       },
+    },
+    {
+      name: '@electron-forge/plugin-auto-unpack-natives',
+      config: {},
     },
 
     new FusesPlugin({

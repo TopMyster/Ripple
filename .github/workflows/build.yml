@@ -33,18 +33,34 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Install system dependencies (Linux)
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm fakeroot dpkg
+
       - name: Install Dependencies
         run: npm install
 
-      - name: Build Application (Windows & Linux)
+      - name: Package Application (Windows & Linux)
         if: matrix.platform != 'macos'
-        run: npm run make
+        run: npm run package
 
-      - name: Build Application (macOS)
+      - name: Make Distributables (Windows)
+        if: matrix.platform == 'windows'
+        run: npm run make -- --skip-package
+
+      - name: Make Distributables (Linux)
+        if: matrix.platform == 'linux'
+        run: npm run make -- --skip-package
+
+      - name: Build Application (macOS x64)
         if: matrix.platform == 'macos'
-        run: |
-          npm run make -- --arch=x64
-          npm run make -- --arch=arm64
+        run: npm run make -- --arch=x64
+
+      - name: Build Application (macOS arm64)
+        if: matrix.platform == 'macos'
+        run: npm run make -- --arch=arm64
 
       - name: Upload Windows Artifacts
         if: matrix.platform == 'windows'
@@ -73,4 +89,3 @@ jobs:
             out/make/deb/**/*.deb
             out/make/rpm/**/*.rpm
           if-no-files-found: error
-          
