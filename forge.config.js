@@ -5,7 +5,7 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 module.exports = {
   packagerConfig: {
     asar: true,
-    executableName: 'ripple',
+    executableName: 'Ripple',
     icon: 'src/assets/icons/icon',
     extraResource: [
       path.join(__dirname, 'src/assets/icons/icon.png'),
