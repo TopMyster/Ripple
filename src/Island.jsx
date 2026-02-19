@@ -750,8 +750,9 @@ export default function Island() {
       }}
       transition={{
         type: "spring",
-        stiffness: 400,
+        stiffness: 350,
         damping: 40,
+        mass: 2.5,
         x: { duration: .15 }
       }}
       style={{
