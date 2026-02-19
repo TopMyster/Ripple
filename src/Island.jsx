@@ -51,7 +51,7 @@ export default function Island() {
   const [weatherUnit, setweatherUnit] = useState(localStorage.getItem("weather-unit") || "f");
   const [theme, setTheme] = useState("default");
   const [bgColor, setBgColor] = useState(localStorage.getItem("bg-color") || "#000000");
-  const [textColor, setTextColor] = useState(localStorage.getItem("text-color") || "#FAFAFA");
+  const [textColor, setTextColor] = useState(localStorage.getItem("text-color") || "#FFFFFF");
   const [bgImage, setBgImage] = useState(localStorage.getItem("bg-image") || "none");
   const [browserSearch, setBrowserSearch] = useState("");
   const [clipboard, setClipboard] = useState([]);
@@ -189,7 +189,7 @@ export default function Island() {
   }
 
   if (!localStorage.getItem("text-color")) {
-    localStorage.setItem("text-color", "#FAFAFA");
+    localStorage.setItem("text-color", "#FFFFFF");
   }
 
   if (!localStorage.getItem("weather-unit")) {
@@ -500,7 +500,7 @@ export default function Island() {
       setTextColor("rgba(0, 0, 0, 0)");
     } else if (theme === "none") {
       const defaultBg = "#000000";
-      const defaultText = "#FAFAFA";
+      const defaultText = "#FFFFFF";
       localStorage.setItem("bg-color", defaultBg);
       localStorage.setItem("text-color", defaultText);
       setBgColor(defaultBg);

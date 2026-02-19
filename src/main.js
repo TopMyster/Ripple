@@ -5,7 +5,6 @@ const fs = require("fs");
 
 if (process.platform === 'linux') {
   app.commandLine.appendSwitch('enable-transparent-visuals');
-  app.disableHardwareAcceleration();
 }
 let tray = null;
 let mainWindow = null;
@@ -48,11 +47,18 @@ ipcMain.handle('set-display', (event, displayId) => {
     const targetDisplay = displays.find(d => d.id.toString() === displayId.toString()) || screen.getPrimaryDisplay();
 
     const { x, y, width, height } = targetDisplay.bounds;
+    const isLinux = process.platform === 'linux';
 
     mainWindow.setFullScreen(false);
-    mainWindow.setBounds({ x, y, width, height });
 
-    if (process.platform !== 'linux') {
+    if (isLinux) {
+      const winWidth = 800;
+      const winHeight = 600;
+      const winX = x + Math.floor((width - winWidth) / 2);
+      const winY = y;
+      mainWindow.setBounds({ x: winX, y: winY, width: winWidth, height: winHeight });
+    } else {
+      mainWindow.setBounds({ x, y, width, height });
       mainWindow.setFullScreen(true);
     }
 
@@ -77,12 +83,18 @@ const getIconPath = () => {
 const createWindow = () => {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width, height } = primaryDisplay.size;
+  const isLinux = process.platform === 'linux';
+
+  const winWidth = isLinux ? 800 : width;
+  const winHeight = isLinux ? 600 : height;
+  const winX = isLinux ? Math.floor((width - winWidth) / 2) : 0;
+  const winY = 0;
 
   mainWindow = new BrowserWindow({
-    width: width,
-    height: height,
-    x: 0,
-    y: 0,
+    width: winWidth,
+    height: winHeight,
+    x: winX,
+    y: winY,
     backgroundColor: "#00000000",
     transparent: true,
     alwaysOnTop: true,
@@ -93,7 +105,7 @@ const createWindow = () => {
     skipTaskbar: true,
     icon: getIconPath(),
     hiddenInMissionControl: true,
-    type: 'toolbar',
+    type: isLinux ? 'utility' : 'toolbar',
     fullscreen: false,
     visibleOnFullScreen: true,
     webPreferences: {
@@ -103,13 +115,13 @@ const createWindow = () => {
     show: false
   });
 
-  if (process.platform !== 'linux') {
+  if (!isLinux) {
     mainWindow.setFullScreen(true);
   }
 
-  mainWindow.setIgnoreMouseEvents(true, { forward: true });
+  mainWindow.setIgnoreMouseEvents(true, { forward: !isLinux });
 
-  const showDelay = process.platform === 'linux' ? 300 : 0;
+  const showDelay = isLinux ? 500 : 0;
 
   mainWindow.once('ready-to-show', () => {
     setTimeout(() => {
