@@ -61,7 +61,7 @@ module.exports = {
         for (const artifactPath of result.artifacts) {
           const ext = path.extname(artifactPath);
           // Skip non-installer files (e.g. blockmap, yml)
-          if (!['.dmg', '.msi', '.deb', '.rpm', '.zip'].includes(ext)) {
+          if (!['.dmg', '.msi', '.deb', '.rpm'].includes(ext)) {
             renamedArtifacts.push(artifactPath);
             continue;
           }
@@ -99,14 +99,11 @@ module.exports = {
         },
       },
     },
-    {
-      name: '@electron-forge/maker-zip',
-      platforms: ['darwin'],
-    },
+
     {
       name: '@electron-forge/maker-dmg',
       config: {
-        name: 'Ripple',
+        name: 'RippleInstaller',
         format: 'UDZO',
         overwrite: true
       }

@@ -75,9 +75,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Ripple-${{ matrix.os-label }}-v${{ steps.pkg.outputs.version }}
-          path: |
-            out/make/**/*.dmg
-            out/make/zip/darwin/**/*.zip
+          path: out/make/**/*.dmg
           if-no-files-found: error
 
       - name: Upload Windows Artifacts

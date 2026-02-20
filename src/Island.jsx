@@ -2,10 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { Groq } from "groq-sdk";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { SkipBackIcon, Play, Pause, SkipForwardIcon, Music, Headphones, Zap, Settings, Sun, Cloud, Droplets, Trash2, ChevronRight, ChevronLeft, Plus, Check, X } from "lucide-react";
+import { SkipBackIcon, Play, Pause, SkipForwardIcon, Music, Headphones, Zap, Settings, Sun, Cloud, Droplets, Trash2, ChevronRight, ChevronLeft, Plus, Check, X, CloudRain, CloudSnow, CloudLightning, CloudSun, Moon } from "lucide-react";
 import "./App.css";
-import lowBatteryIcon from "./assets/images/lowbattery.png";
-import chargingIcon from "./assets/images/charging.png";
 
 //Get Date
 function formatDateShort(input) {
@@ -18,6 +16,17 @@ function formatDateShort(input) {
   const day = date.getDate();
   return `${weekday}, ${month} ${day}`;
 }
+
+const WeatherIcon = ({ status, size = 16, color = "currentColor" }) => {
+  const s = status?.toLowerCase() || "";
+  if (s.includes("sunny") || s.includes("clear")) return <Sun size={size} color={color} />;
+  if (s.includes("partly cloudy")) return <CloudSun size={size} color={color} />;
+  if (s.includes("cloudy") || s.includes("overcast") || s.includes("mist") || s.includes("fog")) return <Cloud size={size} color={color} />;
+  if (s.includes("rain") || s.includes("drizzle") || s.includes("showers")) return <CloudRain size={size} color={color} />;
+  if (s.includes("snow") || s.includes("sleet") || s.includes("ice") || s.includes("blizzard")) return <CloudSnow size={size} color={color} />;
+  if (s.includes("thunder") || s.includes("storm")) return <CloudLightning size={size} color={color} />;
+  return <Sun size={size} color={color} />;
+};
 
 function openApp(app) {
   if (!app) return;
@@ -48,7 +57,7 @@ export default function Island() {
   const [largeStandbyEnabled, setLargeStandbyEnabled] = useState(localStorage.getItem("large-standby-mode") === "true");
   const [hideNotActiveIslandEnabled, sethideNotActiveIslandEnabled] = useState(localStorage.getItem("hide-island-notactive") === "true");
   const [hourFormat, setHourFormat] = useState((localStorage.getItem("hour-format") || "12-hr") === "12-hr");
-  const [weather, setWeather] = useState("");
+  const [weather, setWeather] = useState({ temp: "", status: "" });
   const [weatherUnit, setweatherUnit] = useState(localStorage.getItem("weather-unit") || "f");
   const [theme, setTheme] = useState("default");
   const [bgColor, setBgColor] = useState(localStorage.getItem("bg-color") || "#000000");
@@ -510,18 +519,27 @@ export default function Island() {
   // Get Weather
   useEffect(() => {
     const getWeather = async () => {
-      const response = await fetch(
-        `https://api.weatherapi.com/v1/current.json?key=0b18c67c443543e0a6045401250911&q=${localStorage.getItem(
-          "location"
-        )}&aqi=no`
-      );
-      const data = await response.json();
-      const unit = localStorage.getItem("weather-unit");
-      const key = unit === "f" ? "temp_f" : "temp_c";
-      setWeather(Math.round(data?.current?.[key]));
+      try {
+        const response = await fetch(
+          `https://api.weatherapi.com/v1/current.json?key=0b18c67c443543e0a6045401250911&q=${localStorage.getItem(
+            "location"
+          )}&aqi=no`
+        );
+        const data = await response.json();
+        const unit = localStorage.getItem("weather-unit");
+        const key = unit === "f" ? "temp_f" : "temp_c";
+        setWeather({
+          temp: Math.round(data?.current?.[key]),
+          status: data?.current?.condition?.text || ""
+        });
+      } catch (e) {
+        console.error("Weather fetch failed", e);
+      }
     };
     getWeather();
-  });
+    const interval = setInterval(getWeather, 600000); // Update every 10 mins
+    return () => clearInterval(interval);
+  }, []);
 
   // Set theme
   useEffect(() => {
@@ -897,7 +915,12 @@ export default function Island() {
                   alignItems: 'center'
                 }}
               >
-                {alert === true ? `${percent}%` : chargingAlert === true ? `${percent}%` : standbyBorderEnabled ? `${percent}%` : bluetoothAlert ? "Connected" : weather ? `${weather}º` : `${percent}%`}
+                {alert === true ? `${percent}%` : chargingAlert === true ? `${percent}%` : standbyBorderEnabled ? `${percent}%` : bluetoothAlert ? "Connected" : weather.temp ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <WeatherIcon status={weather.status} size={14} color={textColor} />
+                    <span>{weather.temp}º</span>
+                  </div>
+                ) : `${percent}%`}
               </h1>
             </motion.div>
           )}
@@ -1087,7 +1110,12 @@ export default function Island() {
                     position: "absolute",
                     animation: 'none'
                   }}
-                >{`${weather ? weather : "??"}º`}</h1>
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <WeatherIcon status={weather.status} size={16} color={textColor} />
+                    <span>{weather.temp ? weather.temp : "??"}º</span>
+                  </div>
+                </h1>
                 <div id="date">
                   <h1 className="text" style={{ fontSize: 50, animation: 'none' }}>
                     {time}
