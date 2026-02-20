@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Groq } from "groq-sdk";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
+import { SkipBackIcon, Play, Pause, SkipForwardIcon } from "lucide-react";
 import "./App.css";
 import lowBatteryIcon from "./assets/images/lowbattery.png";
 import chargingIcon from "./assets/images/charging.png";
@@ -782,7 +783,8 @@ export default function Island() {
         '--island-text-color': textColor,
         '--island-bg-color': bgColor,
         position: 'fixed',
-        margin: 0
+        margin: 0,
+        transition: 'box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
       }}
     >
       {/*Quickview*/}
@@ -822,8 +824,9 @@ export default function Island() {
                 marginRight: 6,
                 opacity: isHovered ? 1 : 0,
                 userSelect: 'none',
-                fontSize: 16,
-                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 flexShrink: 0,
                 transition: 'opacity 0.2s ease-in-out',
                 cursor: 'pointer'
@@ -833,7 +836,7 @@ export default function Island() {
                   window.electronAPI.controlSystemMedia('playpause');
                 }}
               >
-                {spotifyTrack.state === 'playing' ? '⏸' : '▶'}
+                {spotifyTrack.state === 'playing' ? <Pause size={16} color={textColor} fill={textColor} /> : <Play size={16} color={textColor} fill={textColor} />}
               </div>
             </div>
           ) : (
@@ -988,6 +991,7 @@ export default function Island() {
                             fontWeight: 600,
                             textAlign: 'left',
                             boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                            transition: 'box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                             alignSelf: 'center',
                             marginBottom: 2
                           }}
@@ -1143,8 +1147,8 @@ export default function Island() {
                       <div style={{ display: 'flex', gap: 15, marginTop: 15, alignItems: 'center', marginLeft: 15 }}>
                         <button
                           onClick={() => window.electronAPI.controlSystemMedia('previous')}
-                          style={{ background: 'none', border: 'none', color: textColor, cursor: 'pointer', fontSize: 23, padding: 0, opacity: 0.8 }}
-                        >⏮</button>
+                          style={{ background: 'none', border: 'none', color: textColor, cursor: 'pointer', padding: 4, opacity: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'opacity 0.2s ease' }}
+                        ><SkipBackIcon size={20} color={textColor} fill={textColor} /></button>
                         <button
                           onClick={() => window.electronAPI.controlSystemMedia('playpause')}
                           style={{
@@ -1152,23 +1156,22 @@ export default function Island() {
                             border: 'none',
                             color: textColor,
                             cursor: 'pointer',
-                            fontSize: 24,
-                            padding: 0,
+                            padding: 4,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             transform: spotifyTrack.state === 'playing'
-                              ? 'scale(1.5)'
+                              ? 'scale(1.3)'
                               : 'scale(1)',
                             transition: 'transform 0.15s ease-out'
                           }}
                         >
-                          {spotifyTrack.state === 'playing' ? '⏸' : '▶'}
+                          {spotifyTrack.state === 'playing' ? <Pause size={24} color={textColor} fill={textColor} /> : <Play size={24} color={textColor} fill={textColor} />}
                         </button>
                         <button
                           onClick={() => window.electronAPI.controlSystemMedia('next')}
-                          style={{ background: 'none', border: 'none', color: textColor, cursor: 'pointer', fontSize: 23, padding: 0, opacity: 0.8 }}
-                        >⏭</button>
+                          style={{ background: 'none', border: 'none', color: textColor, cursor: 'pointer', padding: 4, opacity: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'opacity 0.2s ease' }}
+                        ><SkipForwardIcon size={20} color={textColor} fill={textColor} /></button>
                       </div>
                     </div>
                   </>

@@ -38,6 +38,7 @@
     "electron-squirrel-startup": "^1.0.1",
     "framer-motion": "^12.34.0",
     "groq-sdk": "^0.34.0",
+    "lucide-react": "^0.575.0",
     "node-powershell": "^5.0.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
