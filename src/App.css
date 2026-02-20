@@ -359,12 +359,13 @@ label {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 0px 25px;
 }
 
 #battery-bar h1 {
   position: absolute;
   font-size: 13px;
-  padding: 7px;
+  padding: 8px;
 }
 
 #quick-apps {

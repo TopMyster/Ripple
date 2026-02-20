@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Groq } from "groq-sdk";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { SkipBackIcon, Play, Pause, SkipForwardIcon } from "lucide-react";
+import { SkipBackIcon, Play, Pause, SkipForwardIcon, Music, Headphones, Zap, Settings, Sun, Cloud, Droplets, Trash2, ChevronRight, ChevronLeft, Plus, Check, X } from "lucide-react";
 import "./App.css";
 import lowBatteryIcon from "./assets/images/lowbattery.png";
 import chargingIcon from "./assets/images/charging.png";
@@ -477,7 +477,7 @@ export default function Island() {
       const timerId = setTimeout(() => {
         setMode("still");
         setChargingAlert(false);
-      }, 3000);
+      }, 1500);
       return () => {
         clearTimeout(timerId);
       };
@@ -804,7 +804,7 @@ export default function Island() {
                   <img src={spotifyTrack.artwork_url} style={{ width: 24, height: 24, borderRadius: 4, flexShrink: 0 }} />
                 ) : (
                   <div style={{ width: 24, height: 24, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0 }}>
-                    🎵
+                    <Music size={14} color={textColor} />
                   </div>
                 )}
                 <div style={{
@@ -852,14 +852,19 @@ export default function Island() {
                   fontWeight: 600,
                   margin: 0,
                   animation: 'appear .3s ease-out',
-                  color: chargingAlert ? "#6fff7bff" : alert ? "#ff3f3fff" : textColor
+                  color: chargingAlert ? "#6fff7bff" : alert ? "#ff3f3fff" : textColor,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  lineHeight: 1
                 }}
               >
                 {chargingAlert ? (
-                  <img src={chargingIcon} alt="charging" style={{ width: 25, height: 25, objectFit: 'contain', position: 'absolute', transform: 'translate(0%, -50%)' }} />
+                  <Zap size={20} color="#6fff7b" />
                 ) : alert ? (
-                  <img src={lowBatteryIcon} alt="low battery" style={{ width: 25, height: 25, objectFit: 'contain', position: 'absolute', transform: 'translate(0%, -50%)' }} />
-                ) : bluetoothAlert ? "🎧" : time}
+                  <Zap size={20} color="#ff3f3f" />
+                ) : bluetoothAlert ? <Headphones size={20} /> : time}
               </h1>
               <h1
                 className="text"
@@ -876,8 +881,9 @@ export default function Island() {
                     ? "#6fff7bff"
                     : alert
                       ? "#ff3f3fff"
-                      : `${textColor}`
-
+                      : `${textColor}`,
+                  display: 'flex',
+                  alignItems: 'center'
                 }}
               >
                 {alert === true ? `${percent}%` : chargingAlert === true ? `${percent}%` : standbyBorderEnabled ? `${percent}%` : bluetoothAlert ? "Connected" : weather ? `${weather}º` : `${percent}%`}
@@ -1058,7 +1064,10 @@ export default function Island() {
                       color: bgColor
                     }}
                   >
-                    <h1 className="text" style={{ animation: 'none' }}>{charging ? "⚡︎" : null}{`${percent}%`}</h1>
+                  <h1 className="text" style={{ animation: 'none', display: 'flex', alignItems: 'center', gap: 2 }}>
+                    {charging && <Zap size={16} />}
+                    <span>{percent}%</span>
+                  </h1>
                   </div>
                 </div>
                 <h1
@@ -1108,7 +1117,7 @@ export default function Island() {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 24
                       }}>
-                        🎵
+                        <Music size={40} color={textColor} />
                       </div>
                     )}
 
@@ -1684,12 +1693,15 @@ export default function Island() {
                         color: bgColor,
                         border: 'none',
                         borderRadius: '12px',
-                        padding: '0 15px',
-                        fontWeight: 900,
-                        cursor: 'pointer'
+                        padding: '8px 12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
                       }}
                     >
-                      +
+                      <Plus size={18} />
                     </button>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
@@ -1713,9 +1725,9 @@ export default function Island() {
                           />
                           <button
                             onClick={() => removeQuickApp(idx)}
-                            style={{ color: '#ff4d4d', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}
+                            style={{ color: '#ff4d4d', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                           >
-                            ✕
+                            <Trash2 size={16} />
                           </button>
                         </motion.div>
                       ))}
@@ -1817,9 +1829,10 @@ export default function Island() {
                           </div>
                           <button
                             onClick={() => removeWorkflow(idx)}
-                            style={{ color: '#ff4d4d', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}
+                            style={{ color: '#ff4d4d', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
                           >
-                            Remove
+                            <Trash2 size={14} />
+                            <span style={{ fontSize: 12 }}>Remove</span>
                           </button>
                         </motion.div>
                       ))}
