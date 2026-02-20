@@ -789,16 +789,23 @@ export default function Island() {
     >
       {/*Quickview*/}
       {(mode === "quick" || (mode === "still" && isPlaying) || alert || chargingAlert || bluetoothAlert) ? (
-        <>
+        <AnimatePresence mode="wait">
           {isPlaying && !alert && !chargingAlert && !bluetoothAlert ? (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              width: '100%',
-              opacity: hideNotActiveIslandEnabled ? .6 : 1,
-              padding: '0 10px'
-            }}>
+            <motion.div
+              key={spotifyTrack?.name ? `playing-${spotifyTrack.name}-${spotifyTrack.artist}` : "playing"}
+              initial={{ opacity: 0, filter: 'blur(4px)', scale: 0.98 }}
+              animate={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
+              exit={{ opacity: 0, filter: 'blur(4px)', scale: 0.98 }}
+              transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                width: '100%',
+                opacity: hideNotActiveIslandEnabled ? .6 : 1,
+                padding: '0 10px'
+              }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', flex: 1, userSelect: 'none', }}>
                 {spotifyTrack?.artwork_url ? (
                   <img src={spotifyTrack.artwork_url} style={{ width: 24, height: 24, borderRadius: 4, flexShrink: 0 }} />
@@ -819,7 +826,7 @@ export default function Island() {
                   {spotifyTrack?.name} <span style={{ opacity: 0.7, fontWeight: 400 }}> • {spotifyTrack?.artist}</span>
                 </div>
               </div>
-              <div style={{
+              <div className="media-btn" style={{
                 marginLeft: 6,
                 marginRight: 6,
                 opacity: isHovered ? 1 : 0,
@@ -828,7 +835,6 @@ export default function Island() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
-                transition: 'opacity 0.2s ease-in-out',
                 cursor: 'pointer'
               }}
                 onClick={(e) => {
@@ -838,9 +844,16 @@ export default function Island() {
               >
                 {spotifyTrack.state === 'playing' ? <Pause size={16} color={textColor} fill={textColor} /> : <Play size={16} color={textColor} fill={textColor} />}
               </div>
-            </div>
+            </motion.div>
           ) : (
-            <>
+            <motion.div
+              key={chargingAlert ? "charging" : alert ? "battery" : bluetoothAlert ? "bluetooth" : "time"}
+              initial={{ opacity: 0, filter: 'blur(4px)', scale: 0.98 }}
+              animate={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
+              exit={{ opacity: 0, filter: 'blur(4px)', scale: 0.98 }}
+              transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+              style={{ width: '100%', height: '100%', position: 'relative' }}
+            >
               <h1
                 className="text"
                 style={{
@@ -851,7 +864,6 @@ export default function Island() {
                   fontSize: 16,
                   fontWeight: 600,
                   margin: 0,
-                  animation: 'appear .3s ease-out',
                   color: chargingAlert ? "#6fff7bff" : alert ? "#ff3f3fff" : textColor,
                   display: 'flex',
                   alignItems: 'center',
@@ -876,7 +888,6 @@ export default function Island() {
                   fontSize: 16,
                   fontWeight: 600,
                   margin: 0,
-                  animation: 'appear .3s ease-out',
                   color: chargingAlert
                     ? "#6fff7bff"
                     : alert
@@ -888,9 +899,9 @@ export default function Island() {
               >
                 {alert === true ? `${percent}%` : chargingAlert === true ? `${percent}%` : standbyBorderEnabled ? `${percent}%` : bluetoothAlert ? "Connected" : weather ? `${weather}º` : `${percent}%`}
               </h1>
-            </>
+            </motion.div>
           )}
-        </>
+        </AnimatePresence>
       ) : null}
 
       <AnimatePresence custom={direction} mode="popLayout">
@@ -997,11 +1008,9 @@ export default function Island() {
                             fontWeight: 600,
                             textAlign: 'left',
                             boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-                            transition: 'box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                             alignSelf: 'center',
                             marginBottom: 2
                           }}
-                          layout
                         >
                           {workflow.name} <span style={{ opacity: 0.6, fontWeight: 400, marginLeft: 5 }}>({workflow.urls.length} sites)</span>
                         </motion.button>
@@ -1033,16 +1042,15 @@ export default function Island() {
                           key={`main-qa-${app}-${i}`}
                           className="qa-app"
                           onClick={() => openApp(app)}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.8, width: 0, padding: 0, margin: 0 }}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0, width: 0, padding: 0, margin: 0 }}
                           style={{
                             color: bgColor,
                             backgroundColor: textColor,
                             fontFamily: theme === "win95" ? "w95" : "OpenRunde",
                             flexShrink: 0
                           }}
-                          layout
                         >
                           {app}
                         </motion.button>
@@ -1064,10 +1072,10 @@ export default function Island() {
                       color: bgColor
                     }}
                   >
-                  <h1 className="text" style={{ animation: 'none', display: 'flex', alignItems: 'center', gap: 2 }}>
-                    {charging && <Zap size={16} />}
-                    <span>{percent}%</span>
-                  </h1>
+                    <h1 className="text" style={{ animation: 'none', display: 'flex', alignItems: 'center', gap: 2 }}>
+                      {charging && <Zap size={16} />}
+                      <span>{percent}%</span>
+                    </h1>
                   </div>
                 </div>
                 <h1
@@ -1102,99 +1110,120 @@ export default function Island() {
                 gap: '15px',
                 userSelect: 'none'
               }}>
-                {spotifyTrack ? (
-                  <>
-                    {spotifyTrack.artwork_url ? (
-                      <img src={spotifyTrack.artwork_url} style={{
-                        width: 110, height: 110, minWidth: 110,
-                        borderRadius: 13, objectFit: 'cover', pointerEvents: 'none',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-                      }} />
-                    ) : (
-                      <div style={{
-                        width: 110, height: 110, minWidth: 110,
-                        borderRadius: 12, background: 'rgba(255,255,255,0.1)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 24
-                      }}>
-                        <Music size={40} color={textColor} />
-                      </div>
-                    )}
+                <AnimatePresence mode="wait">
+                  {spotifyTrack ? (
+                    <motion.div
+                      key={spotifyTrack.name + spotifyTrack.artist}
+                      initial={{ opacity: 0, filter: 'blur(10px)', scale: 0.95 }}
+                      animate={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
+                      exit={{ opacity: 0, filter: 'blur(10px)', scale: 0.95 }}
+                      transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '100%',
+                        height: '100%',
+                        gap: '15px'
+                      }}
+                    >
+                      {spotifyTrack.artwork_url ? (
+                        <img src={spotifyTrack.artwork_url} style={{
+                          width: 110, height: 110, minWidth: 110,
+                          borderRadius: 13, objectFit: 'cover', pointerEvents: 'none',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                        }} />
+                      ) : (
+                        <div style={{
+                          width: 110, height: 110, minWidth: 110,
+                          borderRadius: 12, background: 'rgba(255,255,255,0.1)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 24
+                        }}>
+                          <Music size={40} color={textColor} />
+                        </div>
+                      )}
 
-                    <div style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      overflow: 'hidden',
-                      maxWidth: '220px',
-                      justifyContent: 'center',
-                      textAlign: 'left'
-                    }}>
-                      <h2 style={{
-                        margin: '0 30px 0 13px',
-                        fontSize: 18,
-                        fontWeight: 600,
-                        whiteSpace: 'nowrap',
+                      <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
                         overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        color: textColor,
-                        fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+                        maxWidth: '220px',
+                        justifyContent: 'center',
+                        textAlign: 'left'
                       }}>
-                        {spotifyTrack.name || "Unknown Title"}
-                      </h2>
-                      <p style={{
-                        margin: '4px 0 0 13px',
-                        fontSize: 13,
-                        opacity: 0.8,
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        color: textColor,
-                        fontFamily: theme === "win95" ? "w95" : "OpenRunde"
-                      }}>
-                        {spotifyTrack.artist || "Unknown Artist"}
-                      </p>
-                      <div style={{ display: 'flex', gap: 15, marginTop: 15, alignItems: 'center', marginLeft: 15 }}>
-                        <button
-                          onClick={() => window.electronAPI.controlSystemMedia('previous')}
-                          style={{ background: 'none', border: 'none', color: textColor, cursor: 'pointer', padding: 4, opacity: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'opacity 0.2s ease' }}
-                        ><SkipBackIcon size={20} color={textColor} fill={textColor} /></button>
-                        <button
-                          onClick={() => window.electronAPI.controlSystemMedia('playpause')}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            color: textColor,
-                            cursor: 'pointer',
-                            padding: 4,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            transform: spotifyTrack.state === 'playing'
-                              ? 'scale(1.3)'
-                              : 'scale(1)',
-                            transition: 'transform 0.15s ease-out'
-                          }}
-                        >
-                          {spotifyTrack.state === 'playing' ? <Pause size={24} color={textColor} fill={textColor} /> : <Play size={24} color={textColor} fill={textColor} />}
-                        </button>
-                        <button
-                          onClick={() => window.electronAPI.controlSystemMedia('next')}
-                          style={{ background: 'none', border: 'none', color: textColor, cursor: 'pointer', padding: 4, opacity: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'opacity 0.2s ease' }}
-                        ><SkipForwardIcon size={20} color={textColor} fill={textColor} /></button>
+                        <h2 style={{
+                          margin: '0 30px 0 13px',
+                          fontSize: 18,
+                          fontWeight: 600,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          color: textColor,
+                          fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+                        }}>
+                          {spotifyTrack.name || "Unknown Title"}
+                        </h2>
+                        <p style={{
+                          margin: '4px 0 0 13px',
+                          fontSize: 13,
+                          opacity: 0.8,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          color: textColor,
+                          fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+                        }}>
+                          {spotifyTrack.artist || "Unknown Artist"}
+                        </p>
+                        <div style={{ display: 'flex', gap: 15, marginTop: 15, alignItems: 'center', marginLeft: 15 }}>
+                          <button
+                            className="media-btn"
+                            onClick={() => window.electronAPI.controlSystemMedia('previous')}
+                            style={{ background: 'none', border: 'none', color: textColor, cursor: 'pointer', padding: 4, opacity: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          ><SkipBackIcon size={20} color={textColor} fill={textColor} /></button>
+                          <button
+                            className="media-btn"
+                            onClick={() => window.electronAPI.controlSystemMedia('playpause')}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: textColor,
+                              cursor: 'pointer',
+                              padding: 4,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            {spotifyTrack.state === 'playing' ? <Pause size={24} color={textColor} fill={textColor} /> : <Play size={24} color={textColor} fill={textColor} />}
+                          </button>
+                          <button
+                            className="media-btn"
+                            onClick={() => window.electronAPI.controlSystemMedia('next')}
+                            style={{ background: 'none', border: 'none', color: textColor, cursor: 'pointer', padding: 4, opacity: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          ><SkipForwardIcon size={20} color={textColor} fill={textColor} /></button>
+                        </div>
                       </div>
-                    </div>
-                  </>
-                ) : (
-                  <div style={{
-                    width: '100%',
-                    textAlign: 'center',
-                    color: textColor,
-                    fontFamily: theme === "win95" ? "w95" : "OpenRunde"
-                  }}>
-                    <h3 style={{ margin: 0, fontSize: 16 }}>Nothing Playing</h3>
-                    <p style={{ margin: '5px 0 0 0', opacity: 0.7, fontSize: 13 }}>Play music on Spotify or Apple Music</p>
-                  </div>
-                )}
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="nothing"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      style={{
+                        width: '100%',
+                        textAlign: 'center',
+                        color: textColor,
+                        fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+                      }}
+                    >
+                      <h3 style={{ margin: 0, fontSize: 16 }}>Nothing Playing</h3>
+                      <p style={{ margin: '5px 0 0 0', opacity: 0.7, fontSize: 13 }}>Play music on Spotify or Apple Music</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             )}
 
@@ -1458,7 +1487,6 @@ export default function Island() {
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: 20, height: 0, marginBottom: 0, padding: 0 }}
                           transition={{ duration: 0.2 }}
-                          layout
                         >
                           <input
                             type="checkbox"
@@ -1715,7 +1743,6 @@ export default function Island() {
                           animate={{ opacity: 1, height: 'auto' }}
                           exit={{ opacity: 0, x: -20, height: 0, padding: 0 }}
                           transition={{ duration: 0.2 }}
-                          layout
                         >
                           <input
                             className="select-input"
@@ -1821,7 +1848,6 @@ export default function Island() {
                           animate={{ opacity: 1, height: 'auto' }}
                           exit={{ opacity: 0, x: -20, height: 0, padding: 0 }}
                           transition={{ duration: 0.2 }}
-                          layout
                         >
                           <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <span style={{ fontWeight: 600 }}>{wf.name}</span>

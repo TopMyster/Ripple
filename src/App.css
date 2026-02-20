@@ -164,8 +164,13 @@ body {
   align-self: center;
 }
 
-button:active {
-  scale: .9;
+#chatsubmit:hover {
+  opacity: .9;
+}
+
+#chatsubmit:active,
+.clipboard-btn:active {
+  transform: scale(.9);
   opacity: .9;
   filter: blur(2px);
 }
@@ -224,7 +229,7 @@ label {
   right: 0px;
   bottom: 18px;
   padding: 6px 10px;
-  font-weight: 700;
+  font-weight: 600;
   border-radius: 10px;
   transition: .2s;
   z-index: 101;
@@ -385,33 +390,36 @@ label {
   font-size: 17px;
   font-weight: 500;
   margin-right: 2px;
-  transition: .3s;
+  transition: transform .4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow .4s ease;
   cursor: pointer;
   box-shadow: 2px 2px 30px rgba(0, 0, 0, 0.148);
   z-index: 0;
   user-select: none;
+  will-change: transform;
 }
 
 .qa-app:hover {
-  transform: scale(1.35);
+  transform: scale(1.3);
   z-index: 1;
+  box-shadow: 2px 4px 35px rgba(0, 0, 0, 0.22);
 }
 
 .qa-app:active {
-  transform: scale(1.3);
+  transform: scale(1.15);
 }
 
 .workflow-item {
-  transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.5s ease, padding 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.5s ease;
   cursor: pointer;
   user-select: none;
   border: none;
   padding: 10px 15px;
+  will-change: transform;
 }
 
 .workflow-item:hover {
-  padding-top: 18px;
-  padding-bottom: 18px;
+  padding: 20px 17px;
+  filter: brightness(1.1);
 }
 
 .workflow-item:active {
@@ -599,7 +607,6 @@ label {
   transform: scale(0.95);
 }
 
-/* Settings overhaul */
 #settings-container {
   display: flex;
   flex-direction: column;
@@ -633,7 +640,6 @@ label {
   opacity: 0.9;
 }
 
-/* Clipboard Overhaul */
 .clipboard-row {
   display: flex;
   flex-direction: column;
@@ -685,7 +691,15 @@ label {
   transform: scale(0.95);
 }
 
-/* Global scrollbar for all scrollable areas */
+.media-btn {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.4s ease, opacity 0.4s ease;
+}
+
+.media-btn:hover {
+  filter: brightness(0.95);
+  transform: scale(1.2);
+}
+
 #task-list::-webkit-scrollbar,
 #clipboard::-webkit-scrollbar,
 #settings-container::-webkit-scrollbar {
