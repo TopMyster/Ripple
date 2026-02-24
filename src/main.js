@@ -5,6 +5,8 @@ const fs = require("fs");
 
 if (process.platform === 'linux') {
   app.commandLine.appendSwitch('enable-transparent-visuals');
+  app.commandLine.appendSwitch('disable-gpu-compositing');
+  app.disableHardwareAcceleration();
 }
 let tray = null;
 let mainWindow = null;
@@ -49,16 +51,8 @@ ipcMain.handle('set-display', (event, displayId) => {
     const { x, y, width, height } = targetDisplay.bounds;
     const isLinux = process.platform === 'linux';
 
-    mainWindow.setFullScreen(false);
-
-    if (isLinux) {
-      const winWidth = 500;
-      const winHeight = 400;
-      const winX = x + Math.floor((width - winWidth) / 2);
-      const winY = y;
-      mainWindow.setBounds({ x: winX, y: winY, width: winWidth, height: winHeight });
-    } else {
-      mainWindow.setBounds({ x, y, width, height });
+    mainWindow.setBounds({ x, y, width, height });
+    if (!isLinux) {
       mainWindow.setFullScreen(true);
     }
 
@@ -67,17 +61,7 @@ ipcMain.handle('set-display', (event, displayId) => {
 });
 
 ipcMain.handle('update-window-position', (event, xPerc, yPx) => {
-  if (mainWindow && process.platform === 'linux') {
-    const currentDisplay = screen.getDisplayMatching(mainWindow.getBounds());
-    const { x, y, width, height } = currentDisplay.bounds;
-
-    const winWidth = 500;
-    const winHeight = 400;
-    const targetX = x + Math.round((width * (xPerc / 100)) - (winWidth / 2));
-    const targetY = y + yPx;
-
-    mainWindow.setBounds({ x: targetX, y: targetY, width: winWidth, height: winHeight });
-  }
+  // Logic handled by React state when window is full screen
 });
 
 const getIconPath = () => {
@@ -101,10 +85,10 @@ const createWindow = () => {
   const isWindows = process.platform === 'win32';
   const isMac = process.platform === 'darwin';
 
-  const winWidth = isLinux ? 500 : width;
-  const winHeight = isLinux ? 400 : height;
-  const winX = isLinux ? x + Math.floor((width - winWidth) / 2) : x;
-  const winY = isLinux ? y : y;
+  const winWidth = width;
+  const winHeight = height;
+  const winX = x;
+  const winY = y;
 
   // 'type' option is only supported on macOS ('toolbar') and Linux ('dock'); not Windows
   const windowType = isWindows ? undefined : 'toolbar';
@@ -150,7 +134,6 @@ const createWindow = () => {
       if (mainWindow) {
         mainWindow.show();
         if (isLinux) {
-          mainWindow.setPosition(winX, winY);
           mainWindow.setAlwaysOnTop(true, 'screen-saver');
         }
         mainWindow.focus();

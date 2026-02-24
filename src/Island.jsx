@@ -754,14 +754,14 @@ export default function Island() {
       onWheel={handleWheelSwipe}
       initial={{
         x: "-50%",
-        left: window.electronAPI?.platform === 'linux' ? '50%' : `${islandX}%`,
-        top: window.electronAPI?.platform === 'linux' ? '0px' : `${islandY}px`,
+        left: `${islandX}%`,
+        top: `${islandY}px`,
       }}
       animate={{
         width: `${width}px`,
         height: `${height}px`,
-        left: window.electronAPI?.platform === 'linux' ? '50%' : `${islandX}%`,
-        top: window.electronAPI?.platform === 'linux' ? '0px' : `${islandY}px`,
+        left: `${islandX}%`,
+        top: `${islandY}px`,
         backgroundColor: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : bgColor,
         color: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : textColor,
         scale: isHovered ? 1.05 : 1,
