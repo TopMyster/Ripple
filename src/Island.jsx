@@ -155,8 +155,8 @@ export default function Island() {
   };
 
   let isPlaying = spotifyTrack?.state === 'playing';
-  let width = mode === "large" ? (tab === 3 ? 350 : tab === 4 ? 30 : 380) : (mode === "quick" && isPlaying) ? 300 : (mode === "quick" && !isPlaying) ? 300 : 265;
-  let height = mode === "large" ? (tab === 7 ? 300 : tab === 6 ? 250 : tab === 3 ? 160 : 190) : 43;
+  let width = mode === "large" ? (tab === 3 ? 330 : 380) : (mode === "quick" && isPlaying) ? 300 : (mode === "quick" && !isPlaying) ? 300 : 265;
+  let height = mode === "large" ? (tab === 7 ? 300 : tab === 6 ? 250 : tab === 3 ? 150 : 190) : 43;
 
   const [quickApps, setQuickApps] = useState(JSON.parse(localStorage.getItem("quick-apps") || '["Notes", "Spotify", "Calculator", "Terminal"]'));
   const [newQuickApp, setNewQuickApp] = useState("");
@@ -762,6 +762,14 @@ export default function Island() {
         color: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : textColor,
         scale: isHovered ? 1.05 : 1,
         x: "-50%",
+        borderRadius:
+          mode === "large" && theme === "win95"
+            ? 0
+            : mode === "large"
+              ? 32
+              : theme === "win95"
+                ? 0
+                : 16,
       }}
       transition={{
         type: "spring",
@@ -785,14 +793,7 @@ export default function Island() {
           theme === "win95"
             ? "#FFFFFF #808080 #808080 #FFFFFF"
             : "none",
-        borderRadius:
-          mode === "large" && theme === "win95"
-            ? 0
-            : mode === "large"
-              ? 32
-              : theme === "win95"
-                ? 0
-                : 16,
+
         boxShadow: hideNotActiveIslandEnabled && mode === 'still' ? "none" : isHovered ? '0 5px 20px rgba(0, 0, 0, 0.28)' : '2px 2px 30px rgba(0, 0, 0, 0.07)',
         '--island-text-color': textColor,
         '--island-bg-color': bgColor,
@@ -1146,8 +1147,8 @@ export default function Island() {
                         justifyContent: 'flex-start',
                         width: '100%',
                         height: '100%',
-                        gap: '12px',
-                        paddingLeft: '15px'
+                        gap: '8px',
+                        paddingLeft: '17px'
                       }}
                     >
                       {spotifyTrack.artwork_url ? (
@@ -1177,7 +1178,7 @@ export default function Island() {
                         justifyContent: 'center',
                         textAlign: 'left',
                         minWidth: 0,
-                        maxWidth: '210px'
+                        maxWidth: '175px'
                       }}>
                         <h2 style={{
                           margin: '0 10px 0 5px',
