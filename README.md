@@ -47,6 +47,7 @@ npm run make -- --platform=win32 --arch=x64
 ```bash
 npm run make -- --platform=linux --arch=x64
 ```
+*Note: Building Linux packages requires `dpkg`, `fakeroot`, and `rpm` to be installed on your system. On Ubuntu/Debian, run: `sudo apt-get install dpkg fakeroot rpm`*
 
 **macOS (Apple Silicon & Intel)**
 ```bash

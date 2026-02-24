@@ -107,7 +107,7 @@ const createWindow = () => {
   const winY = isLinux ? y : y;
 
   // 'type' option is only supported on macOS ('toolbar') and Linux ('dock'); not Windows
-  const windowType = isWindows ? undefined : (isLinux ? 'dock' : 'toolbar');
+  const windowType = isWindows ? undefined : 'toolbar';
 
   mainWindow = new BrowserWindow({
     width: winWidth,
@@ -149,6 +149,10 @@ const createWindow = () => {
     setTimeout(() => {
       if (mainWindow) {
         mainWindow.show();
+        if (isLinux) {
+          mainWindow.setPosition(winX, winY);
+          mainWindow.setAlwaysOnTop(true, 'screen-saver');
+        }
         mainWindow.focus();
       }
     }, showDelay);
