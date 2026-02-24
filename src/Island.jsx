@@ -155,25 +155,21 @@ export default function Island() {
   };
 
   let isPlaying = spotifyTrack?.state === 'playing';
-  let width = mode === "large" ? (tab === 7) ? 450 : 380 : (mode === "quick" || isPlaying) ? 300 : 175;
-  let height = mode === "large" ? (tab === 7) ? 300 : (tab === 6) ? 250 : 190 : mode === "quick" ? 43 : 43;
+  let width = mode === "large" ? (tab === 3 ? 350 : tab === 4 ? 30 : 380) : (mode === "quick" && isPlaying) ? 300 : (mode === "quick" && !isPlaying) ? 300 : 265;
+  let height = mode === "large" ? (tab === 7 ? 300 : tab === 6 ? 250 : tab === 3 ? 160 : 190) : 43;
 
   const [quickApps, setQuickApps] = useState(JSON.parse(localStorage.getItem("quick-apps") || '["Notes", "Spotify", "Calculator", "Terminal"]'));
   const [newQuickApp, setNewQuickApp] = useState("");
 
   useEffect(() => {
-    // Restore display
     const savedDisplayId = localStorage.getItem("display-id");
     if (savedDisplayId && window.electronAPI?.setDisplay) {
       window.electronAPI.setDisplay(savedDisplayId);
     }
 
-    // Restore Position (especially for Linux)
     if (window.electronAPI?.updateWindowPosition) {
       window.electronAPI.updateWindowPosition(islandX, islandY);
     }
-
-    // User age/Intro
     if (!localStorage.getItem('newuser')) {
       localStorage.setItem('newuser', 'true');
     }
@@ -415,7 +411,7 @@ export default function Island() {
                 setAIAnswer((prev) => (prev ? prev + delta : delta));
               }
             } catch (e) {
-              // Ignore parse errors for partial chunks
+              console.error("Error parsing AI response:", e);
             }
           }
         }
@@ -781,7 +777,7 @@ export default function Island() {
         backgroundRepeat: "no-repeat",
         backgroundPosition: "center",
         backgroundSize: "cover",
-        justifyContent: "center",
+        justifyContent: (mode === "large" && tab === 3) ? "flex-start" : "center",
         overflow: "hidden",
         fontFamily: theme === "win95" ? "w95" : "OpenRunde",
         border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : islandBorderEnabled ? (charging || chargingAlert) ? `1px solid rgba(111, 255, 123, 0.5)` : (percent <= 20 || alert) ? `1px solid rgba(255, 63, 63, 0.5)` : bluetoothAlert ? `1px solid rgba(0, 150, 255, 0.34)` : hideNotActiveIslandEnabled ? "none" : `1px solid color-mix(in srgb, ${textColor}, transparent 70%)` : "none",
@@ -1132,10 +1128,8 @@ export default function Island() {
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                width: '90%',
+                width: '100%',
                 height: '100%',
-                gap: '15px',
                 userSelect: 'none'
               }}>
                 <AnimatePresence mode="wait">
@@ -1149,21 +1143,24 @@ export default function Island() {
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
+                        justifyContent: 'flex-start',
                         width: '100%',
                         height: '100%',
-                        gap: '15px'
+                        gap: '12px',
+                        paddingLeft: '15px'
                       }}
                     >
                       {spotifyTrack.artwork_url ? (
                         <img src={spotifyTrack.artwork_url} style={{
                           width: 110, height: 110, minWidth: 110,
+                          flexShrink: 0,
                           borderRadius: 13, objectFit: 'cover', pointerEvents: 'none',
                           boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
                         }} />
                       ) : (
                         <div style={{
                           width: 110, height: 110, minWidth: 110,
+                          flexShrink: 0,
                           borderRadius: 12, background: 'rgba(255,255,255,0.1)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontSize: 24
@@ -1176,12 +1173,14 @@ export default function Island() {
                         display: 'flex',
                         flexDirection: 'column',
                         overflow: 'hidden',
-                        maxWidth: '220px',
+                        flex: 1,
                         justifyContent: 'center',
-                        textAlign: 'left'
+                        textAlign: 'left',
+                        minWidth: 0,
+                        maxWidth: '210px'
                       }}>
                         <h2 style={{
-                          margin: '0 30px 0 13px',
+                          margin: '0 10px 0 5px',
                           fontSize: 18,
                           fontWeight: 600,
                           whiteSpace: 'nowrap',
@@ -1193,7 +1192,7 @@ export default function Island() {
                           {spotifyTrack.name || "Unknown Title"}
                         </h2>
                         <p style={{
-                          margin: '4px 0 0 13px',
+                          margin: '4px 0 0 5px',
                           fontSize: 13,
                           opacity: 0.8,
                           whiteSpace: 'nowrap',
@@ -1204,7 +1203,7 @@ export default function Island() {
                         }}>
                           {spotifyTrack.artist || "Unknown Artist"}
                         </p>
-                        <div style={{ display: 'flex', gap: 15, marginTop: 15, alignItems: 'center', marginLeft: 15 }}>
+                        <div style={{ display: 'flex', gap: 15, marginTop: 15, alignItems: 'center', marginLeft: 5 }}>
                           <button
                             className="media-btn"
                             onClick={() => window.electronAPI.controlSystemMedia('previous')}
