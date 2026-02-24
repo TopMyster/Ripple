@@ -155,8 +155,8 @@ export default function Island() {
   };
 
   let isPlaying = spotifyTrack?.state === 'playing';
-  let width = mode === "large" ? (tab === 3 ? 330 : 380) : (mode === "quick" && isPlaying) ? 300 : (mode === "quick" && !isPlaying) ? 300 : 265;
-  let height = mode === "large" ? (tab === 7 ? 300 : tab === 6 ? 250 : tab === 3 ? 150 : 190) : 43;
+  let width = mode === "large" ? (tab === 7 ? 450 : tab === 3 ? 330 : tab === 0 ? 405 : 380) : (mode === "quick" && isPlaying) ? 300 : (mode === "quick" && !isPlaying) ? 300 : 265;
+  let height = mode === "large" ? (tab === 7 ? 300 : tab === 6 ? 250 : tab === 3 ? 150 : tab === 0 ? 120 : 190) : 43;
 
   const [quickApps, setQuickApps] = useState(JSON.parse(localStorage.getItem("quick-apps") || '["Notes", "Spotify", "Calculator", "Terminal"]'));
   const [newQuickApp, setNewQuickApp] = useState("");
@@ -766,7 +766,7 @@ export default function Island() {
           mode === "large" && theme === "win95"
             ? 0
             : mode === "large"
-              ? 32
+              ? (tab === 0 ? 30 : 32)
               : theme === "win95"
                 ? 0
                 : 16,
