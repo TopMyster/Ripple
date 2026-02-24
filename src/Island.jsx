@@ -794,7 +794,7 @@ export default function Island() {
             ? "#FFFFFF #808080 #808080 #FFFFFF"
             : "none",
 
-        boxShadow: hideNotActiveIslandEnabled && mode === 'still' ? "none" : isHovered ? '0 5px 20px rgba(0, 0, 0, 0.28)' : '2px 2px 30px rgba(0, 0, 0, 0.07)',
+        boxShadow: hideNotActiveIslandEnabled && mode === 'still' ? "none" : isHovered ? '0 8px 32px rgba(0, 0, 0, 0.25)' : '0 4px 24px rgba(0, 0, 0, 0.12)',
         '--island-text-color': textColor,
         '--island-bg-color': bgColor,
         position: 'fixed',
@@ -1611,17 +1611,21 @@ export default function Island() {
                     </select>
                   </div>
                   <div className="settings-row">
-                    <span className="settings-label">Position X ({Math.round(islandX)}%)</span>
+                    <span className="settings-label">Position X ({islandX.toFixed(1)}%)</span>
                     <input
                       type="range"
                       min="0"
                       max="100"
-                      step="0.01"
+                      step="0.1"
                       value={islandX}
                       onChange={handleIslandXChange}
                       onPointerUp={savePosition}
+                      list="tickmarks"
                       style={{ flex: 1, accentColor: textColor }}
                     />
+                    <datalist id="tickmarks">
+                      <option value="50" label="50%"></option>
+                    </datalist>
                   </div>
                   <div className="settings-row">
                     <span className="settings-label">Position Y ({islandY}px)</span>

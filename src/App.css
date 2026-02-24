@@ -65,11 +65,11 @@ body {
 #root {
   margin: 0;
   padding: 0;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
   width: 100vw;
   height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 #app {
@@ -99,7 +99,6 @@ body {
     -webkit-filter: blur(0px);
     filter: blur(0px);
     opacity: 1;
-    translateY: 50%;
   }
 }
 
