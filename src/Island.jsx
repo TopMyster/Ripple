@@ -124,11 +124,6 @@ export default function Island() {
     })
   };
 
-  const swipeConfidenceThreshold = 10000;
-  const swipePower = (offset, velocity) => {
-    return Math.abs(offset) * velocity;
-  };
-
   const wheelSwipeThreshold = 60;
   const wheelLockout = useRef(false);
   const wheelAccumulator = useRef(0);
@@ -874,7 +869,7 @@ export default function Island() {
       }}
       transition={{
         type: "spring",
-        stiffness: 350,
+        stiffness: 400,
         damping: 40,
         mass: 2.5,
         x: { duration: .15 }

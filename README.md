@@ -24,7 +24,6 @@ https://github.com/user-attachments/assets/a7b9ed8a-97b5-4603-bad7-6f4c4bef1f5d
 - ✅ Quick apps
 - ✅ Clipboard
 - ✅ Tasks List <sup>*Idea from ali120b*</sup>
-- • Side mode 
 
 
 <sup>✅ = done, - = Working on, • = Planned, * = Note to self</sup><br>
