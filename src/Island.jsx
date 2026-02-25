@@ -82,6 +82,7 @@ export default function Island() {
   const [displays, setDisplays] = useState([]);
   const [currentDisplayId, setCurrentDisplayId] = useState(localStorage.getItem("display-id") || "");
   const [weatherLocation, setWeatherLocation] = useState(localStorage.getItem("location") || "");
+  const [autoLaunchEnabled, setAutoLaunchEnabled] = useState(localStorage.getItem("auto-launch") === "true");
 
   const [islandX, setIslandX] = useState(() => {
     const saved = localStorage.getItem("island-x");
@@ -155,7 +156,7 @@ export default function Island() {
   };
 
   let isPlaying = spotifyTrack?.state === 'playing';
-  let width = mode === "large" ? (tab === 7 ? 450 : tab === 3 ? 330 : tab === 0 ? 405 : 380) : (mode === "quick" && isPlaying) ? 300 : (mode === "quick" && !isPlaying) ? 300 : 265;
+  let width = mode === "large" ? (tab === 7 ? 450 : tab === 3 ? 330 : tab === 0 ? 405 : 380) : (mode === "quick" || isPlaying || alert || chargingAlert || bluetoothAlert) ? 300 : 170;
   let height = mode === "large" ? (tab === 7 ? 300 : tab === 6 ? 250 : tab === 3 ? 150 : tab === 0 ? 120 : 190) : 43;
 
   const [quickApps, setQuickApps] = useState(JSON.parse(localStorage.getItem("quick-apps") || '["Notes", "Spotify", "Calculator", "Terminal"]'));
@@ -170,6 +171,11 @@ export default function Island() {
     if (window.electronAPI?.updateWindowPosition) {
       window.electronAPI.updateWindowPosition(islandX, islandY);
     }
+
+    if (window.electronAPI?.setAutoLaunch) {
+      window.electronAPI.setAutoLaunch(autoLaunchEnabled);
+    }
+
     if (!localStorage.getItem('newuser')) {
       localStorage.setItem('newuser', 'true');
     }
@@ -228,6 +234,10 @@ export default function Island() {
     localStorage.setItem("weather-unit", "f");
   }
 
+  if (!localStorage.getItem("auto-launch")) {
+    localStorage.setItem("auto-launch", "false");
+  }
+
   const handleBatteryAlertsChange = (e) => {
     const value = e.target.value === "true";
     setBatteryAlertsEnabled(value);
@@ -256,6 +266,13 @@ export default function Island() {
     const value = e.target.value;
     setHourFormat(value === "12-hr");
     localStorage.setItem("hour-format", value);
+  };
+
+  const handleAutoLaunchChange = (e) => {
+    const value = e.target.value === "true";
+    setAutoLaunchEnabled(value);
+    localStorage.setItem("auto-launch", value ? "true" : "false");
+    window.electronAPI?.setAutoLaunch(value);
   };
 
   const handlehideNotActiveIslandChange = (e) => {
@@ -829,36 +846,57 @@ export default function Island() {
                     <Music size={14} color={textColor} />
                   </div>
                 )}
-                <div style={{
-                  overflow: 'hidden',
-                  whiteSpace: 'nowrap',
-                  textOverflow: 'ellipsis',
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: textColor,
-                  maxWidth: '250px'
-                }}>
+                <motion.div
+                  animate={{ maxWidth: isHovered ? '250px' : '260px' }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 350,
+                    damping: 40,
+                    mass: 2.5
+                  }}
+                  style={{
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: textColor,
+                  }}>
                   {spotifyTrack?.name} <span style={{ opacity: 0.7, fontWeight: 400 }}> • {spotifyTrack?.artist}</span>
-                </div>
+                </motion.div>
               </div>
-              <div className="media-btn" style={{
-                marginLeft: 6,
-                marginRight: 6,
-                opacity: isHovered ? 1 : 0,
-                userSelect: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-                cursor: 'pointer'
-              }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.electronAPI.controlSystemMedia('playpause');
-                }}
-              >
-                {spotifyTrack.state === 'playing' ? <Pause size={16} color={textColor} fill={textColor} /> : <Play size={16} color={textColor} fill={textColor} />}
-              </div>
+              <AnimatePresence>
+                {isHovered && (
+                  <motion.div
+                    key="media-controls"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{
+                      animate: { delay: 0.1, duration: 0.25 },
+                      exit: { duration: 0.15 },
+                      ease: [0.4, 0, 0.2, 1]
+                    }}
+                    className="media-btn"
+                    style={{
+                      marginLeft: 6,
+                      marginRight: 6,
+                      userSelect: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      cursor: 'pointer'
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.electronAPI.controlSystemMedia('playpause');
+                    }}
+                  >
+                    {spotifyTrack.state === 'playing' ? <Pause size={16} color={textColor} fill={textColor} /> : <Play size={16} color={textColor} fill={textColor} />}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           ) : (
             <motion.div
@@ -1576,6 +1614,13 @@ export default function Island() {
                     <select value={hourFormat ? "12-hr" : "24-hr"} onChange={handleHourFormatChange}>
                       <option value="12-hr">12-hour</option>
                       <option value="24-hr">24-hour</option>
+                    </select>
+                  </div>
+                  <div className="settings-row">
+                    <span className="settings-label">Auto Launch on Boot</span>
+                    <select value={autoLaunchEnabled ? "true" : "false"} onChange={handleAutoLaunchChange}>
+                      <option value="true">Enabled</option>
+                      <option value="false">Disabled</option>
                     </select>
                   </div>
                   <div className="settings-row">

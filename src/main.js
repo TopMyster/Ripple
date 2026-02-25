@@ -64,6 +64,42 @@ ipcMain.handle('update-window-position', (event, xPerc, yPx) => {
   // Logic handled by React state when window is full screen
 });
 
+ipcMain.handle('set-auto-launch', (event, enable) => {
+  if (process.platform === 'linux') {
+    const autostartPath = path.join(app.getPath('home'), '.config', 'autostart');
+    const desktopFilePath = path.join(autostartPath, 'ripple.desktop');
+
+    try {
+      if (enable) {
+        if (!fs.existsSync(autostartPath)) {
+          fs.mkdirSync(autostartPath, { recursive: true });
+        }
+        const desktopFileContent = `[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Ripple
+Comment=Ripple Desktop Assistant
+Exec="${app.getPath('exe')}"
+Icon=${getIconPath()}
+Terminal=false
+`;
+        fs.writeFileSync(desktopFilePath, desktopFileContent);
+      } else {
+        if (fs.existsSync(desktopFilePath)) {
+          fs.unlinkSync(desktopFilePath);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to set auto-launch on Linux:', e);
+    }
+  } else {
+    app.setLoginItemSettings({
+      openAtLogin: enable,
+      path: app.getPath('exe'),
+    });
+  }
+});
+
 const getIconPath = () => {
   const ext = 'png';
   if (app.isPackaged) {
