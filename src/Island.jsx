@@ -156,7 +156,7 @@ export default function Island() {
   };
 
   let isPlaying = spotifyTrack?.state === 'playing';
-  let width = mode === "large" ? (tab === 7 ? 450 : tab === 3 ? 330 : tab === 0 ? 405 : 380) : (mode === "quick" || isPlaying || alert || chargingAlert || bluetoothAlert) ? 300 : 170;
+  let width = mode === "large" ? (tab === 7 ? 450 : tab === 3 ? 330 : tab === 0 ? 405 : 380) : (mode === "quick" || alert || chargingAlert || bluetoothAlert) ? 300 : isPlaying ? 265 : 170;
   let height = mode === "large" ? (tab === 7 ? 300 : tab === 6 ? 250 : tab === 3 ? 150 : tab === 0 ? 120 : 190) : 43;
 
   const [quickApps, setQuickApps] = useState(JSON.parse(localStorage.getItem("quick-apps") || '["Notes", "Spotify", "Calculator", "Terminal"]'));
@@ -847,7 +847,7 @@ export default function Island() {
                   </div>
                 )}
                 <motion.div
-                  animate={{ maxWidth: isHovered ? '250px' : '260px' }}
+                  animate={{ maxWidth: isHovered ? '240px' : '260px' }}
                   transition={{
                     type: "spring",
                     stiffness: 350,
@@ -869,18 +869,17 @@ export default function Island() {
                 {isHovered && (
                   <motion.div
                     key="media-controls"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
+                    initial={{ opacity: 0, width: 0, marginLeft: 0, marginRight: 0 }}
+                    animate={{ opacity: 1, width: 'auto', marginLeft: 6, marginRight: 6 }}
+                    exit={{ opacity: 0, width: 0, marginLeft: 0, marginRight: 0 }}
                     transition={{
                       animate: { delay: 0.1, duration: 0.25 },
-                      exit: { duration: 0.15 },
+                      exit: { duration: 0.2 },
                       ease: [0.4, 0, 0.2, 1]
                     }}
                     className="media-btn"
                     style={{
-                      marginLeft: 6,
-                      marginRight: 6,
+                      overflow: 'hidden',
                       userSelect: 'none',
                       display: 'flex',
                       alignItems: 'center',
@@ -958,8 +957,9 @@ export default function Island() {
                 ) : `${percent}%`}
               </h1>
             </motion.div>
-          )}
-        </AnimatePresence>
+          )
+          }
+        </AnimatePresence >
       ) : null}
 
       <AnimatePresence custom={direction} mode="popLayout">
@@ -1948,6 +1948,6 @@ export default function Island() {
         )}
       </AnimatePresence>
 
-    </motion.div>
+    </motion.div >
   );
 }
