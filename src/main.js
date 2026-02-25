@@ -65,8 +65,6 @@ ipcMain.handle('update-window-position', (event, xPerc, yPx) => {
 });
 
 ipcMain.handle('set-auto-launch', (event, enable) => {
-  if (process.platform === 'darwin') return;
-
   if (process.platform === 'linux') {
     const autostartPath = path.join(app.getPath('home'), '.config', 'autostart');
     const desktopFilePath = path.join(autostartPath, 'ripple.desktop');

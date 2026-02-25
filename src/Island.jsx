@@ -79,10 +79,17 @@ export default function Island() {
   const [aiModel, setAiModel] = useState(localStorage.getItem("ai-model") || "llama-3.3-70b-versatile");
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const isDraggingRef = useRef(false);
+
+  const updateDragging = (val) => {
+    isDraggingRef.current = val;
+    setIsDragging(val);
+  };
   const [displays, setDisplays] = useState([]);
   const [currentDisplayId, setCurrentDisplayId] = useState(localStorage.getItem("display-id") || "");
   const [weatherLocation, setWeatherLocation] = useState(localStorage.getItem("location") || "");
   const [autoLaunchEnabled, setAutoLaunchEnabled] = useState(localStorage.getItem("auto-launch") === "true");
+  const [positionMode, setPositionMode] = useState(localStorage.getItem("position-mode") || localStorage.getItem("side-mode") || "free");
 
   const [islandX, setIslandX] = useState(() => {
     const saved = localStorage.getItem("island-x");
@@ -156,8 +163,8 @@ export default function Island() {
   };
 
   let isPlaying = spotifyTrack?.state === 'playing';
-  let width = mode === "large" ? (tab === 7 ? 450 : tab === 3 ? 330 : tab === 0 ? 405 : 380) : (mode === "quick" || alert || chargingAlert || bluetoothAlert) ? 300 : isPlaying ? 265 : 170;
-  let height = mode === "large" ? (tab === 7 ? 300 : tab === 6 ? 250 : tab === 3 ? 150 : tab === 0 ? 120 : 190) : 43;
+  let width = mode === "large" ? (tab === 7 ? 480 : tab === 3 ? 330 : tab === 0 ? 405 : 380) : (mode === "quick" || alert || chargingAlert || bluetoothAlert) ? 300 : isPlaying ? 265 : 170;
+  let height = mode === "large" ? (tab === 7 ? (positionMode === "free" ? 410 : 330) : tab === 6 ? 250 : tab === 3 ? 150 : tab === 0 ? 120 : 190) : 43;
 
   const [quickApps, setQuickApps] = useState(JSON.parse(localStorage.getItem("quick-apps") || '["Notes", "Spotify", "Calculator", "Terminal"]'));
   const [newQuickApp, setNewQuickApp] = useState("");
@@ -602,10 +609,10 @@ export default function Island() {
     try {
       const text = await navigator.clipboard.readText();
       setClipboard((prevClipboard) => {
-        if (prevClipboard[prevClipboard.length - 1] === text) {
+        if (prevClipboard[0] === text) {
           return prevClipboard;
         }
-        return [...prevClipboard, text];
+        return [text, ...prevClipboard];
       });
     } catch (error) {
       console.log(
@@ -735,6 +742,61 @@ export default function Island() {
     };
   }, []);
 
+  useEffect(() => {
+    const handleFocusOut = () => {
+      setTimeout(() => {
+        if (!isHovered) {
+          const activeTag = document.activeElement?.tagName;
+          if (activeTag !== "INPUT" && activeTag !== "TEXTAREA" && activeTag !== "SELECT") {
+            if (standbyBorderEnabled) {
+              setMode("quick");
+            } else if (largeStandbyEnabled) {
+              setMode("large");
+            } else {
+              setMode("still");
+            }
+          }
+        }
+      }, 100);
+    };
+
+    window.addEventListener("focusout", handleFocusOut);
+    return () => window.removeEventListener("focusout", handleFocusOut);
+  }, [isHovered, standbyBorderEnabled, largeStandbyEnabled]);
+
+  useEffect(() => {
+    if (!isDragging && !isHovered) {
+      const activeTag = document.activeElement?.tagName;
+      if (activeTag !== "INPUT" && activeTag !== "TEXTAREA") {
+        if (standbyBorderEnabled) {
+          setMode("quick");
+        } else if (largeStandbyEnabled) {
+          setMode("large");
+        } else {
+          setMode("still");
+        }
+      }
+    }
+  }, [isDragging, isHovered, standbyBorderEnabled, largeStandbyEnabled]);
+
+  const handleDragEndChecks = (e) => {
+    updateDragging(false);
+  };
+
+  const isFree = positionMode === "free";
+  const getSideStyles = () => {
+    switch (positionMode) {
+      case 'top-left': return { left: '15px', top: '15px', x: '-1px' };
+      case 'top-right': return { left: 'calc(100% - 15px)', top: '15px', x: 'calc(-100% - 1px)' };
+      case 'bottom-left': return { left: '15px', top: 'auto', bottom: '45px', x: '-1px' };
+      case 'bottom-right': return { left: 'calc(100% - 15px)', top: 'auto', bottom: '45px', x: 'calc(-100% - 1px)' };
+      case 'top-center': return { left: '50%', top: '20px', x: 'calc(-50% - 1px)' };
+      case 'bottom-center': return { left: '50%', top: 'auto', bottom: '45px', x: 'calc(-50% - 1px)' };
+      default: return { left: `${islandX}%`, top: `${islandY}px`, x: 'calc(-50% - 1px)' };
+    }
+  };
+  const sideStyles = getSideStyles();
+
   return (
     <motion.div
       id="Island"
@@ -746,7 +808,15 @@ export default function Island() {
         }
       }}
       onMouseLeave={() => {
+        if (isDraggingRef.current) return;
         setIsHovered(false);
+        if (window.electronAPI) {
+          window.electronAPI.setIgnoreMouseEvents(true, true);
+        }
+
+        const activeTag = document.activeElement?.tagName;
+        if (activeTag === "INPUT" || activeTag === "TEXTAREA") return;
+
         if (standbyBorderEnabled) {
           setMode("quick");
         } else if (largeStandbyEnabled) {
@@ -754,31 +824,45 @@ export default function Island() {
         } else {
           setMode("still");
         }
-        if (window.electronAPI) {
-          window.electronAPI.setIgnoreMouseEvents(true, true);
-        }
       }}
-      onClick={() => {
-        setMode("large");
+      onClick={(e) => {
+        const target = e.target;
+        const targetTag = target.tagName;
+        const isInteractive =
+          targetTag === "INPUT" ||
+          targetTag === "TEXTAREA" ||
+          targetTag === "SELECT" ||
+          targetTag === "LABEL" ||
+          target.closest('button') ||
+          target.closest('.radio-label') ||
+          target.closest('.task-row') ||
+          target.closest('.clipboard-row');
+
+        if (isInteractive) {
+          return;
+        }
+        setMode(prev => prev === "large" ? "quick" : "large");
         if (window.electronAPI) {
           window.electronAPI.setIgnoreMouseEvents(false, false);
         }
       }}
       onWheel={handleWheelSwipe}
       initial={{
-        x: "-50%",
-        left: `${islandX}%`,
-        top: `${islandY}px`,
+        x: sideStyles.x,
+        left: sideStyles.left,
+        top: sideStyles.top || 'auto',
+        bottom: sideStyles.bottom || 'auto',
       }}
       animate={{
         width: `${width}px`,
         height: `${height}px`,
-        left: `${islandX}%`,
-        top: `${islandY}px`,
+        left: sideStyles.left,
+        top: sideStyles.top || 'auto',
+        bottom: sideStyles.bottom || 'auto',
         backgroundColor: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : bgColor,
         color: hideNotActiveIslandEnabled && mode === 'still' ? "rgba(0,0,0,0)" : textColor,
         scale: isHovered ? 1.05 : 1,
-        x: "-50%",
+        x: sideStyles.x,
         borderRadius:
           mode === "large" && theme === "win95"
             ? 0
@@ -811,7 +895,7 @@ export default function Island() {
             ? "#FFFFFF #808080 #808080 #FFFFFF"
             : "none",
 
-        boxShadow: hideNotActiveIslandEnabled && mode === 'still' ? "none" : isHovered ? '0 8px 32px rgba(0, 0, 0, 0.25)' : '0 4px 24px rgba(0, 0, 0, 0.12)',
+        boxShadow: hideNotActiveIslandEnabled && mode === 'still' ? "none" : isHovered ? '0 0 32px rgba(0, 0, 0, 0.25)' : '0 0 24px rgba(0, 0, 0, 0.12)',
         '--island-text-color': textColor,
         '--island-bg-color': bgColor,
         position: 'fixed',
@@ -820,7 +904,7 @@ export default function Island() {
       }}
     >
       {/*Quickview*/}
-      {(mode === "quick" || (mode === "still" && isPlaying) || alert || chargingAlert || bluetoothAlert) ? (
+      {mode !== "large" && (mode === "quick" || (mode === "still" && isPlaying) || alert || chargingAlert || bluetoothAlert) ? (
         <AnimatePresence mode="wait">
           {isPlaying && !alert && !chargingAlert && !bluetoothAlert ? (
             <motion.div
@@ -975,19 +1059,6 @@ export default function Island() {
               x: { type: "spring", stiffness: 400, damping: 40 },
               opacity: { duration: 0.15 }
             }}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.4}
-            onDragStart={() => setIsDragging(true)}
-            onDragEnd={(e, { offset, velocity }) => {
-              setIsDragging(false);
-              const swipe = swipePower(offset.x, velocity.x);
-              if (swipe < -swipeConfidenceThreshold) {
-                setTab(([prev]) => [Math.min(7, prev + 1), 1]);
-              } else if (swipe > swipeConfidenceThreshold) {
-                setTab(([prev]) => [Math.max(0, prev - 1), -1]);
-              }
-            }}
             style={{
               width: "100%",
               height: "100%",
@@ -995,8 +1066,7 @@ export default function Island() {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              position: "absolute",
-              cursor: "grab"
+              position: "absolute"
             }}
           >
             {/*Browser Search*/}
@@ -1657,35 +1727,108 @@ export default function Island() {
                       <option value="win95">Windows 95</option>
                     </select>
                   </div>
-                  <div className="settings-row">
-                    <span className="settings-label">Position X ({islandX.toFixed(1)}%)</span>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      step="0.1"
-                      value={islandX}
-                      onChange={handleIslandXChange}
-                      onPointerUp={savePosition}
-                      list="tickmarks"
-                      style={{ flex: 1, accentColor: textColor }}
-                    />
-                    <datalist id="tickmarks">
-                      <option value="50" label="50%"></option>
-                    </datalist>
+                  <div className="settings-section" style={{ alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <span className="settings-label" style={{ textAlign: 'center', marginBottom: '8px', opacity: 1, color: textColor }}>Position Mode</span>
+                    <div className="radio-group" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', width: '100%', gap: '15px 10px' }}>
+                      {[
+                        { val: "top-left", label: "Top L" },
+                        { val: "top-center", label: "Top C" },
+                        { val: "top-right", label: "Top R" },
+                        { val: "bottom-left", label: "Bot L" },
+                        { val: "bottom-center", label: "Bot C" },
+                        { val: "bottom-right", label: "Bot R" }
+                      ].map((mode) => (
+                        <label key={mode.val} className="radio-label" style={{ justifyContent: 'center' }}>
+                          <input
+                            type="radio"
+                            name="positionMode"
+                            value={mode.val}
+                            checked={positionMode === mode.val}
+                            onChange={(e) => {
+                              setPositionMode(e.target.value);
+                              localStorage.setItem("position-mode", e.target.value);
+                            }}
+                          />
+                          <span className="radio-custom"></span>
+                          {mode.label}
+                        </label>
+                      ))}
+                    </div>
+                    <div style={{ width: '100%', height: '1px', background: 'rgba(255,255,255,0.1)', margin: '10px 0' }}></div>
+                    <label className="radio-label" style={{ justifyContent: 'center' }}>
+                      <input
+                        type="radio"
+                        name="positionMode"
+                        value="free"
+                        checked={positionMode === "free"}
+                        onChange={(e) => {
+                          setPositionMode(e.target.value);
+                          localStorage.setItem("position-mode", e.target.value);
+                        }}
+                      />
+                      <span className="radio-custom"></span>
+                      FREE (MANUAL)
+                    </label>
                   </div>
-                  <div className="settings-row">
-                    <span className="settings-label">Position Y ({islandY}px)</span>
-                    <input
-                      type="range"
-                      min="0"
-                      max="500"
-                      value={islandY}
-                      onChange={handleIslandYChange}
-                      onPointerUp={savePosition}
-                      style={{ flex: 1, accentColor: textColor }}
-                    />
-                  </div>
+                  <AnimatePresence>
+                    {isFree && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.15 }}
+                        style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: '12px' }}
+                      >
+                        <div className="settings-row">
+                          <span className="settings-label">Position X ({islandX.toFixed(1)}%)</span>
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            step="0.1"
+                            value={islandX}
+                            onPointerDown={(e) => {
+                              e.stopPropagation();
+                              updateDragging(true);
+                            }}
+                            onChange={handleIslandXChange}
+                            onPointerUp={(e) => {
+                              e.stopPropagation();
+                              savePosition();
+                              handleDragEndChecks(e);
+                              e.target.blur();
+                            }}
+                            list="tickmarks"
+                            style={{ flex: 1, accentColor: textColor }}
+                          />
+                          <datalist id="tickmarks">
+                            <option value="50" label="50%"></option>
+                          </datalist>
+                        </div>
+                        <div className="settings-row">
+                          <span className="settings-label">Position Y ({islandY}px)</span>
+                          <input
+                            type="range"
+                            min="0"
+                            max="500"
+                            value={islandY}
+                            onPointerDown={(e) => {
+                              e.stopPropagation();
+                              updateDragging(true);
+                            }}
+                            onChange={handleIslandYChange}
+                            onPointerUp={(e) => {
+                              e.stopPropagation();
+                              savePosition();
+                              handleDragEndChecks(e);
+                              e.target.blur();
+                            }}
+                            style={{ flex: 1, accentColor: textColor }}
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                   <div className="settings-row">
                     <span className="settings-label">Island Border</span>
                     <select value={islandBorderEnabled ? "true" : "false"} onChange={handleIslandBorderChange}>
