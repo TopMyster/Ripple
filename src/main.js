@@ -65,6 +65,8 @@ ipcMain.handle('update-window-position', (event, xPerc, yPx) => {
 });
 
 ipcMain.handle('set-auto-launch', (event, enable) => {
+  if (process.platform === 'darwin') return;
+
   if (process.platform === 'linux') {
     const autostartPath = path.join(app.getPath('home'), '.config', 'autostart');
     const desktopFilePath = path.join(autostartPath, 'ripple.desktop');
@@ -92,11 +94,15 @@ Terminal=false
     } catch (e) {
       console.error('Failed to set auto-launch on Linux:', e);
     }
-  } else {
-    app.setLoginItemSettings({
-      openAtLogin: enable,
-      path: app.getPath('exe'),
-    });
+  } else if (process.platform === 'win32') {
+    try {
+      app.setLoginItemSettings({
+        openAtLogin: enable,
+        path: app.getPath('exe'),
+      });
+    } catch (e) {
+      console.error('Failed to set login item settings on Windows:', e);
+    }
   }
 });
 

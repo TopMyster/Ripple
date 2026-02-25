@@ -1616,13 +1616,15 @@ export default function Island() {
                       <option value="24-hr">24-hour</option>
                     </select>
                   </div>
-                  <div className="settings-row">
-                    <span className="settings-label">Auto Launch on Boot</span>
-                    <select value={autoLaunchEnabled ? "true" : "false"} onChange={handleAutoLaunchChange}>
-                      <option value="true">Enabled</option>
-                      <option value="false">Disabled</option>
-                    </select>
-                  </div>
+                  {window.electronAPI?.platform !== 'darwin' && (
+                    <div className="settings-row">
+                      <span className="settings-label">Auto Launch on Boot</span>
+                      <select value={autoLaunchEnabled ? "true" : "false"} onChange={handleAutoLaunchChange}>
+                        <option value="true">Enabled</option>
+                        <option value="false">Disabled</option>
+                      </select>
+                    </div>
+                  )}
                   <div className="settings-row">
                     <span className="settings-label">Default Tab (1-8)</span>
                     <input
