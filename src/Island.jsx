@@ -781,13 +781,13 @@ export default function Island() {
   const isFree = positionMode === "free";
   const getSideStyles = () => {
     switch (positionMode) {
-      case 'top-left': return { left: '15px', top: '15px', x: '-1px' };
-      case 'top-right': return { left: 'calc(100% - 15px)', top: '15px', x: 'calc(-100% - 1px)' };
-      case 'bottom-left': return { left: '15px', top: 'auto', bottom: '45px', x: '-1px' };
-      case 'bottom-right': return { left: 'calc(100% - 15px)', top: 'auto', bottom: '45px', x: 'calc(-100% - 1px)' };
-      case 'top-center': return { left: '50%', top: '20px', x: 'calc(-50% - 1px)' };
-      case 'bottom-center': return { left: '50%', top: 'auto', bottom: '45px', x: 'calc(-50% - 1px)' };
-      default: return { left: `${islandX}%`, top: `${islandY}px`, x: 'calc(-50% - 1px)' };
+      case 'top-left': return { left: '15px', top: '15px', x: '0%' };
+      case 'top-right': return { left: 'calc(100% - 15px)', top: '15px', x: '-100%' };
+      case 'bottom-left': return { left: '15px', top: 'auto', bottom: '45px', x: '0%' };
+      case 'bottom-right': return { left: 'calc(100% - 15px)', top: 'auto', bottom: '45px', x: '-100%' };
+      case 'top-center': return { left: '49.8%', top: '20px', x: '-50%' };
+      case 'bottom-center': return { left: '49.8%', top: 'auto', bottom: '45px', x: '-50%' };
+      default: return { left: `${islandX}%`, top: `${islandY}px`, x: '-50%' };
     }
   };
   const sideStyles = getSideStyles();
