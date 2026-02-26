@@ -128,6 +128,20 @@ export default function Island() {
   const wheelLockout = useRef(false);
   const wheelAccumulator = useRef(0);
   const wheelResetTimeout = useRef(null);
+  const swipeStartX = useRef(0);
+  const swipeStartY = useRef(0);
+  const swipeMoved = useRef(false);
+  const suppressClick = useRef(false);
+  const swipeThreshold = 60;
+  const totalTabs = 8;
+
+  const moveTab = (direction) => {
+    if (direction > 0) {
+      setTab(([prev]) => [Math.min(totalTabs - 1, prev + 1), 1]);
+    } else if (direction < 0) {
+      setTab(([prev]) => [Math.max(0, prev - 1), -1]);
+    }
+  };
 
   const handleWheelSwipe = (e) => {
     if (wheelLockout.current || mode !== "large" || isDragging) return;
@@ -146,15 +160,58 @@ export default function Island() {
       wheelLockout.current = true;
       wheelAccumulator.current = 0;
 
-      if (isNext) {
-        setTab(([prev]) => [Math.min(7, prev + 1), 1]);
-      } else {
-        setTab(([prev]) => [Math.max(0, prev - 1), -1]);
-      }
+      moveTab(isNext ? 1 : -1);
       setTimeout(() => {
         wheelLockout.current = false;
       }, 800);
     }
+  };
+
+  const isInteractiveTarget = (target) => {
+    const targetTag = target?.tagName;
+    return (
+      targetTag === "INPUT" ||
+      targetTag === "TEXTAREA" ||
+      targetTag === "SELECT" ||
+      targetTag === "LABEL" ||
+      target?.closest?.("button") ||
+      target?.closest?.(".radio-label") ||
+      target?.closest?.(".task-row") ||
+      target?.closest?.(".clipboard-row")
+    );
+  };
+
+  const handlePointerDown = (e) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (mode !== "large" || isDragging || isInteractiveTarget(e.target)) return;
+    swipeStartX.current = e.clientX;
+    swipeStartY.current = e.clientY;
+    swipeMoved.current = false;
+  };
+
+  const handlePointerMove = (e) => {
+    if (mode !== "large") return;
+    const dx = Math.abs(e.clientX - swipeStartX.current);
+    const dy = Math.abs(e.clientY - swipeStartY.current);
+    if (dx > 8 || dy > 8) {
+      swipeMoved.current = true;
+      suppressClick.current = true;
+    }
+  };
+
+  const handlePointerUp = (e) => {
+    if (mode !== "large" || isDragging || wheelLockout.current) return;
+    if (!swipeMoved.current) return;
+
+    const dx = e.clientX - swipeStartX.current;
+    const dy = e.clientY - swipeStartY.current;
+    if (Math.abs(dx) < swipeThreshold || Math.abs(dx) <= Math.abs(dy)) return;
+
+    wheelLockout.current = true;
+    moveTab(dx < 0 ? 1 : -1);
+    setTimeout(() => {
+      wheelLockout.current = false;
+    }, 800);
   };
 
   let isPlaying = spotifyTrack?.state === 'playing';
@@ -722,9 +779,9 @@ export default function Island() {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "ArrowRight") {
-        setTab(([prev]) => [Math.min(7, prev + 1), 1]);
+        moveTab(1);
       } else if (e.key === "ArrowLeft") {
-        setTab(([prev]) => [Math.max(0, prev - 1), -1]);
+        moveTab(-1);
       } else if (e.ctrlKey && e.key >= "1" && e.key <= "8") {
         const tabNum = parseInt(e.key) - 1;
         setMode("large");
@@ -821,27 +878,20 @@ export default function Island() {
         }
       }}
       onClick={(e) => {
-        const target = e.target;
-        const targetTag = target.tagName;
-        const isInteractive =
-          targetTag === "INPUT" ||
-          targetTag === "TEXTAREA" ||
-          targetTag === "SELECT" ||
-          targetTag === "LABEL" ||
-          target.closest('button') ||
-          target.closest('.radio-label') ||
-          target.closest('.task-row') ||
-          target.closest('.clipboard-row');
-
-        if (isInteractive) {
+        if (suppressClick.current) {
+          suppressClick.current = false;
           return;
         }
+        if (isInteractiveTarget(e.target)) return;
         setMode(prev => prev === "large" ? "quick" : "large");
         if (window.electronAPI) {
           window.electronAPI.setIgnoreMouseEvents(false, false);
         }
       }}
       onWheel={handleWheelSwipe}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
       initial={{
         x: sideStyles.x,
         left: sideStyles.left,
