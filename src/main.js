@@ -16,7 +16,6 @@ const { exec } = require('child_process');
 ipcMain.handle('set-ignore-mouse-events', (event, ignore, forward) => {
   if (mainWindow) {
     mainWindow.setIgnoreMouseEvents(ignore, { forward: forward || false });
-    // On Linux, disabling focusable allows clicks to pass through more reliably to background apps
     if (process.platform === 'linux') {
       mainWindow.setFocusable(!ignore);
     }
@@ -70,9 +69,7 @@ ipcMain.handle('set-display', (event, displayId) => {
   }
 });
 
-ipcMain.handle('update-window-position', (event, xPerc, yPx) => {
-  // Logic handled by React state when window is full screen
-});
+ipcMain.handle('update-window-position', (event, xPerc, yPx) => { });
 
 ipcMain.handle('set-auto-launch', (event, enable) => {
   if (process.platform === 'linux') {
@@ -140,7 +137,6 @@ const createWindow = () => {
   const winX = x;
   const winY = y;
 
-  // 'type' option is only supported on macOS ('toolbar') and Linux ('dock'); not Windows
   const windowType = isWindows ? undefined : 'toolbar';
 
   mainWindow = new BrowserWindow({
@@ -153,17 +149,15 @@ const createWindow = () => {
     alwaysOnTop: true,
     resizable: false,
     frame: false,
-    // thickFrame: false breaks transparent windows on Windows
     ...(isWindows ? {} : { thickFrame: false }),
     hasShadow: false,
     skipTaskbar: true,
     icon: getIconPath(),
-    // hiddenInMissionControl is a macOS-only option
     ...(isMac ? { hiddenInMissionControl: true } : {}),
-    // type is not supported on Windows
     ...(windowType ? { type: windowType } : {}),
     fullscreen: false,
     visibleOnFullScreen: true,
+    acceptFirstMouse: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       devTools: false
