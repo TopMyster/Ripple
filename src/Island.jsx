@@ -79,6 +79,7 @@ export default function Island() {
   const [aiModel, setAiModel] = useState(localStorage.getItem("ai-model") || "llama-3.3-70b-versatile");
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const isDraggingRef = useRef(false);
 
   const updateDragging = (val) => {
@@ -857,6 +858,7 @@ export default function Island() {
         if (mode !== "large") setMode("quick");
         if (window.electronAPI) {
           window.electronAPI.setIgnoreMouseEvents(false, false);
+          window.electronAPI.focusWindow();
         }
       }}
       onMouseLeave={() => {
@@ -917,6 +919,14 @@ export default function Island() {
                 ? 0
                 : 16,
       }}
+      onUpdate={(latest) => {
+        if (latest.width || latest.height) {
+          setIsTransitioning(true);
+        }
+      }}
+      onAnimationComplete={() => {
+        setIsTransitioning(false);
+      }}
       transition={{
         type: "spring",
         stiffness: 400,
@@ -945,7 +955,8 @@ export default function Island() {
         '--island-bg-color': bgColor,
         position: 'fixed',
         margin: 0,
-        transition: 'box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+        transition: 'box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        pointerEvents: isTransitioning ? 'auto' : (window.electronAPI?.platform === 'linux' && mode === 'still' && !isHovered) ? 'none' : 'auto'
       }}
     >
       {/*Quickview*/}
@@ -1018,6 +1029,7 @@ export default function Island() {
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
+                      window.electronAPI.focusWindow();
                       window.electronAPI.controlSystemMedia('playpause');
                     }}
                   >
@@ -1120,6 +1132,7 @@ export default function Island() {
                 <input
                   id="browser-searchbar"
                   placeholder="Search google or enter URL"
+                  onFocus={() => window.electronAPI.focusWindow()}
                   value={browserSearch}
                   onChange={(e) => setBrowserSearch(e.target.value)}
                   onKeyDown={(e) => {
@@ -1167,7 +1180,10 @@ export default function Island() {
                         <motion.button
                           key={`main-wf-${workflow.name}-${i}`}
                           className="workflow-item"
-                          onClick={() => openWorkflow(workflow)}
+                          onClick={() => {
+                            window.electronAPI.focusWindow();
+                            openWorkflow(workflow);
+                          }}
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.9, height: 0, padding: 0, marginBottom: 0 }}
@@ -1214,7 +1230,10 @@ export default function Island() {
                         <motion.button
                           key={`main-qa-${app}-${i}`}
                           className="qa-app"
-                          onClick={() => openApp(app)}
+                          onClick={() => {
+                            window.electronAPI.focusWindow();
+                            openApp(app);
+                          }}
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0, width: 0, padding: 0, margin: 0 }}
@@ -1360,12 +1379,18 @@ export default function Island() {
                         <div style={{ display: 'flex', gap: 15, marginTop: 15, alignItems: 'center', marginLeft: 5 }}>
                           <button
                             className="media-btn"
-                            onClick={() => window.electronAPI.controlSystemMedia('previous')}
+                            onClick={() => {
+                              window.electronAPI.focusWindow();
+                              window.electronAPI.controlSystemMedia('previous');
+                            }}
                             style={{ background: 'none', border: 'none', color: textColor, cursor: 'pointer', padding: 4, opacity: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                           ><SkipBackIcon size={20} color={textColor} fill={textColor} /></button>
                           <button
                             className="media-btn"
-                            onClick={() => window.electronAPI.controlSystemMedia('playpause')}
+                            onClick={() => {
+                              window.electronAPI.focusWindow();
+                              window.electronAPI.controlSystemMedia('playpause');
+                            }}
                             style={{
                               background: 'none',
                               border: 'none',
@@ -1381,7 +1406,10 @@ export default function Island() {
                           </button>
                           <button
                             className="media-btn"
-                            onClick={() => window.electronAPI.controlSystemMedia('next')}
+                            onClick={() => {
+                              window.electronAPI.focusWindow();
+                              window.electronAPI.controlSystemMedia('next');
+                            }}
                             style={{ background: 'none', border: 'none', color: textColor, cursor: 'pointer', padding: 4, opacity: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                           ><SkipForwardIcon size={20} color={textColor} fill={textColor} /></button>
                         </div>
@@ -1433,6 +1461,7 @@ export default function Island() {
                       <textarea
                         id="userinput"
                         placeholder="Ask Anything"
+                        onFocus={() => window.electronAPI.focusWindow()}
                         value={userText}
                         onChange={(e) => setUserText(e.target.value)}
                         onKeyDown={(e) => {
@@ -1452,6 +1481,7 @@ export default function Island() {
                       <button
                         id="chatsubmit"
                         onClick={() => {
+                          window.electronAPI.focusWindow();
                           setAsked(true);
                           askAI();
                         }}
@@ -1573,6 +1603,7 @@ export default function Island() {
                       <button
                         onPointerDown={(e) => e.stopPropagation()}
                         onClick={() => {
+                          window.electronAPI.focusWindow();
                           setAsked(false);
                           setAIAnswer(null);
                           setUserText("");
@@ -1610,6 +1641,7 @@ export default function Island() {
                       <p className="clipboard-content" style={{ paddingRight: '45px' }}>{item}</p>
                       <button
                         onClick={(e) => {
+                          window.electronAPI.focusWindow();
                           copyToClipboard(item);
                           const btn = e.currentTarget;
                           const originalText = btn.innerText;
@@ -1671,7 +1703,10 @@ export default function Island() {
                         >
                           <input
                             type="checkbox"
-                            onChange={() => removeTask(index)}
+                            onChange={() => {
+                              window.electronAPI.focusWindow();
+                              removeTask(index);
+                            }}
                             className="task-checkbox"
                           />
                           <h3 className="task-item" style={{ flex: 1, margin: 0 }}>{task}</h3>
@@ -1684,6 +1719,7 @@ export default function Island() {
                   <input
                     type="text"
                     placeholder="New task..."
+                    onFocus={() => window.electronAPI.focusWindow()}
                     value={taskText}
                     onChange={(e) => setTaskText(e.target.value)}
                     onKeyDown={(e) => {
@@ -1701,7 +1737,10 @@ export default function Island() {
                     }}
                   />
                   <button
-                    onClick={addTask}
+                    onClick={() => {
+                      window.electronAPI.focusWindow();
+                      addTask();
+                    }}
                     className="task-add-btn"
                     style={{
                       backgroundColor: textColor,
@@ -1982,7 +2021,10 @@ export default function Island() {
                       onChange={(e) => setNewQuickApp(e.target.value)}
                     />
                     <button
-                      onClick={addQuickApp}
+                      onClick={() => {
+                        window.electronAPI.focusWindow();
+                        addQuickApp();
+                      }}
                       style={{
                         backgroundColor: textColor,
                         color: bgColor,
@@ -2089,7 +2131,10 @@ export default function Island() {
                       onChange={(e) => setWorkflowUrls(e.target.value)}
                     />
                     <button
-                      onClick={addWorkflow}
+                      onClick={() => {
+                        window.electronAPI.focusWindow();
+                        addWorkflow();
+                      }}
                       style={{
                         backgroundColor: textColor,
                         color: bgColor,

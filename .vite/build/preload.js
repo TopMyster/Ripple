@@ -13,5 +13,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   setDisplay: (displayId) => ipcRenderer.invoke("set-display", displayId),
   updateWindowPosition: (xPerc, yPx) => ipcRenderer.invoke("update-window-position", xPerc, yPx),
   setAutoLaunch: (enable) => process.platform !== "darwin" ? ipcRenderer.invoke("set-auto-launch", enable) : Promise.resolve(),
+  focusWindow: () => ipcRenderer.invoke("focus-window"),
   platform: process.platform
 });

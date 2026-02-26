@@ -16,6 +16,16 @@ const { exec } = require('child_process');
 ipcMain.handle('set-ignore-mouse-events', (event, ignore, forward) => {
   if (mainWindow) {
     mainWindow.setIgnoreMouseEvents(ignore, { forward: forward || false });
+    // On Linux, disabling focusable allows clicks to pass through more reliably to background apps
+    if (process.platform === 'linux') {
+      mainWindow.setFocusable(!ignore);
+    }
+  }
+});
+
+ipcMain.handle('focus-window', () => {
+  if (mainWindow) {
+    mainWindow.focus();
   }
 });
 
@@ -165,7 +175,14 @@ const createWindow = () => {
     mainWindow.setFullScreen(true);
   }
 
-  mainWindow.setIgnoreMouseEvents(true, { forward: true });
+  if (isLinux) {
+    // On Linux, forward: true can sometimes block clicks on certain window managers
+    // so we set it to true but only when the window is actually supposed to be interactive.
+    mainWindow.setIgnoreMouseEvents(true, { forward: true });
+    mainWindow.setFocusable(false);
+  } else {
+    mainWindow.setIgnoreMouseEvents(true, { forward: true });
+  }
 
   const showDelay = isLinux ? 500 : 0;
 
