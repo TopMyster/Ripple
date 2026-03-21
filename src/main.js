@@ -15,8 +15,9 @@ const { exec } = require('child_process');
 
 ipcMain.handle('set-ignore-mouse-events', (event, ignore, forward) => {
   if (mainWindow) {
-    mainWindow.setIgnoreMouseEvents(ignore, { forward: forward || false });
-    if (process.platform === 'linux') {
+    if (process.platform !== 'linux') {
+      mainWindow.setIgnoreMouseEvents(ignore, { forward: forward || false });
+    } else {
       mainWindow.setFocusable(!ignore);
     }
   }
@@ -169,13 +170,12 @@ const createWindow = () => {
     mainWindow.setFullScreen(true);
   }
 
-  if (isLinux) {
-    // On Linux, forward: true can sometimes block clicks on certain window managers
-    // so we set it to true but only when the window is actually supposed to be interactive.
+  if (!isLinux) {
     mainWindow.setIgnoreMouseEvents(true, { forward: true });
-    mainWindow.setFocusable(false);
   } else {
-    mainWindow.setIgnoreMouseEvents(true, { forward: true });
+    // On Linux, native transparency handles click-through automatically. 
+    // Using setIgnoreMouseEvents with forward: true blocks clicks on KDE Plasma and Debian.
+    mainWindow.setFocusable(false);
   }
 
   const showDelay = isLinux ? 500 : 0;
@@ -332,27 +332,9 @@ ipcMain.handle('get-system-media', async () => {
       });
 
     } else if (platform === 'win32') {
-      const psScript = `
-        Add-Type -AssemblyName System.Runtime.WindowsRuntime
-        $manager = [Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager, Windows.Media.Control, ContentType = WindowsRuntime]::RequestAsync().GetAwaiter().GetResult()
-        $session = $manager.GetCurrentSession()
-        if ($session) {
-            $props = $session.TryGetMediaPropertiesAsync().GetAwaiter().GetResult()
-            $playback = $session.GetPlaybackInfo()
-            $status = $playback.PlaybackStatus
-            $info = @{
-                Title = $props.Title
-                Artist = $props.Artist
-                Album = $props.AlbumTitle
-                Status = $status.ToString().ToLower()
-                Source = $session.SourceAppId
-            }
-            return $info | ConvertTo-Json
-        }
-        return "null"
-      `;
-      exec(`powershell -Command "${psScript.replace(/"/g, '\\"')}"`, (error, stdout) => {
-        if (error || !stdout || stdout.trim() === "null") {
+      const psScript = `Add-Type -AssemblyName System.Runtime.WindowsRuntime; $manager = [Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager, Windows.Media.Control, ContentType = WindowsRuntime]::RequestAsync().GetAwaiter().GetResult(); $session = $manager.GetCurrentSession(); if ($session) { $props = $session.TryGetMediaPropertiesAsync().GetAwaiter().GetResult(); $playback = $session.GetPlaybackInfo(); $status = $playback.PlaybackStatus; $thumbnail = $props.Thumbnail; $artwork = ''; if ($thumbnail) { try { $stream = $thumbnail.OpenReadAsync().GetAwaiter().GetResult(); $buffer = New-Object byte[] $stream.Size; $reader = New-Object Windows.Storage.Streams.DataReader $stream; $reader.LoadAsync($stream.Size).GetAwaiter().GetResult() | Out-Null; $reader.ReadBytes($buffer); $artwork = 'data:image/png;base64,' + [Convert]::ToBase64String($buffer); $reader.Close(); $stream.Close(); } catch { } } $info = @{ Title = $props.Title; Artist = $props.Artist; Album = $props.AlbumTitle; Status = $status.ToString().ToLower(); Source = $session.SourceAppUserModelId; Artwork = $artwork }; return $info | ConvertTo-Json -Compress; } return 'null';`;
+      exec(`powershell -NoProfile -Command "${psScript}"`, { maxBuffer: 5 * 1024 * 1024 }, (error, stdout) => {
+        if (error || !stdout || stdout.trim() === "null" || stdout.trim() === "'null'") {
           exec(`powershell "Get-Process | Where-Object {$_.ProcessName -eq 'Spotify'} | Select-Object MainWindowTitle"`, (err, out) => {
             if (err || !out) return resolve(null);
             const title = out.split('\n').find(l => l.includes('-'))?.trim();
@@ -377,6 +359,7 @@ ipcMain.handle('get-system-media', async () => {
             name: data.Title || "Unknown Title",
             artist: data.Artist || "Unknown Artist",
             album: data.Album || "",
+            artwork_url: data.Artwork || null,
             state: data.Status === 'playing' ? 'playing' : 'paused',
             source: data.Source || 'System'
           });
