@@ -66,9 +66,8 @@ module.exports = {
             continue;
           }
 
-          // macOS gets arch suffix (x64/arm64), others don't need it
           const archSuffix = result.platform === 'darwin' ? `-${result.arch}` : '';
-          const portableSuffix = ext === '.zip' && result.platform === 'win32' ? '-Portable' : '';
+          const portableSuffix = ext === '.zip' ? '-Portable' : '';
           const newName = `Ripple-${os}${archSuffix}-v${version}${portableSuffix}${ext}`;
           const newPath = path.join(path.dirname(artifactPath), newName);
 
@@ -130,7 +129,7 @@ module.exports = {
     },
     {
       name: '@electron-forge/maker-zip',
-      platforms: ['win32'],
+      platforms: ['darwin', 'win32', 'linux'],
     },
   ],
   plugins: [
