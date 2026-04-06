@@ -771,11 +771,12 @@ export default function Island() {
     setTasks((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function openWorkflow(workflow) {
+  async function openWorkflow(workflow) {
     if (!workflow || !workflow.urls) return;
-    workflow.urls.forEach(url => {
-      openApp(url);
-    });
+    for (let i = 0; i < workflow.urls.length; i++) {
+      openApp(workflow.urls[i]);
+      await new Promise(r => setTimeout(r, 400));
+    }
   }
 
   function addWorkflow() {
