@@ -196,17 +196,17 @@ export default function Island() {
   const handlePointerDown = (e) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
     const target = e.target;
-    const isEditing = document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA";
-    const isTargetInput = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.closest("#userinput") || target?.id === "userinput";
-    if (mode !== "large" || isDragging || isEditing || isTargetInput) return;
+    if (mode !== "large" || isDragging || isInteractiveTarget(target) || target?.closest("#userinput") || target?.id === "userinput") {
+      swipeStartX.current = null;
+      return;
+    }
     swipeStartX.current = e.clientX;
     swipeStartY.current = e.clientY;
     swipeMoved.current = false;
   };
 
   const handlePointerMove = (e) => {
-    const isEditing = document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA";
-    if (mode !== "large" || isEditing) return;
+    if (swipeStartX.current === null || mode !== "large") return;
     const dx = Math.abs(e.clientX - swipeStartX.current);
     const dy = Math.abs(e.clientY - swipeStartY.current);
     if (dx > 8 || dy > 8) {
@@ -220,11 +220,16 @@ export default function Island() {
       suppressClick.current = false;
     }, 100);
 
+    if (swipeStartX.current === null) return;
+    const startX = swipeStartX.current;
+    const startY = swipeStartY.current;
+    swipeStartX.current = null;
+
     if (mode !== "large" || isDragging || wheelLockout.current) return;
     if (!swipeMoved.current) return;
 
-    const dx = e.clientX - swipeStartX.current;
-    const dy = e.clientY - swipeStartY.current;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
     if (Math.abs(dx) < swipeThreshold || Math.abs(dx) <= Math.abs(dy)) return;
 
     wheelLockout.current = true;
