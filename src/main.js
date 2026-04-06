@@ -405,12 +405,8 @@ ipcMain.handle('get-bluetooth-status', async () => {
         }
       });
     } else if (platform === 'win32') {
-      const psScript = `
-        Add-Type -AssemblyName System.Runtime.WindowsRuntime
-        $devices = [Windows.Devices.Enumeration.DeviceInformation, Windows.Devices.Enumeration, ContentType = WindowsRuntime]::FindAllAsync('(System.Devices.Aep.ProtocolId:="{e0cbf06c-5021-4943-9112-460f89956c33}") AND (System.Devices.Aep.IsConnected:=$true)').GetAwaiter().GetResult()
-        return $devices.Count > 0
-      `;
-      exec(`powershell -Command "${psScript.replace(/"/g, '\\"')}"`, (error, stdout) => {
+      const psScript = `@(Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq 'OK' -and $_.Present -eq $true -and $_.InstanceId -match 'BTHENUM' }).Count -gt 0`;
+      exec(`powershell -NoProfile -Command "${psScript}"`, (error, stdout) => {
         if (error) return resolve(false);
         resolve(stdout.trim().toLowerCase() === 'true');
       });
