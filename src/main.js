@@ -18,7 +18,7 @@ ipcMain.handle('set-ignore-mouse-events', (event, ignore, forward) => {
     if (process.platform !== 'linux') {
       mainWindow.setIgnoreMouseEvents(ignore, { forward: forward || false });
     } else {
-      mainWindow.setFocusable(!ignore);
+      mainWindow.setIgnoreMouseEvents(ignore);
     }
   }
 });
@@ -63,7 +63,8 @@ ipcMain.handle('set-display', (event, displayId) => {
 
     mainWindow.setBounds({ x, y, width, height });
     if (!isLinux) {
-      mainWindow.setFullScreen(true);
+      // Avoid setFullScreen to prevent covering taskbars and causing focus issues
+      // mainWindow.setFullScreen(true);
     }
 
     mainWindow.show();
@@ -138,7 +139,7 @@ const createWindow = () => {
   const winX = x;
   const winY = y;
 
-  const windowType = isWindows ? undefined : 'toolbar';
+  const windowType = isWindows ? 'toolbar' : 'panel';
 
   mainWindow = new BrowserWindow({
     width: winWidth,
@@ -163,19 +164,17 @@ const createWindow = () => {
       preload: path.join(__dirname, "preload.js"),
       devTools: false
     },
-    show: false
+    show: true
   });
 
   if (!isLinux) {
-    mainWindow.setFullScreen(true);
+
   }
 
   if (!isLinux) {
     mainWindow.setIgnoreMouseEvents(true, { forward: true });
   } else {
-    // On Linux, native transparency handles click-through automatically. 
-    // Using setIgnoreMouseEvents with forward: true blocks clicks on KDE Plasma and Debian.
-    mainWindow.setFocusable(false);
+    mainWindow.setIgnoreMouseEvents(true);
   }
 
   const showDelay = isLinux ? 500 : 0;
@@ -186,6 +185,10 @@ const createWindow = () => {
         mainWindow.show();
         if (isLinux) {
           mainWindow.setAlwaysOnTop(true, 'screen-saver');
+        } else if (isMac) {
+          mainWindow.setAlwaysOnTop(true, 'pop-up-menu');
+        } else {
+          mainWindow.setAlwaysOnTop(true, 'pop-up-menu');
         }
         mainWindow.focus();
       }
@@ -230,7 +233,6 @@ app.whenReady().then(() => {
   try {
     const iconPath = getIconPath();
     const icon = nativeImage.createFromPath(iconPath);
-    // Always resize specifically for the tray to ensure it fits the OS requirements (usually 16x16 or 32x32)
     const trayIcon = icon.resize({ width: 16, height: 16 });
     tray = new Tray(trayIcon);
     const contextMenu = Menu.buildFromTemplate([
@@ -332,14 +334,15 @@ ipcMain.handle('get-system-media', async () => {
       });
 
     } else if (platform === 'win32') {
-      const psScript = `Add-Type -AssemblyName System.Runtime.WindowsRuntime; $manager = [Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager, Windows.Media.Control, ContentType = WindowsRuntime]::RequestAsync().GetAwaiter().GetResult(); $session = $manager.GetCurrentSession(); if ($session) { $props = $session.TryGetMediaPropertiesAsync().GetAwaiter().GetResult(); $playback = $session.GetPlaybackInfo(); $status = $playback.PlaybackStatus; $thumbnail = $props.Thumbnail; $artwork = ''; if ($thumbnail) { try { $stream = $thumbnail.OpenReadAsync().GetAwaiter().GetResult(); $buffer = New-Object byte[] $stream.Size; $reader = New-Object Windows.Storage.Streams.DataReader $stream; $reader.LoadAsync($stream.Size).GetAwaiter().GetResult() | Out-Null; $reader.ReadBytes($buffer); $artwork = 'data:image/png;base64,' + [Convert]::ToBase64String($buffer); $reader.Close(); $stream.Close(); } catch { } } $info = @{ Title = $props.Title; Artist = $props.Artist; Album = $props.AlbumTitle; Status = $status.ToString().ToLower(); Source = $session.SourceAppUserModelId; Artwork = $artwork }; return $info | ConvertTo-Json -Compress; } return 'null';`;
-      exec(`powershell -NoProfile -Command "${psScript}"`, { maxBuffer: 5 * 1024 * 1024 }, (error, stdout) => {
+      const psScript = `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Add-Type -AssemblyName System.Runtime.WindowsRuntime; $manager = [Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager, Windows.Media.Control, ContentType = WindowsRuntime]::RequestAsync().GetAwaiter().GetResult(); $session = $manager.GetCurrentSession(); if ($session) { $props = $session.TryGetMediaPropertiesAsync().GetAwaiter().GetResult(); $playback = $session.GetPlaybackInfo(); $status = $playback.PlaybackStatus; $thumbnail = $props.Thumbnail; $artwork = ''; if ($thumbnail) { try { $stream = $thumbnail.OpenReadAsync().GetAwaiter().GetResult(); $buffer = New-Object byte[] $stream.Size; $reader = New-Object Windows.Storage.Streams.DataReader $stream; $reader.LoadAsync($stream.Size).GetAwaiter().GetResult() | Out-Null; $reader.ReadBytes($buffer); $artwork = 'data:image/png;base64,' + [Convert]::ToBase64String($buffer); $reader.Close(); $stream.Close(); } catch { } } $info = @{ Title = $props.Title; Artist = $props.Artist; Album = $props.AlbumTitle; Status = $status.ToString().ToLower(); Source = $session.SourceAppUserModelId; Artwork = $artwork }; return $info | ConvertTo-Json -Compress; } return 'null';`;
+      exec(`powershell -NoProfile -Command "${psScript}"`, { maxBuffer: 5 * 1024 * 1024, encoding: 'utf8' }, (error, stdout) => {
         if (error || !stdout || stdout.trim() === "null" || stdout.trim() === "'null'") {
-          exec(`powershell "Get-Process | Where-Object {$_.ProcessName -eq 'Spotify'} | Select-Object MainWindowTitle"`, (err, out) => {
+          exec(`powershell -NoProfile -Command "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Get-Process | Where-Object {$_.ProcessName -eq 'Spotify'} | Select-Object MainWindowTitle"`, { encoding: 'utf8' }, (err, out) => {
             if (err || !out) return resolve(null);
             const title = out.split('\n').find(l => l.includes('-'))?.trim();
             if (title) {
-              const [artist, song] = title.split(' - ');
+              const [artist, ...songParts] = title.split(' - ');
+              const song = songParts.join(' - ');
               resolve({
                 name: song || title,
                 artist: artist || "Unknown",

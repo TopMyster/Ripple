@@ -46,6 +46,17 @@ export default function Island() {
   const [time, setTime] = useState(null);
   const [mode, setMode] = useState("still");
   const [[tab, direction], setTab] = useState([Number(localStorage.getItem("default-tab") || 2), 0]);
+  const [tabOrder, setTabOrder] = useState(() => JSON.parse(localStorage.getItem("tab-order") || "[0,1,2,3,4,5,6,7]"));
+  const currentTab = tabOrder[tab];
+  const moveTabOrder = (fromIdx, toIdx) => {
+    setTabOrder((prev) => {
+      const newOrder = [...prev];
+      const [moved] = newOrder.splice(fromIdx, 1);
+      newOrder.splice(toIdx, 0, moved);
+      localStorage.setItem("tab-order", JSON.stringify(newOrder));
+      return newOrder;
+    });
+  };
   const [asked, setAsked] = useState(false);
   const [aiAnswer, setAIAnswer] = useState(null);
   const [percent, setPercent] = useState(null);
@@ -224,8 +235,8 @@ export default function Island() {
   };
 
   let isPlaying = spotifyTrack?.state === 'playing';
-  let width = mode === "large" ? (tab === 7 ? 480 : tab === 3 ? 330 : tab === 0 ? 405 : 380) : (mode === "quick" || alert || chargingAlert || bluetoothAlert) ? 300 : isPlaying ? 265 : 170;
-  let height = mode === "large" ? (tab === 7 ? (positionMode === "free" ? 410 : 330) : tab === 6 ? 250 : tab === 3 ? 150 : tab === 0 ? 120 : 190) : 43;
+  let width = mode === "large" ? (currentTab === 7 ? 480 : currentTab === 1 ? 480 : currentTab === 3 ? 330 : currentTab === 0 ? 405 : 380) : (mode === "quick" || alert || chargingAlert || bluetoothAlert) ? 300 : isPlaying ? 265 : 170;
+  let height = mode === "large" ? (currentTab === 7 ? (positionMode === "free" ? 410 : 330) : currentTab === 6 ? 250 : currentTab === 3 ? 150 : currentTab === 0 ? 120 : 190) : 43;
 
   const [quickApps, setQuickApps] = useState(JSON.parse(localStorage.getItem("quick-apps") || '["Notes", "Spotify", "Calculator", "Terminal"]'));
   const [newQuickApp, setNewQuickApp] = useState("");
@@ -394,10 +405,10 @@ export default function Island() {
   };
 
   useEffect(() => {
-    if (tab === 7 && window.electronAPI?.getDisplays) {
+    if (currentTab === 7 && window.electronAPI?.getDisplays) {
       window.electronAPI.getDisplays().then(setDisplays);
     }
-  }, [tab]);
+  }, [currentTab]);
 
   const handleBgImageChange = (e) => {
     const value = e.target.value;
@@ -758,11 +769,7 @@ export default function Island() {
   function openWorkflow(workflow) {
     if (!workflow || !workflow.urls) return;
     workflow.urls.forEach(url => {
-      const trimmedUrl = url.trim();
-      if (!trimmedUrl) return;
-      const hasProtocol = /^https?:\/\//i.test(trimmedUrl);
-      const urlToOpen = hasProtocol ? trimmedUrl : `https://${trimmedUrl}`;
-      window.electronAPI?.openExternal(urlToOpen);
+      openApp(url);
     });
   }
 
@@ -929,7 +936,7 @@ export default function Island() {
           mode === "large" && theme === "win95"
             ? 0
             : mode === "large"
-              ? (tab === 0 ? 30 : 32)
+              ? (currentTab === 0 ? 30 : 32)
               : theme === "win95"
                 ? 0
                 : 16,
@@ -956,7 +963,7 @@ export default function Island() {
         backgroundRepeat: "no-repeat",
         backgroundPosition: "center",
         backgroundSize: "cover",
-        justifyContent: (mode === "large" && tab === 3) ? "flex-start" : "center",
+        justifyContent: (mode === "large" && currentTab === 3) ? "flex-start" : "center",
         overflow: "hidden",
         fontFamily: theme === "win95" ? "w95" : "OpenRunde",
         border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : islandBorderEnabled ? (charging || chargingAlert) ? `1px solid rgba(111, 255, 123, 0.5)` : (percent <= 20 || alert) ? `1px solid rgba(255, 63, 63, 0.5)` : bluetoothAlert ? `1px solid rgba(0, 150, 255, 0.34)` : hideNotActiveIslandEnabled ? "none" : `1px solid color-mix(in srgb, ${textColor}, transparent 70%)` : "none",
@@ -1141,7 +1148,7 @@ export default function Island() {
             }}
           >
             {/*Browser Search*/}
-            {tab === 0 && (
+            {currentTab === 0 && (
               <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                 <input
                   id="browser-searchbar"
@@ -1159,7 +1166,7 @@ export default function Island() {
               </div>
             )}
             {/* Workflows & Quick Apps */}
-            {tab === 1 && (
+            {currentTab === 1 && (
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -1265,7 +1272,7 @@ export default function Island() {
             )}
 
             {/*Overview tab*/}
-            {tab === 2 && (
+            {currentTab === 2 && (
               <>
                 <div id="battery" style={{ animation: 'none' }}>
                   <div
@@ -1308,7 +1315,7 @@ export default function Island() {
             )}
 
             {/* Now Playing*/}
-            {tab === 3 && (
+            {currentTab === 3 && (
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -1445,7 +1452,7 @@ export default function Island() {
             )}
 
             {/* AI tab container */}
-            {tab === 4 && (
+            {currentTab === 4 && (
               <div style={{ width: '100%', height: '100%', position: 'relative' }}>
                 <AnimatePresence mode="wait">
                   {!asked ? (
@@ -1636,7 +1643,7 @@ export default function Island() {
             )}
 
             {/*Clipboard*/}
-            {tab === 5 && (
+            {currentTab === 5 && (
               <div id="clipboard" style={{ animation: 'none' }}>
                 {clipboard.length === 0 ? (
                   <p style={{ opacity: 0.5, textAlign: 'center', marginTop: 30 }}>Clipboard is empty</p>
@@ -1682,7 +1689,7 @@ export default function Island() {
             )}
 
             {/*Tasks*/}
-            {tab === 6 && (
+            {currentTab === 6 && (
               <div id="tasks-container" style={{ animation: 'none' }}>
                 <div id="task-list">
                   <AnimatePresence>
@@ -1760,7 +1767,7 @@ export default function Island() {
             )}
 
             {/*Settings Overhaul*/}
-            {tab === 7 && (
+            {currentTab === 7 && (
               <div id="settings-container">
                 <div className="settings-section">
                   <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>General</h3>
@@ -1799,6 +1806,28 @@ export default function Island() {
                       </select>
                     </div>
                   )}
+                </div>
+                <div className="settings-section">
+                  <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Tab Order</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    {tabOrder.map((t, i) => (
+                      <div key={t} className="settings-row" style={{ padding: '8px 0', borderBottom: `1px solid color-mix(in srgb, ${textColor}, transparent 95%)` }}>
+                        <span style={{ flex: 1 }}>{["Browser Search", "Workflows & QA", "Overview", "Now Playing", "AI Assistant", "Clipboard", "Tasks", "Settings"][t]}</span>
+                        <div style={{ display: 'flex', gap: 10 }}>
+                          <button
+                            disabled={i === 0}
+                            onClick={() => moveTabOrder(i, i - 1)}
+                            style={{ background: 'none', border: 'none', color: textColor, cursor: i === 0 ? 'default' : 'pointer', opacity: i === 0 ? 0.3 : 1 }}
+                          >▲</button>
+                          <button
+                            disabled={i === tabOrder.length - 1}
+                            onClick={() => moveTabOrder(i, i + 1)}
+                            style={{ background: 'none', border: 'none', color: textColor, cursor: i === tabOrder.length - 1 ? 'default' : 'pointer', opacity: i === tabOrder.length - 1 ? 0.3 : 1 }}
+                          >▼</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="settings-section">
@@ -2115,18 +2144,23 @@ export default function Island() {
                 <div className="settings-section" style={{ marginBottom: 30 }}>
                   <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Manage Workflows</h3>
 
-                  <div id="add-workflow-form" style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
+                  <div id="add-workflow-form" style={{
+                    display: 'flex', flexDirection: 'column', gap: '6px', width: '100%',
+                    boxSizing: 'border-box'
+                  }}>
+                    <span className="settings-label" style={{ opacity: 0.8 }}>Workflow Name</span>
                     <input
                       className="select-input"
-                      style={{ width: '100%' }}
-                      placeholder="Workflow Name (e.g. Work Tools)"
+                      style={{ width: '100%', boxSizing: 'border-box' }}
+                      placeholder="e.g. Work Tools"
                       value={workflowName}
                       onChange={(e) => setWorkflowName(e.target.value)}
                     />
+                    <span className="settings-label" style={{ marginTop: 15, opacity: 0.8 }}>Apps or URLs (Comma Separated)</span>
                     <textarea
                       className="select-input"
-                      style={{ width: '100%', minHeight: '60px', padding: '10px' }}
-                      placeholder="URLs (comma separated): google.com, github.com"
+                      style={{ width: '100%', minHeight: '50px', padding: '8px', boxSizing: 'border-box' }}
+                      placeholder="e.g. Spotify, docs.google.com"
                       value={workflowUrls}
                       onChange={(e) => setWorkflowUrls(e.target.value)}
                     />
@@ -2139,12 +2173,13 @@ export default function Island() {
                         color: bgColor,
                         border: 'none',
                         borderRadius: '12px',
-                        padding: '10px',
+                        padding: '8px',
                         fontWeight: 600,
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        marginTop: 2
                       }}
                     >
-                      Add Workflow
+                      Save Workflow
                     </button>
                   </div>
 
@@ -2154,15 +2189,17 @@ export default function Island() {
                         <motion.div
                           key={`wf-${wf.name}-${idx}`}
                           className="settings-row"
-                          style={{ justifyContent: 'space-between', padding: '8px 0', borderBottom: `1px solid color-mix(in srgb, ${textColor}, transparent 95%)` }}
+                          style={{ justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid color-mix(in srgb, ${textColor}, transparent 95%)` }}
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: 'auto' }}
                           exit={{ opacity: 0, x: -20, height: 0, padding: 0 }}
                           transition={{ duration: 0.2 }}
                         >
-                          <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingRight: '10px' }}>
                             <span style={{ fontWeight: 600 }}>{wf.name}</span>
-                            <span style={{ fontSize: 11, opacity: 0.5 }}>{wf.urls.length} URLs</span>
+                            <span style={{ fontSize: 11, opacity: 0.6 }}>
+                              {wf.urls.length} items
+                            </span>
                           </div>
                           <button
                             onClick={() => removeWorkflow(idx)}
