@@ -61,14 +61,15 @@ module.exports = {
         for (const artifactPath of result.artifacts) {
           const ext = path.extname(artifactPath);
           // Skip non-installer files (e.g. blockmap, yml)
-          if (!['.dmg', '.msi', '.deb', '.rpm'].includes(ext)) {
+          if (!['.dmg', '.msi', '.deb', '.rpm', '.zip'].includes(ext)) {
             renamedArtifacts.push(artifactPath);
             continue;
           }
 
           // macOS gets arch suffix (x64/arm64), others don't need it
           const archSuffix = result.platform === 'darwin' ? `-${result.arch}` : '';
-          const newName = `Ripple-${os}${archSuffix}-v${version}${ext}`;
+          const portableSuffix = ext === '.zip' && result.platform === 'win32' ? '-Portable' : '';
+          const newName = `Ripple-${os}${archSuffix}-v${version}${portableSuffix}${ext}`;
           const newPath = path.join(path.dirname(artifactPath), newName);
 
           fs.renameSync(artifactPath, newPath);
@@ -126,6 +127,10 @@ module.exports = {
           name: 'ripple',
         }
       },
+    },
+    {
+      name: '@electron-forge/maker-zip',
+      platforms: ['win32'],
     },
   ],
   plugins: [
