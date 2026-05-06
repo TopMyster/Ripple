@@ -71,6 +71,22 @@ function openApp(app) {
   window.electronAPI?.launchApp(trimmedApp);
 }
 
+// Open music player based on source (Spotify, Music, etc.)
+function openMusicPlayer(source) {
+  if (!source) return;
+  
+  if (source === "Spotify") {
+    openApp("Spotify");
+  } else if (source === "Music") {
+    openApp("Music");
+  } else if (source === "music.apple.com" || source.includes("Apple")) {
+    openApp("Music");
+  } else {
+    // Fallback: try to open by source name
+    openApp(source);
+  }
+}
+
 export default function Island() {
   const [time, setTime] = useState(null);
   const [mode, setMode] = useState("still");
@@ -1053,7 +1069,11 @@ export default function Island() {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', flex: 1, userSelect: 'none', }}>
                 {spotifyTrack?.artwork_url ? (
-                  <img src={spotifyTrack.artwork_url} style={{ width: 24, height: 24, borderRadius: 4, flexShrink: 0 }} />
+                  <img 
+                    src={spotifyTrack.artwork_url} 
+                    onClick={() => openMusicPlayer(spotifyTrack.source)}
+                    style={{ width: 24, height: 24, borderRadius: 4, flexShrink: 0, cursor: 'pointer' }} 
+                  />
                 ) : (
                   <div style={{ width: 24, height: 24, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0 }}>
                     <Music size={14} color={textColor} />
@@ -1393,12 +1413,17 @@ export default function Island() {
                       }}
                     >
                       {spotifyTrack.artwork_url ? (
-                        <img src={spotifyTrack.artwork_url} style={{
-                          width: 110, height: 110, minWidth: 110,
-                          flexShrink: 0,
-                          borderRadius: 13, objectFit: 'cover', pointerEvents: 'none',
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-                        }} />
+                        <img 
+                          src={spotifyTrack.artwork_url} 
+                          onClick={() => openMusicPlayer(spotifyTrack.source)}
+                          style={{
+                            width: 110, height: 110, minWidth: 110,
+                            flexShrink: 0,
+                            borderRadius: 13, objectFit: 'cover', pointerEvents: 'auto',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                            cursor: 'pointer'
+                          }} 
+                        />
                       ) : (
                         <div style={{
                           width: 110, height: 110, minWidth: 110,

@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   controlSystemMedia: (command) => ipcRenderer.invoke("control-system-media", command),
   openExternal: (url) => ipcRenderer.invoke("open-external", url),
   launchApp: (appName) => ipcRenderer.invoke("launch-app", appName),
+  buildAppCache: () => ipcRenderer.invoke("build-app-cache"),
+  searchApps: (query) => ipcRenderer.invoke("search-apps", query),
   getDisplays: () => ipcRenderer.invoke("get-displays"),
   setDisplay: (displayId) => ipcRenderer.invoke("set-display", displayId),
   updateWindowPosition: (xPerc, yPx) => ipcRenderer.invoke("update-window-position", xPerc, yPx),
