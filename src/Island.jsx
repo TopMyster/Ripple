@@ -31,15 +31,44 @@ const WeatherIcon = ({ status, size = 16, color = "currentColor" }) => {
 function openApp(app) {
   if (!app) return;
   const trimmedApp = app.trim();
-  const hasProtocol = /^[a-z0-9-]+:\/\//i.test(trimmedApp);
-  const isUrl = /^https?:\/\//i.test(trimmedApp) || trimmedApp.includes('.');
 
-  if (hasProtocol || isUrl) {
-    const target = (isUrl && !hasProtocol) ? `https://${trimmedApp}` : trimmedApp;
-    window.electronAPI?.openExternal(target);
-  } else {
-    window.electronAPI?.launchApp(trimmedApp);
+  // 1. Explicit protocol URLs — checked first so that file:// and https://
+  //    aren't accidentally caught by the path-separator test below.
+  if (/^(https?|file):\/\//i.test(trimmedApp)) {
+    window.electronAPI?.openExternal(trimmedApp);
+    return;
   }
+
+  // 2. Launch targets — exe paths, UNC paths, shell: URIs.
+  //    Checked before any dot-based heuristic so .exe and AppID dots never
+  //    trip URL detection.
+  const isLaunchTarget =
+    /[\\\/]/.test(trimmedApp)  ||   // path separator → exe path or UNC
+    /\.exe$/i.test(trimmedApp) ||   // bare name ending in .exe
+    trimmedApp.startsWith('shell:'); // UWP shell URI
+
+  if (isLaunchTarget) {
+    window.electronAPI?.launchApp(trimmedApp);
+    return;
+  }
+
+  // 3. IPv4 address or localhost → open in browser via http://
+  //    (dev servers rarely run https)
+  if (/^(\d{1,3}\.){3}\d{1,3}(:\d+)?(\/.*)?$/.test(trimmedApp) ||
+      /^localhost(:\d+)?(\/.*)?$/i.test(trimmedApp)) {
+    window.electronAPI?.openExternal(`http://${trimmedApp}`);
+    return;
+  }
+
+  // 4. Bare domain — must end with 2+ alpha chars so python3.11 and
+  //    192.168.1.1 are not misclassified. DO NOT use .includes('.').
+  if (/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(trimmedApp)) {
+    window.electronAPI?.openExternal(`https://${trimmedApp}`);
+    return;
+  }
+
+  // 5. Everything else — treat as a command or app name
+  window.electronAPI?.launchApp(trimmedApp);
 }
 
 export default function Island() {
@@ -243,8 +272,21 @@ export default function Island() {
   let width = mode === "large" ? (currentTab === 7 ? 480 : currentTab === 1 ? 480 : currentTab === 3 ? 330 : currentTab === 0 ? 405 : 380) : (mode === "quick" || alert || chargingAlert || bluetoothAlert) ? 300 : isPlaying ? 265 : 170;
   let height = mode === "large" ? (currentTab === 7 ? (positionMode === "free" ? 410 : 330) : currentTab === 6 ? 250 : currentTab === 3 ? 150 : currentTab === 0 ? 120 : 190) : 43;
 
-  const [quickApps, setQuickApps] = useState(JSON.parse(localStorage.getItem("quick-apps") || '["Notes", "Spotify", "Calculator", "Terminal"]'));
+  const normalizeApps = (arr) => arr.map(a => typeof a === 'string' ? { name: a, launch: a } : a);
+  const [quickApps, setQuickApps] = useState(() =>
+    normalizeApps(JSON.parse(localStorage.getItem("quick-apps") || '["Notes", "Spotify", "Calculator", "Terminal"]'))
+  );
   const [newQuickApp, setNewQuickApp] = useState("");
+  const [appSuggestions, setAppSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const selectedAppRef = useRef(null);
+  const appSearchTimer = useRef(null);
+
+  useEffect(() => {
+    if (window.electronAPI?.platform === 'win32') {
+      window.electronAPI?.buildAppCache?.();
+    }
+  }, []);
 
   useEffect(() => {
     const savedDisplayId = localStorage.getItem("display-id");
@@ -423,17 +465,20 @@ export default function Island() {
 
   const handleQaChange = (index, value) => {
     const updatedApps = [...quickApps];
-    updatedApps[index] = value;
+    updatedApps[index] = { name: value, launch: value };
     setQuickApps(updatedApps);
     localStorage.setItem("quick-apps", JSON.stringify(updatedApps));
   };
 
   const addQuickApp = () => {
     if (newQuickApp.trim()) {
-      const updatedApps = [...quickApps, newQuickApp.trim()];
+      const entry = selectedAppRef.current || { name: newQuickApp.trim(), launch: newQuickApp.trim() };
+      const updatedApps = [...quickApps, entry];
       setQuickApps(updatedApps);
       localStorage.setItem("quick-apps", JSON.stringify(updatedApps));
       setNewQuickApp("");
+      selectedAppRef.current = null;
+      setShowSuggestions(false);
     }
   };
 
@@ -1253,10 +1298,10 @@ export default function Island() {
                     <AnimatePresence>
                       {quickApps.map((app, i) => (
                         <motion.button
-                          key={`main-qa-${app}-${i}`}
+                          key={`main-qa-${app.name}-${i}`}
                           className="qa-app"
                           onClick={() => {
-                            openApp(app);
+                            openApp(app.launch);
                           }}
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
@@ -1268,7 +1313,7 @@ export default function Island() {
                             flexShrink: 0
                           }}
                         >
-                          {app}
+                          {app.name}
                         </motion.button>
                       ))}
                     </AnimatePresence>
@@ -2048,39 +2093,97 @@ export default function Island() {
 
                 <div className="settings-section">
                   <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Quick Apps</h3>
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                    <input
-                      className="select-input"
-                      style={{ flex: 1 }}
-                      value={newQuickApp}
-                      placeholder="Add app (e.g. Mail)"
-                      onChange={(e) => setNewQuickApp(e.target.value)}
-                    />
-                    <button
-                      onClick={() => {
-                        addQuickApp();
-                      }}
-                      style={{
-                        backgroundColor: textColor,
-                        color: bgColor,
-                        border: 'none',
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', position: 'relative', flexDirection: 'column' }}>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input
+                        className="select-input"
+                        style={{ flex: 1 }}
+                        value={newQuickApp}
+                        placeholder="Add app (e.g. Apple Music)"
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setNewQuickApp(val);
+                          selectedAppRef.current = null;
+                          clearTimeout(appSearchTimer.current);
+                          if (window.electronAPI?.platform === 'win32' && val.trim().length > 1) {
+                            appSearchTimer.current = setTimeout(async () => {
+                              const results = await window.electronAPI.searchApps(val.trim());
+                              setAppSuggestions(results);
+                              setShowSuggestions(results.length > 0);
+                            }, 200);
+                          } else {
+                            setAppSuggestions([]);
+                            setShowSuggestions(false);
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') addQuickApp();
+                          if (e.key === 'Escape') setShowSuggestions(false);
+                        }}
+                        onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                      />
+                      <button
+                        onClick={addQuickApp}
+                        style={{
+                          backgroundColor: textColor,
+                          color: bgColor,
+                          border: 'none',
+                          borderRadius: '12px',
+                          padding: '8px 12px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        <Plus size={18} />
+                      </button>
+                    </div>
+                    {showSuggestions && appSuggestions.length > 0 && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        right: 0,
+                        zIndex: 999,
                         borderRadius: '12px',
-                        padding: '8px 12px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                    >
-                      <Plus size={18} />
-                    </button>
+                        overflow: 'hidden',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                        backgroundColor: bgColor,
+                        border: `1px solid ${textColor}22`,
+                        marginTop: '4px'
+                      }}>
+                        {appSuggestions.map((s, i) => (
+                          <div
+                            key={i}
+                            onMouseDown={() => {
+                              selectedAppRef.current = s;
+                              setNewQuickApp(s.name);
+                              setShowSuggestions(false);
+                            }}
+                            style={{
+                              padding: '8px 12px',
+                              cursor: 'pointer',
+                              color: textColor,
+                              fontSize: 13,
+                              borderBottom: i < appSuggestions.length - 1 ? `1px solid ${textColor}11` : 'none',
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.backgroundColor = `${textColor}11`}
+                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                          >
+                            <div style={{ fontWeight: 600 }}>{s.name}</div>
+                            <div style={{ opacity: 0.4, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.launch}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     <AnimatePresence>
                       {quickApps.map((app, idx) => (
                         <motion.div
-                          key={`qa-${app}-${idx}`}
+                          key={`qa-${idx}`}
                           className="settings-row"
                           style={{ justifyContent: 'space-between', padding: '5px 0' }}
                           initial={{ opacity: 0, height: 0 }}
@@ -2091,7 +2194,7 @@ export default function Island() {
                           <input
                             className="select-input"
                             style={{ flex: 1, border: 'none', background: 'transparent', padding: 0 }}
-                            value={app}
+                            value={app.name}
                             onChange={(e) => handleQaChange(idx, e.target.value)}
                           />
                           <button
