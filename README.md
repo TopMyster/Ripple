@@ -52,7 +52,7 @@ Ripple has multiple display modes that adapt to your needs:
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
@@ -61,7 +61,7 @@ Download the latest release for your platform:
 - **macOS**: `.dmg` package (Intel & Apple Silicon supported)
 - **Linux**: `.deb` or `.rpm` packages
 
-[📥 Download Latest Release](https://github.com/TopMyster/Ripple/releases)
+[Download Latest Release](https://github.com/TopMyster/Ripple/releases)
 
 ### First Run
 1. Install and launch Ripple
@@ -72,7 +72,7 @@ Download the latest release for your platform:
 
 ---
 
-## 🎮 How to Use
+## How to Use
 
 ### The Three Modes
 
@@ -104,7 +104,7 @@ Download the latest release for your platform:
 
 ---
 
-## ⚙️ Build & Development
+## Build & Development
 
 ### Prerequisites
 - **Node.js** 16+ and npm
@@ -165,36 +165,7 @@ npm run make -- --platform=darwin --arch=x64
 
 **Output**: Compiled binaries are found in `out/make/`
 
-### Project Structure
-
-```
-ripple/
-├── src/
-│   ├── main.js           # Electron main process
-│   ├── preload.js        # Preload script for IPC
-│   ├── App.jsx           # React root component
-│   ├── Island.jsx        # Main Island component
-│   ├── App.css           # Styling
-│   ├── assets/
-│   │   ├── icons/        # App icons
-│   │   └── fonts/        # Custom fonts
-├── vite.*.config.mjs     # Vite build configurations
-├── forge.config.js       # Electron Forge config
-├── package.json          # Dependencies and scripts
-└── instructions.md       # Detailed user guide
-```
-
-### Technology Stack
-- **Framework**: Electron + React 19
-- **Build Tool**: Vite + Electron Forge
-- **Styling**: CSS with Framer Motion animations
-- **AI**: Groq SDK integration
-- **Music**: Spotify Node AppleScript
-- **Icons**: Lucide React
-
----
-
-## 📖 Documentation
+## Documentation
 
 For more detailed information, see [instructions.md](instructions.md) which includes:
 - Comprehensive mode explanations with screenshots
@@ -204,26 +175,26 @@ For more detailed information, see [instructions.md](instructions.md) which incl
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Whether it's:
-- 🐛 Bug reports and fixes
-- ✨ New features and improvements
-- 📝 Documentation updates
-- 🎨 Theme designs
-- 💡 Ideas and suggestions
+- Bug reports and fixes
+- New features and improvements
+- Documentation updates
+- Theme designs
+- Ideas and suggestions
 
 Please check [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
-## 📜 License
+## License
 
 Ripple is open source and available under the [MIT License](LICENSE).
 
 ---
 
-## 🙋 Support & Community
+## Support & Community
 
 - **Discord**: [Join our Discord server](https://discord.gg/a2xzVkxFVg) for discussions, support, and updates
 - **Issues**: Report bugs and request features on [GitHub Issues](https://github.com/TopMyster/Ripple/issues)
