@@ -1069,7 +1069,7 @@ export default function Island() {
                 minWidth: 0,
                 boxSizing: 'border-box',
                 opacity: hideNotActiveIslandEnabled ? .6 : 1,
-                padding: '0 16px'
+                padding: '0 12px'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'visible', flex: 1, minWidth: 0, userSelect: 'none', perspective: '1200px' }}>
