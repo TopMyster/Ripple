@@ -43,7 +43,7 @@ function openApp(app) {
   //    Checked before any dot-based heuristic so .exe and AppID dots never
   //    trip URL detection.
   const isLaunchTarget =
-    /[\\\/]/.test(trimmedApp)  ||   // path separator → exe path or UNC
+    /[\\\/]/.test(trimmedApp) ||   // path separator → exe path or UNC
     /\.exe$/i.test(trimmedApp) ||   // bare name ending in .exe
     trimmedApp.startsWith('shell:'); // UWP shell URI
 
@@ -55,7 +55,7 @@ function openApp(app) {
   // 3. IPv4 address or localhost → open in browser via http://
   //    (dev servers rarely run https)
   if (/^(\d{1,3}\.){3}\d{1,3}(:\d+)?(\/.*)?$/.test(trimmedApp) ||
-      /^localhost(:\d+)?(\/.*)?$/i.test(trimmedApp)) {
+    /^localhost(:\d+)?(\/.*)?$/i.test(trimmedApp)) {
     window.electronAPI?.openExternal(`http://${trimmedApp}`);
     return;
   }
@@ -74,7 +74,7 @@ function openApp(app) {
 // Open music player based on source (Spotify, Music, etc.)
 function openMusicPlayer(source) {
   if (!source) return;
-  
+
   if (source === "Spotify") {
     openApp("Spotify");
   } else if (source === "Music") {
@@ -1066,15 +1066,17 @@ export default function Island() {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 width: '100%',
+                minWidth: 0,
+                boxSizing: 'border-box',
                 opacity: hideNotActiveIslandEnabled ? .6 : 1,
-                padding: '0 10px'
+                padding: '0 16px'
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'visible', flex: 1, userSelect: 'none', perspective: '1200px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'visible', flex: 1, minWidth: 0, userSelect: 'none', perspective: '1200px' }}>
                 {spotifyTrack?.artwork_url ? (
                   <div style={{ perspective: '1200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <img 
-                      src={spotifyTrack.artwork_url} 
+                    <img
+                      src={spotifyTrack.artwork_url}
                       onClick={() => openMusicPlayer(spotifyTrack.source)}
                       onMouseEnter={() => setAlbumHovered(true)}
                       onMouseLeave={() => {
@@ -1092,13 +1094,13 @@ export default function Island() {
                         const angleY = (deltaX / maxDistance) * -35;
                         setAlbumRotation({ x: angleX, y: angleY });
                       }}
-                      style={{ 
+                      style={{
                         width: 24, height: 24, borderRadius: 4, flexShrink: 0, cursor: 'pointer',
                         transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease-out',
                         transform: `rotateX(${albumRotation.x}deg) rotateY(${albumRotation.y}deg) scale(${albumHovered ? 1.25 : 1})`,
                         transformStyle: 'preserve-3d',
                         filter: albumHovered ? 'drop-shadow(0 10px 20px rgba(0,0,0,0.4))' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
-                      }} 
+                      }}
                     />
                   </div>
                 ) : (
@@ -1107,14 +1109,9 @@ export default function Island() {
                   </div>
                 )}
                 <motion.div
-                  animate={{ maxWidth: isHovered ? '240px' : '260px' }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 350,
-                    damping: 40,
-                    mass: 2.5
-                  }}
                   style={{
+                    flex: 1,
+                    minWidth: 0,
                     overflow: 'hidden',
                     whiteSpace: 'nowrap',
                     textOverflow: 'ellipsis',
@@ -1440,9 +1437,9 @@ export default function Island() {
                       }}
                     >
                       {spotifyTrack.artwork_url ? (
-                        <img 
+                        <img
                           ref={albumRef}
-                          src={spotifyTrack.artwork_url} 
+                          src={spotifyTrack.artwork_url}
                           onClick={() => openMusicPlayer(spotifyTrack.source)}
                           onMouseEnter={() => setAlbumHovered(true)}
                           onMouseLeave={() => {
@@ -1471,7 +1468,7 @@ export default function Island() {
                             transition: 'transform 0.3s ease-out, box-shadow 0.3s ease-out',
                             transform: `perspective(600px) rotateX(${albumRotation.x}deg) rotateY(${albumRotation.y}deg) scale(${albumHovered ? 1.08 : 1})`,
                             transformStyle: 'preserve-3d'
-                          }} 
+                          }}
                         />
                       ) : (
                         <div style={{
