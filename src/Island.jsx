@@ -291,7 +291,7 @@ export default function Island() {
 
   let isPlaying = spotifyTrack?.state === 'playing';
   let width = mode === "large" ? (currentTab === 7 ? 480 : currentTab === 1 ? 480 : currentTab === 3 ? 330 : currentTab === 0 ? 405 : 380) : (mode === "quick" || alert || chargingAlert || bluetoothAlert || cameraAlert) ? 300 : isPlaying ? 265 : 170;
-  let height = mode === "large" ? (currentTab === 7 ? (positionMode === "free" ? 410 : 330) : currentTab === 6 ? 250 : currentTab === 3 ? 150 : currentTab === 0 ? 120 : 190) : 43;
+  let height = mode === "large" ? (currentTab === 7 ? (positionMode === "free" ? 410 : 330) : currentTab === 6 ? 250 : currentTab === 3 ? 150 : currentTab === 0 ? 120 : currentTab === 1 ? 210 : 190) : 43;
 
   const normalizeApps = (arr) => arr.map(a => typeof a === 'string' ? { name: a, launch: a } : a);
   const [quickApps, setQuickApps] = useState(() =>
