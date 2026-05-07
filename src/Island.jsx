@@ -136,6 +136,9 @@ export default function Island() {
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [albumHovered, setAlbumHovered] = useState(false);
+  const [albumRotation, setAlbumRotation] = useState({ x: 0, y: 0 });
+  const albumRef = useRef(null);
   const isDraggingRef = useRef(false);
 
   const updateDragging = (val) => {
@@ -1067,13 +1070,37 @@ export default function Island() {
                 padding: '0 10px'
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', flex: 1, userSelect: 'none', }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'visible', flex: 1, userSelect: 'none', perspective: '1200px' }}>
                 {spotifyTrack?.artwork_url ? (
-                  <img 
-                    src={spotifyTrack.artwork_url} 
-                    onClick={() => openMusicPlayer(spotifyTrack.source)}
-                    style={{ width: 24, height: 24, borderRadius: 4, flexShrink: 0, cursor: 'pointer' }} 
-                  />
+                  <div style={{ perspective: '1200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <img 
+                      src={spotifyTrack.artwork_url} 
+                      onClick={() => openMusicPlayer(spotifyTrack.source)}
+                      onMouseEnter={() => setAlbumHovered(true)}
+                      onMouseLeave={() => {
+                        setAlbumHovered(false);
+                        setAlbumRotation({ x: 0, y: 0 });
+                      }}
+                      onMouseMove={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const centerX = rect.left + rect.width / 2;
+                        const centerY = rect.top + rect.height / 2;
+                        const deltaX = e.clientX - centerX;
+                        const deltaY = e.clientY - centerY;
+                        const maxDistance = Math.sqrt(rect.width * rect.width + rect.height * rect.height) / 2;
+                        const angleX = (deltaY / maxDistance) * 35;
+                        const angleY = (deltaX / maxDistance) * -35;
+                        setAlbumRotation({ x: angleX, y: angleY });
+                      }}
+                      style={{ 
+                        width: 24, height: 24, borderRadius: 4, flexShrink: 0, cursor: 'pointer',
+                        transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease-out',
+                        transform: `rotateX(${albumRotation.x}deg) rotateY(${albumRotation.y}deg) scale(${albumHovered ? 1.25 : 1})`,
+                        transformStyle: 'preserve-3d',
+                        filter: albumHovered ? 'drop-shadow(0 10px 20px rgba(0,0,0,0.4))' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                      }} 
+                    />
+                  </div>
                 ) : (
                   <div style={{ width: 24, height: 24, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0 }}>
                     <Music size={14} color={textColor} />
@@ -1414,14 +1441,36 @@ export default function Island() {
                     >
                       {spotifyTrack.artwork_url ? (
                         <img 
+                          ref={albumRef}
                           src={spotifyTrack.artwork_url} 
                           onClick={() => openMusicPlayer(spotifyTrack.source)}
+                          onMouseEnter={() => setAlbumHovered(true)}
+                          onMouseLeave={() => {
+                            setAlbumHovered(false);
+                            setAlbumRotation({ x: 0, y: 0 });
+                          }}
+                          onMouseMove={(e) => {
+                            if (albumRef.current) {
+                              const rect = albumRef.current.getBoundingClientRect();
+                              const centerX = rect.left + rect.width / 2;
+                              const centerY = rect.top + rect.height / 2;
+                              const deltaX = e.clientX - centerX;
+                              const deltaY = e.clientY - centerY;
+                              const maxDistance = Math.sqrt(rect.width * rect.width + rect.height * rect.height) / 2;
+                              const angleX = (deltaY / maxDistance) * 15;
+                              const angleY = (deltaX / maxDistance) * -15;
+                              setAlbumRotation({ x: angleX, y: angleY });
+                            }
+                          }}
                           style={{
                             width: 110, height: 110, minWidth: 110,
                             flexShrink: 0,
-                            borderRadius: 13, objectFit: 'cover', pointerEvents: 'auto',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                            cursor: 'pointer'
+                            borderRadius: 13, objectFit: 'cover',
+                            boxShadow: albumHovered ? '0 8px 24px rgba(0,0,0,0.35)' : '0 4px 12px rgba(0,0,0,0.2)',
+                            cursor: 'pointer',
+                            transition: 'transform 0.3s ease-out, box-shadow 0.3s ease-out',
+                            transform: `perspective(600px) rotateX(${albumRotation.x}deg) rotateY(${albumRotation.y}deg) scale(${albumHovered ? 1.08 : 1})`,
+                            transformStyle: 'preserve-3d'
                           }} 
                         />
                       ) : (
