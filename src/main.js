@@ -717,6 +717,40 @@ ipcMain.handle("get-bluetooth-status", async () => {
   });
 });
 
+ipcMain.handle("get-camera-status", async () => {
+  return new Promise((resolve) => {
+    const platform = process.platform;
+    if (platform === "darwin") {
+      exec('ioreg -l | grep -E "FrontCameraActive|FrontCameraStreaming"', (error, stdout) => {
+        resolve(stdout ? stdout.includes('= Yes') : false);
+      });
+    } else if (platform === "win32") {
+      const psScript = `
+        $inUse = $false
+        $keys = Get-ChildItem -Path "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\webcam" -Recurse -ErrorAction SilentlyContinue
+        foreach ($key in $keys) {
+            $val = Get-ItemProperty -Path $key.PSPath -Name "LastUsedTimeStop" -ErrorAction SilentlyContinue
+            if ($val -and $val.LastUsedTimeStop -eq 0) {
+                $inUse = $true
+                break
+            }
+        }
+        $inUse
+      `;
+      exec(`powershell -NoProfile -Command "${psScript}"`, (error, stdout) => {
+        if (error) return resolve(false);
+        resolve(stdout.trim().toLowerCase() === "true");
+      });
+    } else if (platform === "linux") {
+      exec("fuser /dev/video* 2>/dev/null", (error, stdout) => {
+        resolve(stdout.trim().length > 0);
+      });
+    } else {
+      resolve(false);
+    }
+  });
+});
+
 app.on("window-all-closed", () => {
   if (process.platform === "linux" && !tray) {
     app.quit();

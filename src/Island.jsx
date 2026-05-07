@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Groq } from "groq-sdk";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { SkipBackIcon, Play, Pause, SkipForwardIcon, Music, Headphones, Zap, Settings, Sun, Cloud, Droplets, Trash2, ChevronRight, ChevronLeft, Plus, Check, X, CloudRain, CloudSnow, CloudLightning, CloudSun, Moon } from "lucide-react";
+import { Camera, SkipBackIcon, Play, Pause, SkipForwardIcon, Music, Headphones, Zap, Settings, Sun, Cloud, Droplets, Trash2, ChevronRight, ChevronLeft, Plus, Check, X, CloudRain, CloudSnow, CloudLightning, CloudSun, Moon } from "lucide-react";
 import "./App.css";
 
 //Get Date
@@ -126,6 +126,8 @@ export default function Island() {
   const [spotifyTrack, setSpotifyTrack] = useState(null);
   const [bluetooth, setBluetooth] = useState(false);
   const [bluetoothAlert, setBluetoothAlert] = useState(false);
+  const [cameraInUse, setCameraInUse] = useState(false);
+  const [cameraAlert, setCameraAlert] = useState(false);
   const [tasks, setTasks] = useState(JSON.parse(localStorage.getItem("tasks") || "[]"));
   const [taskText, setTaskText] = useState("");
   const [workflows, setWorkflows] = useState(JSON.parse(localStorage.getItem("workflows") || "[]"));
@@ -288,7 +290,7 @@ export default function Island() {
   };
 
   let isPlaying = spotifyTrack?.state === 'playing';
-  let width = mode === "large" ? (currentTab === 7 ? 480 : currentTab === 1 ? 480 : currentTab === 3 ? 330 : currentTab === 0 ? 405 : 380) : (mode === "quick" || alert || chargingAlert || bluetoothAlert) ? 300 : isPlaying ? 265 : 170;
+  let width = mode === "large" ? (currentTab === 7 ? 480 : currentTab === 1 ? 480 : currentTab === 3 ? 330 : currentTab === 0 ? 405 : 380) : (mode === "quick" || alert || chargingAlert || bluetoothAlert || cameraAlert) ? 300 : isPlaying ? 265 : 170;
   let height = mode === "large" ? (currentTab === 7 ? (positionMode === "free" ? 410 : 330) : currentTab === 6 ? 250 : currentTab === 3 ? 150 : currentTab === 0 ? 120 : 190) : 43;
 
   const normalizeApps = (arr) => arr.map(a => typeof a === 'string' ? { name: a, launch: a } : a);
@@ -798,6 +800,38 @@ export default function Island() {
     }
   }, [bluetooth]);
 
+  // Get Camera Status
+  useEffect(() => {
+    const fetchCamera = async () => {
+      if (window.electronAPI?.getCameraStatus) {
+        try {
+          const inUse = await window.electronAPI.getCameraStatus();
+          setCameraInUse(inUse);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    };
+
+    fetchCamera();
+    const interval = setInterval(fetchCamera, 3000); // Check every 3 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (cameraInUse === true) {
+      setMode("quick");
+      setCameraAlert(true);
+      const timerId = setTimeout(() => {
+        setMode("still");
+        setCameraAlert(false);
+      }, 3000);
+      return () => {
+        clearTimeout(timerId);
+      };
+    }
+  }, [cameraInUse]);
+
   // Now Playing
   useEffect(() => {
     const fetchMedia = async () => {
@@ -1036,7 +1070,7 @@ export default function Island() {
         justifyContent: (mode === "large" && currentTab === 3) ? "flex-start" : "center",
         overflow: "hidden",
         fontFamily: theme === "win95" ? "w95" : "OpenRunde",
-        border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : islandBorderEnabled ? (charging || chargingAlert) ? `1px solid rgba(111, 255, 123, 0.5)` : (percent <= 20 || alert) ? `1px solid rgba(255, 63, 63, 0.5)` : bluetoothAlert ? `1px solid rgba(0, 150, 255, 0.34)` : hideNotActiveIslandEnabled ? "none" : `1px solid color-mix(in srgb, ${textColor}, transparent 70%)` : "none",
+        border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : islandBorderEnabled ? cameraInUse ? `1px solid rgba(255, 215, 0, 0.8)` : (charging || chargingAlert) ? `1px solid rgba(111, 255, 123, 0.5)` : (percent <= 20 || alert) ? `1px solid rgba(255, 63, 63, 0.5)` : bluetoothAlert ? `1px solid rgba(0, 150, 255, 0.34)` : hideNotActiveIslandEnabled ? "none" : `1px solid color-mix(in srgb, ${textColor}, transparent 70%)` : "none",
         borderColor:
           theme === "win95"
             ? "#FFFFFF #808080 #808080 #FFFFFF"
@@ -1156,7 +1190,7 @@ export default function Island() {
             </motion.div>
           ) : (
             <motion.div
-              key={chargingAlert ? "charging" : alert ? "battery" : bluetoothAlert ? "bluetooth" : "time"}
+              key={chargingAlert ? "charging" : alert ? "battery" : bluetoothAlert ? "bluetooth" : cameraAlert ? "camera" : "time"}
               initial={{ opacity: 0, filter: 'blur(4px)', scale: 0.98 }}
               animate={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
               exit={{ opacity: 0, filter: 'blur(4px)', scale: 0.98 }}
@@ -1173,7 +1207,7 @@ export default function Island() {
                   fontSize: 16,
                   fontWeight: 600,
                   margin: 0,
-                  color: chargingAlert ? "#6fff7bff" : alert ? "#ff3f3fff" : textColor,
+                  color: chargingAlert ? "#6fff7bff" : alert ? "#ff3f3fff" : cameraAlert ? "#ffff00ff" : textColor,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -1185,6 +1219,8 @@ export default function Island() {
                   <Zap size={20} color="#6fff7b" />
                 ) : alert ? (
                   <Zap size={20} color="#ff3f3f" />
+                ) : cameraAlert ? (
+                  <Camera size={20} color="#ffff00" />
                 ) : bluetoothAlert ? <Headphones size={20} /> : time}
               </h1>
               <h1
@@ -1201,12 +1237,14 @@ export default function Island() {
                     ? "#6fff7bff"
                     : alert
                       ? "#ff3f3fff"
-                      : `${textColor}`,
+                      : cameraAlert
+                        ? "#ffff00ff"
+                        : `${textColor}`,
                   display: 'flex',
                   alignItems: 'center'
                 }}
               >
-                {alert === true ? `${percent}%` : chargingAlert === true ? `${percent}%` : standbyBorderEnabled ? `${percent}%` : bluetoothAlert ? "Connected" : weather.temp ? (
+                {alert === true ? `${percent}%` : chargingAlert === true ? `${percent}%` : standbyBorderEnabled ? `${percent}%` : cameraAlert ? "Camera" : bluetoothAlert ? "Connected" : weather.temp ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <WeatherIcon status={weather.status} size={14} color={textColor} />
                     <span>{weather.temp}º</span>
