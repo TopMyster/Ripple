@@ -1027,7 +1027,7 @@ export default function Island() {
       // Reset album hover state when window loses focus
       setAlbumHovered(false);
       setAlbumRotation({ x: 0, y: 0 });
-      
+
       setTimeout(() => {
         if (!isHovered) {
           const activeTag = document.activeElement?.tagName;
