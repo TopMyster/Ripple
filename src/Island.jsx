@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Groq } from "groq-sdk";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { Camera, SkipBackIcon, Play, Pause, SkipForwardIcon, Music, Headphones, Zap, Settings, Sun, Cloud, Droplets, Trash2, ChevronRight, ChevronLeft, Plus, Check, X, CloudRain, CloudSnow, CloudLightning, CloudSun, Moon } from "lucide-react";
+import { Camera, Mic, SkipBackIcon, Play, Pause, SkipForwardIcon, Music, Headphones, Zap, Settings, Sun, Cloud, Droplets, Trash2, ChevronRight, ChevronLeft, Plus, Check, X, CloudRain, CloudSnow, CloudLightning, CloudSun, Moon } from "lucide-react";
 import "./App.css";
 
 //Get Date
@@ -15,6 +15,15 @@ function formatDateShort(input) {
   const month = date.toLocaleDateString(undefined, { month: "short" });
   const day = date.getDate();
   return `${weekday}, ${month} ${day}`;
+}
+
+const textMeasureCanvas = typeof document !== "undefined" ? document.createElement("canvas") : null;
+function measureTextWidth(text, font = "600 13px OpenRunde, Arial, sans-serif") {
+  if (!textMeasureCanvas || !textMeasureCanvas.getContext) return null;
+  const ctx = textMeasureCanvas.getContext("2d");
+  if (!ctx) return null;
+  ctx.font = font;
+  return ctx.measureText(text).width;
 }
 
 const WeatherIcon = ({ status, size = 16, color = "currentColor" }) => {
@@ -112,6 +121,9 @@ export default function Island() {
   const [standbyBorderEnabled, setStandbyEnabled] = useState(localStorage.getItem("standby-mode") === "true");
   const [largeStandbyEnabled, setLargeStandbyEnabled] = useState(localStorage.getItem("large-standby-mode") === "true");
   const [hideNotActiveIslandEnabled, sethideNotActiveIslandEnabled] = useState(localStorage.getItem("hide-island-notactive") === "true");
+  const [showInfoWhenIdleEnabled, setShowInfoWhenIdleEnabled] = useState(
+    localStorage.getItem("show-info-when-idle") === "true" || localStorage.getItem("still-mode-time-weather") === "true"
+  );
   const [hourFormat, setHourFormat] = useState((localStorage.getItem("hour-format") || "12-hr") === "12-hr");
   const [weather, setWeather] = useState({ temp: "", status: "" });
   const [weatherUnit, setweatherUnit] = useState(localStorage.getItem("weather-unit") || "f");
@@ -128,6 +140,11 @@ export default function Island() {
   const [bluetoothAlert, setBluetoothAlert] = useState(false);
   const [cameraInUse, setCameraInUse] = useState(false);
   const [cameraAlert, setCameraAlert] = useState(false);
+  const [microphoneInUse, setMicrophoneInUse] = useState(false);
+  const [microphoneAlert, setMicrophoneAlert] = useState(false);
+  const captureAlertQueue = useRef([]);
+  const captureAlertTimer = useRef(null);
+  const captureAlertDisplayed = useRef({ camera: false, microphone: false });
   const [tasks, setTasks] = useState(JSON.parse(localStorage.getItem("tasks") || "[]"));
   const [taskText, setTaskText] = useState("");
   const [workflows, setWorkflows] = useState(JSON.parse(localStorage.getItem("workflows") || "[]"));
@@ -290,7 +307,25 @@ export default function Island() {
   };
 
   let isPlaying = spotifyTrack?.state === 'playing';
-  let width = mode === "large" ? (currentTab === 7 ? 480 : currentTab === 1 ? 480 : currentTab === 3 ? 330 : currentTab === 0 ? 405 : 380) : (mode === "quick" || alert || chargingAlert || bluetoothAlert || cameraAlert) ? 300 : isPlaying ? 265 : 170;
+  const nowPlayingText = spotifyTrack?.name ? `${spotifyTrack.name}${spotifyTrack.artist ? ` • ${spotifyTrack.artist}` : ''}` : '';
+  const textWidth = measureTextWidth(nowPlayingText) || (nowPlayingText.length * 7);
+  const hoverExtraWidth = 36;
+  const nowPlayingWidth = Math.min(
+    300,
+    Math.max(
+      122,
+      Math.ceil(textWidth + 24 + 6 + 13.5 + hoverExtraWidth)
+    )
+  );
+  let width = mode === "large"
+    ? (currentTab === 7 ? 480 : currentTab === 1 ? 480 : currentTab === 3 ? 330 : currentTab === 0 ? 405 : 380)
+    : (mode === "quick" && isPlaying && !alert && !chargingAlert && !bluetoothAlert && !cameraAlert && !microphoneAlert)
+      ? nowPlayingWidth
+      : (mode === "quick" || alert || chargingAlert || bluetoothAlert || cameraAlert || microphoneAlert)
+        ? 260
+        : isPlaying
+          ? nowPlayingWidth
+          : 170;
   let height = mode === "large" ? (currentTab === 7 ? (positionMode === "free" ? 410 : 330) : currentTab === 6 ? 250 : currentTab === 3 ? 150 : currentTab === 0 ? 120 : currentTab === 1 ? 210 : 190) : 43;
 
   const normalizeApps = (arr) => arr.map(a => typeof a === 'string' ? { name: a, launch: a } : a);
@@ -426,6 +461,12 @@ export default function Island() {
     const value = e.target.value === "true";
     sethideNotActiveIslandEnabled(value);
     localStorage.setItem("hide-island-notactive", value ? "true" : "false");
+  };
+
+  const handleShowInfoWhenIdleChange = (e) => {
+    const value = e.target.value === "true";
+    setShowInfoWhenIdleEnabled(value);
+    localStorage.setItem("show-info-when-idle", value ? "true" : "false");
   };
 
   const handleWeatherUnitChange = (e) => {
@@ -818,19 +859,86 @@ export default function Island() {
     return () => clearInterval(interval);
   }, []);
 
+  // Get Microphone Status
   useEffect(() => {
-    if (cameraInUse === true) {
+    const fetchMicrophone = async () => {
+      if (window.electronAPI?.getMicrophoneStatus) {
+        try {
+          const inUse = await window.electronAPI.getMicrophoneStatus();
+          setMicrophoneInUse(inUse);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    };
+
+    fetchMicrophone();
+    const interval = setInterval(fetchMicrophone, 3000); // Check every 3 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const processCaptureQueue = () => {
+      if (captureAlertTimer.current || captureAlertQueue.current.length === 0) return;
+      const nextAlert = captureAlertQueue.current.shift();
+      if (!nextAlert) return;
+
       setMode("quick");
-      setCameraAlert(true);
-      const timerId = setTimeout(() => {
-        setMode("still");
-        setCameraAlert(false);
+      if (nextAlert === "camera") {
+        setCameraAlert(true);
+      } else {
+        setMicrophoneAlert(true);
+      }
+
+      captureAlertTimer.current = setTimeout(() => {
+        if (nextAlert === "camera") {
+          setCameraAlert(false);
+        } else {
+          setMicrophoneAlert(false);
+        }
+        captureAlertTimer.current = null;
+        if (captureAlertQueue.current.length > 0) {
+          processCaptureQueue();
+        } else {
+          setMode("still");
+        }
       }, 3000);
-      return () => {
-        clearTimeout(timerId);
-      };
+    };
+
+    if (cameraInUse && !captureAlertDisplayed.current.camera) {
+      captureAlertQueue.current.push("camera");
+      captureAlertDisplayed.current.camera = true;
     }
-  }, [cameraInUse]);
+    if (!cameraInUse) {
+      captureAlertDisplayed.current.camera = false;
+    }
+
+    if (microphoneInUse && !captureAlertDisplayed.current.microphone) {
+      captureAlertQueue.current.push("microphone");
+      captureAlertDisplayed.current.microphone = true;
+    }
+    if (!microphoneInUse) {
+      captureAlertDisplayed.current.microphone = false;
+    }
+
+    captureAlertQueue.current = captureAlertQueue.current.filter((item) => {
+      if (item === "camera" && !cameraInUse) return false;
+      if (item === "microphone" && !microphoneInUse) return false;
+      return true;
+    });
+
+    processCaptureQueue();
+
+    return () => {
+      if (!cameraInUse && !microphoneInUse) {
+        if (captureAlertTimer.current) {
+          clearTimeout(captureAlertTimer.current);
+          captureAlertTimer.current = null;
+        }
+        captureAlertQueue.current = [];
+      }
+    };
+  }, [cameraInUse, microphoneInUse]);
 
   // Now Playing
   useEffect(() => {
@@ -975,7 +1083,11 @@ export default function Island() {
       id="Island"
       onMouseEnter={() => {
         setIsHovered(true);
-        if (mode !== "large") setMode("quick");
+        if (mode === "still" && showInfoWhenIdleEnabled && !isPlaying) {
+          setMode("large");
+        } else if (mode !== "large") {
+          setMode("quick");
+        }
         if (window.electronAPI) {
           window.electronAPI.setIgnoreMouseEvents(false, false);
         }
@@ -1070,7 +1182,7 @@ export default function Island() {
         justifyContent: (mode === "large" && currentTab === 3) ? "flex-start" : "center",
         overflow: "hidden",
         fontFamily: theme === "win95" ? "w95" : "OpenRunde",
-        border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : islandBorderEnabled ? cameraInUse ? `1px solid rgba(255, 215, 0, 0.8)` : (charging || chargingAlert) ? `1px solid rgba(111, 255, 123, 0.5)` : (percent <= 20 || alert) ? `1px solid rgba(255, 63, 63, 0.5)` : bluetoothAlert ? `1px solid rgba(0, 150, 255, 0.34)` : hideNotActiveIslandEnabled ? "none" : `1px solid color-mix(in srgb, ${textColor}, transparent 70%)` : "none",
+        border: theme === "win95" ? "2px solid rgb(254, 254, 254)" : islandBorderEnabled ? cameraInUse ? `1px solid rgba(255, 215, 0, 0.8)` : microphoneInUse ? `1px solid rgba(255, 154, 0, 0.8)` : (charging || chargingAlert) ? `1px solid rgba(111, 255, 123, 0.5)` : (percent <= 20 || alert) ? `1px solid rgba(255, 63, 63, 0.5)` : bluetoothAlert ? `1px solid rgba(0, 150, 255, 0.34)` : hideNotActiveIslandEnabled ? "none" : `1px solid color-mix(in srgb, ${textColor}, transparent 70%)` : "none",
         borderColor:
           theme === "win95"
             ? "#FFFFFF #808080 #808080 #FFFFFF"
@@ -1086,9 +1198,9 @@ export default function Island() {
       }}
     >
       {/*Quickview*/}
-      {mode !== "large" && (mode === "quick" || (mode === "still" && isPlaying) || alert || chargingAlert || bluetoothAlert) ? (
+      {mode !== "large" && (mode === "quick" || (mode === "still" && showInfoWhenIdleEnabled) || (mode === "still" && isPlaying) || alert || chargingAlert || bluetoothAlert || cameraAlert || microphoneAlert) ? (
         <AnimatePresence mode="wait">
-          {isPlaying && !alert && !chargingAlert && !bluetoothAlert ? (
+          {isPlaying && !alert && !chargingAlert && !bluetoothAlert && !cameraAlert && !microphoneAlert ? (
             <motion.div
               key={spotifyTrack?.name ? `playing-${spotifyTrack.name}-${spotifyTrack.artist}` : "playing"}
               initial={{ opacity: 0, filter: 'blur(4px)', scale: 0.98 }}
@@ -1103,7 +1215,7 @@ export default function Island() {
                 minWidth: 0,
                 boxSizing: 'border-box',
                 opacity: hideNotActiveIslandEnabled ? .6 : 1,
-                padding: '0 12px'
+                padding: '0 9px'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'visible', flex: 1, minWidth: 0, userSelect: 'none', perspective: '1200px' }}>
@@ -1190,7 +1302,7 @@ export default function Island() {
             </motion.div>
           ) : (
             <motion.div
-              key={chargingAlert ? "charging" : alert ? "battery" : bluetoothAlert ? "bluetooth" : cameraAlert ? "camera" : "time"}
+              key={chargingAlert ? "charging" : alert ? "battery" : bluetoothAlert ? "bluetooth" : cameraAlert ? "camera" : microphoneAlert ? "microphone" : "time"}
               initial={{ opacity: 0, filter: 'blur(4px)', scale: 0.98 }}
               animate={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
               exit={{ opacity: 0, filter: 'blur(4px)', scale: 0.98 }}
@@ -1207,7 +1319,7 @@ export default function Island() {
                   fontSize: 16,
                   fontWeight: 600,
                   margin: 0,
-                  color: chargingAlert ? "#6fff7bff" : alert ? "#ff3f3fff" : cameraAlert ? "#ffff00ff" : textColor,
+                  color: chargingAlert ? "#6fff7bff" : alert ? "#ff3f3fff" : cameraAlert ? "#ffff00ff" : microphoneAlert ? "#ff9a00ff" : textColor,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -1221,6 +1333,8 @@ export default function Island() {
                   <Zap size={20} color="#ff3f3f" />
                 ) : cameraAlert ? (
                   <Camera size={20} color="#ffff00" />
+                ) : microphoneAlert ? (
+                  <Mic size={20} color="#ff9a00" />
                 ) : bluetoothAlert ? <Headphones size={20} /> : time}
               </h1>
               <h1
@@ -1239,12 +1353,14 @@ export default function Island() {
                       ? "#ff3f3fff"
                       : cameraAlert
                         ? "#ffff00ff"
-                        : `${textColor}`,
+                        : microphoneAlert
+                          ? "#ff9a00ff"
+                          : `${textColor}`,
                   display: 'flex',
                   alignItems: 'center'
                 }}
               >
-                {alert === true ? `${percent}%` : chargingAlert === true ? `${percent}%` : standbyBorderEnabled ? `${percent}%` : cameraAlert ? "Camera" : bluetoothAlert ? "Connected" : weather.temp ? (
+                {alert === true ? `${percent}%` : chargingAlert === true ? `${percent}%` : standbyBorderEnabled ? `${percent}%` : cameraAlert ? "Camera" : microphoneAlert ? "Microphone" : bluetoothAlert ? "Connected" : weather.temp ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <WeatherIcon status={weather.status} size={14} color={textColor} />
                     <span>{weather.temp}º</span>
@@ -2171,6 +2287,13 @@ export default function Island() {
                   <div className="settings-row">
                     <span className="settings-label">Large Standby Mode</span>
                     <select value={largeStandbyEnabled ? "true" : "false"} onChange={handleLargeStandbyChange}>
+                      <option value="true">Enabled</option>
+                      <option value="false">Disabled</option>
+                    </select>
+                  </div>
+                  <div className="settings-row">
+                    <span className="settings-label">Show Info when idle</span>
+                    <select value={showInfoWhenIdleEnabled ? "true" : "false"} onChange={handleShowInfoWhenIdleChange}>
                       <option value="true">Enabled</option>
                       <option value="false">Disabled</option>
                     </select>

@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getSystemMedia: () => ipcRenderer.invoke('get-system-media'),
   getBluetoothStatus: () => ipcRenderer.invoke('get-bluetooth-status'),
   getCameraStatus: () => ipcRenderer.invoke('get-camera-status'),
+  getMicrophoneStatus: () => ipcRenderer.invoke('get-microphone-status'),
   controlSystemMedia: (command) => ipcRenderer.invoke('control-system-media', command),
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
   launchApp: (appName) => ipcRenderer.invoke('launch-app', appName),

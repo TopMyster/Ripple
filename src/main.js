@@ -751,6 +751,29 @@ ipcMain.handle("get-camera-status", async () => {
   });
 });
 
+ipcMain.handle("get-microphone-status", async () => {
+  return new Promise((resolve) => {
+    const platform = process.platform;
+    if (platform === "darwin") {
+      exec('ioreg -l | grep -E "IOAudioStreamActive|IOAudioEngine|IOAudioStream" | grep -i "Yes"', (error, stdout) => {
+        resolve(stdout ? stdout.trim().length > 0 : false);
+      });
+    } else if (platform === "win32") {
+      const psScript = `@(Get-ChildItem -Path "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\microphone" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Get-ItemProperty -Path $_.PSPath -Name "LastUsedTimeStop" -ErrorAction SilentlyContinue } | Where-Object { $_ -and $_.LastUsedTimeStop -eq 0 }).Count -gt 0`;
+      exec(`powershell -NoProfile -Command "${psScript}"`, (error, stdout) => {
+        if (error) return resolve(false);
+        resolve(stdout.trim().toLowerCase() === "true");
+      });
+    } else if (platform === "linux") {
+      exec("pactl list source-outputs | grep -q 'Source #'", (error) => {
+        resolve(!error);
+      });
+    } else {
+      resolve(false);
+    }
+  });
+});
+
 app.on("window-all-closed", () => {
   if (process.platform === "linux" && !tray) {
     app.quit();
