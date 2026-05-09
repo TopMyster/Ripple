@@ -396,7 +396,7 @@ export default function Island() {
         : isPlaying
           ? nowPlayingWidth
           : 170;
-  let height = mode === "large" ? (currentTab === 7 ? (positionMode === "free" ? 425 : 345) : currentTab === 6 ? 250 : currentTab === 3 ? 150 : currentTab === 0 ? 120 : currentTab === 1 ? 210 : 190) : 43;
+  let height = mode === "large" ? (currentTab === 7 ? (positionMode === "free" ? 425 : 345) : currentTab === 6 ? 250 : currentTab === 3 ? 150 : currentTab === 0 ? 120 : currentTab === 1 ? 210 : 190) : 40;
 
   const normalizeApps = (arr) => arr.map(a => typeof a === 'string' ? { name: a, launch: a } : a);
   const [quickApps, setQuickApps] = useState(() =>
@@ -1229,10 +1229,10 @@ export default function Island() {
           mode === "large" && theme === "win95"
             ? 0
             : mode === "large"
-              ? (currentTab === 0 ? 30 : 32)
+              ? (currentTab === 0 ? 28 : 30)
               : theme === "win95"
                 ? 0
-                : 16,
+                : 14,
       }}
       onUpdate={(latest) => {
         if (latest.width || latest.height) {
@@ -1336,7 +1336,7 @@ export default function Island() {
                 <div style={{ flex: 1, minWidth: 0, overflow: 'hidden', position: 'relative', transform: 'translateZ(0)' }}>
                   <motion.div
                     animate={textWidth > (nowPlayingWidth - (isHovered ? 80 : 45)) ? { x: [0, -(textWidth + 30)] } : { x: 0 }}
-                    transition={textWidth > (nowPlayingWidth - (isHovered ? 80 : 45)) 
+                    transition={textWidth > (nowPlayingWidth - (isHovered ? 80 : 45))
                       ? { duration: 12, repeat: Infinity, ease: "linear" }
                       : { duration: 0.3, ease: "easeInOut" }
                     }
