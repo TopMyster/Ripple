@@ -1321,9 +1321,10 @@ export default function Island() {
                       style={{
                         width: 24, height: 24, borderRadius: 4, flexShrink: 0, cursor: 'pointer',
                         transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease-out',
-                        transform: `rotateX(${albumRotation.x}deg) rotateY(${albumRotation.y}deg) scale(${albumHovered ? 1.25 : 1})`,
+                        transform: `rotateX(${albumRotation.x}deg) rotateY(${albumRotation.y}deg) scale(${albumHovered ? 1.25 : 1}) translateZ(0)`,
                         transformStyle: 'preserve-3d',
-                        filter: albumHovered ? 'drop-shadow(0 10px 20px rgba(0,0,0,0.4))' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                        filter: albumHovered ? 'drop-shadow(0 10px 20px rgba(0,0,0,0.4))' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
+                        willChange: 'transform'
                       }}
                     />
                   </div>
@@ -1332,12 +1333,12 @@ export default function Island() {
                     <Music size={14} color={textColor} />
                   </div>
                 )}
-                <div style={{ flex: 1, minWidth: 0, overflow: 'hidden', position: 'relative' }}>
+                <div style={{ flex: 1, minWidth: 0, overflow: 'hidden', position: 'relative', transform: 'translateZ(0)' }}>
                   <motion.div
                     animate={textWidth > (nowPlayingWidth - (isHovered ? 80 : 45)) ? { x: [0, -(textWidth + 30)] } : { x: 0 }}
                     transition={textWidth > (nowPlayingWidth - (isHovered ? 80 : 45)) 
                       ? { duration: 12, repeat: Infinity, ease: "linear" }
-                      : { duration: 0.4, ease: "easeOut" }
+                      : { duration: 0.3, ease: "easeInOut" }
                     }
                     style={{
                       display: 'inline-block',
@@ -1345,6 +1346,7 @@ export default function Island() {
                       fontSize: 13,
                       fontWeight: 600,
                       color: textColor,
+                      willChange: 'transform'
                     }}>
                     <span style={{ paddingRight: textWidth > (nowPlayingWidth - (isHovered ? 80 : 45)) ? 30 : 0 }}>
                       {spotifyTrack?.name} <span style={{ opacity: 0.7, fontWeight: 400 }}> • {spotifyTrack?.artist}</span>
@@ -1360,10 +1362,10 @@ export default function Island() {
                   {isHovered && (
                     <motion.button
                       key="play-pause-hover"
-                      initial={{ opacity: 0, width: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, width: 30, scale: 1 }}
-                      exit={{ opacity: 0, width: 0, scale: 0.5 }}
-                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: 30 }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.25, ease: "easeInOut" }}
                       onClick={(e) => {
                         e.stopPropagation();
                         window.electronAPI.controlSystemMedia('playpause');
@@ -1383,7 +1385,11 @@ export default function Island() {
                         justifyContent: 'center',
                         flexShrink: 0,
                         overflow: 'hidden',
-                        zIndex: 100
+                        zIndex: 100,
+                        willChange: 'opacity, width',
+                        WebkitBackfaceVisibility: 'hidden',
+                        backfaceVisibility: 'hidden',
+                        transform: 'translateZ(0)'
                       }}
                     >
                       {spotifyTrack?.state === 'playing' ? <Pause size={15} color="#FFFFFF" fill="#FFFFFF" /> : <Play size={15} color="#FFFFFF" fill="#FFFFFF" />}

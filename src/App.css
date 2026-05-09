@@ -88,6 +88,10 @@ body {
   scrollbar-width: none;
   -webkit-user-select: none;
   user-select: none;
+  will-change: transform, width, height;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
 }
 
 #Island input,
@@ -835,10 +839,22 @@ label {
 }
 
 @keyframes marquee {
-  0% { transform: translateX(0); }
-  20% { transform: translateX(0); }
-  80% { transform: translateX(calc(-100% + 100%)); } /* Logic: width of text minus container */
-  100% { transform: translateX(0); }
+  0% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(0);
+  }
+
+  80% {
+    transform: translateX(calc(-100% + 100%));
+  }
+
+  /* Logic: width of text minus container */
+  100% {
+    transform: translateX(0);
+  }
 }
 
 /* We'll use a simpler version with Framer Motion in the JS, but keyframes are good for backup */
