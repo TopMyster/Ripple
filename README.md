@@ -1,10 +1,8 @@
 # Ripple
 
-**Bring Apple's Dynamic Island to your computer** — the elegant notification and widget system that adapts to what you need, when you need it.
+**"Dynamic Island, but for everyone."**
 
-> **"Dynamic Island, but for everyone."**
->
-> Ripple is a cross-platform desktop application that recreates Apple's Dynamic Island experience on Windows, Linux, and macOS. It's a highly customizable notification hub, widget system, and smart assistant that stays out of your way until you need it.
+Ripple is a cross-platform desktop application that recreates Apple's Dynamic Island experience on Windows, Linux, and macOS. It's a notification hub, widget system, and smart assistant that stays out of your way until you need it.
 
 <div align="center">
 
@@ -31,24 +29,12 @@ https://github.com/user-attachments/assets/a7b9ed8a-97b5-4603-bad7-6f4c4bef1f5d
 - **Weather Display** — Real-time weather information
 - **Battery Alerts** — Charging status and low battery notifications
 - **Bluetooth Alerts** — Get notified when devices connect/disconnect
-- **Smart Notifications** — Contextual alerts that appear when you need them
 
 ### Smart Features
 - **AI Ask Feature** — Integrated AI assistant powered by Groq
 - **Browser Search** — Quick search integration
 - **Clipboard Manager** — Access your clipboard history
 - **Tasks List** — Built-in task management
-- **Stealth Mode** — Complete transparency when idle
-- **Standby Mode** — Always-visible quick info widget
-
-### Interaction Modes
-Ripple has multiple display modes that adapt to your needs:
-- **Still Mode** — Minimalist idle state (170px)
-- **Quick Mode** — Hover to see weather, time, battery, and music info
-- **Large Mode** — Full interface with all tabs and features
-- **Stealth Mode** — Invisible when inactive
-- **Standby Mode** — Persistent quick info display
-
 
 ---
 
@@ -77,7 +63,7 @@ Download the latest release for your platform:
 ### The Three Modes
 
 **Still Mode** — The default idle state
-- Compact 170px display
+- Compact display
 - Minimal visual footprint
 - Ready to expand on interaction
 
@@ -96,11 +82,7 @@ Download the latest release for your platform:
 - **Arrow Keys** — Navigate between tabs
 - **Mouse Wheel** — Scroll horizontally between tabs
 - **Ctrl + Number** — Jump to a specific tab
-- **Custom Apps Tab** — Quick access to 4 apps of your choice
 
-### Optional Modes
-- **Stealth Mode** — Island completely disappears when idle (Settings)
-- **Standby Mode** — Always shows quick info instead of disappearing (Settings)
 
 ---
 
@@ -128,8 +110,6 @@ npm start
 ```
 
 The development server will launch Ripple with hot reload enabled. Press `Ctrl+R` (or `Cmd+R` on macOS) to refresh the app.
-
-### Building for Production
 
 #### Build for Current OS
 ```bash
@@ -165,19 +145,11 @@ npm run make -- --platform=darwin --arch=x64
 
 **Output**: Compiled binaries are found in `out/make/`
 
-## Documentation
-
-For more detailed information, see [instructions.md](instructions.md) which includes:
-- Comprehensive mode explanations with screenshots
-- Tab system overview
-- Settings configuration
-- Feature walkthroughs
-
 ---
 
 ## Contributing
 
-We welcome contributions! Whether it's:
+We welcome contributions!:
 - Bug reports and fixes
 - New features and improvements
 - Documentation updates
@@ -193,11 +165,4 @@ Please check [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 Ripple is open source and available under the [MIT License](LICENSE).
 
 ---
-
-## Support & Community
-
-- **Discord**: [Join our Discord server](https://discord.gg/a2xzVkxFVg) for discussions, support, and updates
-- **Issues**: Report bugs and request features on [GitHub Issues](https://github.com/TopMyster/Ripple/issues)
-- **Author**: Created by [TopMyster](https://github.com/TopMyster)
-
 

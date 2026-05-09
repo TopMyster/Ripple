@@ -1333,17 +1333,17 @@ export default function Island() {
                     <Music size={14} color={textColor} />
                   </div>
                 )}
-                <div style={{ 
-                  flex: 1, 
-                  minWidth: 0, 
-                  overflow: 'hidden', 
-                  position: 'relative', 
+                <div style={{
+                  flex: 1,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  position: 'relative',
                   transform: 'translateZ(0)',
-                  WebkitMaskImage: textWidth > (nowPlayingWidth - (isHovered ? 80 : 45)) 
-                    ? 'linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)' 
+                  WebkitMaskImage: textWidth > (nowPlayingWidth - (isHovered ? 80 : 45))
+                    ? 'linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)'
                     : 'none',
-                  maskImage: textWidth > (nowPlayingWidth - (isHovered ? 80 : 45)) 
-                    ? 'linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)' 
+                  maskImage: textWidth > (nowPlayingWidth - (isHovered ? 80 : 45))
+                    ? 'linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)'
                     : 'none'
                 }}>
                   <motion.div
@@ -1758,7 +1758,16 @@ export default function Island() {
                         textAlign: 'left',
                         minWidth: 0,
                       }}>
-                        <div style={{ width: '175px', overflow: 'hidden' }}>
+                        <div style={{ 
+                          width: '175px', 
+                          overflow: 'hidden',
+                          WebkitMaskImage: measureTextWidth(spotifyTrack.name, 18) > 175 
+                            ? 'linear-gradient(to right, transparent, black 15px, black 160px, transparent)' 
+                            : 'none',
+                          maskImage: measureTextWidth(spotifyTrack.name, 18) > 175 
+                            ? 'linear-gradient(to right, transparent, black 15px, black 160px, transparent)' 
+                            : 'none'
+                        }}>
                           <motion.h2
                             animate={measureTextWidth(spotifyTrack.name, 18) > 175 ? { x: [0, -(measureTextWidth(spotifyTrack.name, 18) + 30)] } : {}}
                             transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
@@ -1777,7 +1786,16 @@ export default function Island() {
                             )}
                           </motion.h2>
                         </div>
-                        <div style={{ width: '175px', overflow: 'hidden' }}>
+                        <div style={{ 
+                          width: '175px', 
+                          overflow: 'hidden',
+                          WebkitMaskImage: measureTextWidth(spotifyTrack.artist, 13) > 175 
+                            ? 'linear-gradient(to right, transparent, black 15px, black 160px, transparent)' 
+                            : 'none',
+                          maskImage: measureTextWidth(spotifyTrack.artist, 13) > 175 
+                            ? 'linear-gradient(to right, transparent, black 15px, black 160px, transparent)' 
+                            : 'none'
+                        }}>
                           <motion.p
                             animate={measureTextWidth(spotifyTrack.artist, 13) > 175 ? { x: [0, -(measureTextWidth(spotifyTrack.artist, 13) + 30)] } : {}}
                             transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
