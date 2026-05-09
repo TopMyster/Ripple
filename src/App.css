@@ -785,3 +785,64 @@ label {
 #settings-container::-webkit-scrollbar {
   display: none;
 }
+
+.tab-order-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--island-text-color), transparent 96%);
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--island-text-color), transparent 94%);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 8px;
+}
+
+.tab-order-item:hover {
+  background: color-mix(in srgb, var(--island-text-color), transparent 92%);
+  border-color: color-mix(in srgb, var(--island-text-color), transparent 85%);
+  transform: translateY(-1px);
+}
+
+.tab-order-item.hidden {
+  opacity: 0.45;
+  filter: grayscale(0.8);
+  border-style: dashed;
+}
+
+.tab-order-btn {
+  background: none;
+  border: none;
+  color: var(--island-text-color);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  opacity: 0.6;
+}
+
+.tab-order-btn:hover:not(:disabled) {
+  opacity: 1;
+  background: color-mix(in srgb, var(--island-text-color), transparent 90%);
+}
+
+.tab-order-btn:disabled {
+  opacity: 0.15;
+  cursor: default;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(0); }
+  80% { transform: translateX(calc(-100% + 100%)); } /* Logic: width of text minus container */
+  100% { transform: translateX(0); }
+}
+
+/* We'll use a simpler version with Framer Motion in the JS, but keyframes are good for backup */
+.scrolling-text {
+  display: inline-block;
+  white-space: nowrap;
+}

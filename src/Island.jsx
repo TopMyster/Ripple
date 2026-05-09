@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Groq } from "groq-sdk";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { Camera, Mic, SkipBackIcon, Play, Pause, SkipForwardIcon, Music, Headphones, Zap, Settings, Sun, Cloud, Droplets, Trash2, ChevronRight, ChevronLeft, Plus, Check, X, CloudRain, CloudSnow, CloudLightning, CloudSun, Moon } from "lucide-react";
+import { Camera, Mic, SkipBackIcon, Play, Pause, SkipForwardIcon, Music, Headphones, Zap, Settings, Sun, Cloud, Droplets, Trash2, ChevronRight, ChevronLeft, Plus, Check, X, CloudRain, CloudSnow, CloudLightning, CloudSun, Moon, Eye, EyeOff, GripVertical, List, Search, Star } from "lucide-react";
 import "./App.css";
 
 //Get Date
@@ -96,13 +96,27 @@ function openMusicPlayer(source) {
   }
 }
 
+const TABS = [
+  { id: 0, name: "Browser Search", icon: (color) => <Search size={16} color={color} /> },
+  { id: 1, name: "Workflows & QA", icon: (color) => <Zap size={16} color={color} /> },
+  { id: 2, name: "Overview", icon: (color) => <Sun size={16} color={color} /> },
+  { id: 3, name: "Now Playing", icon: (color) => <Music size={16} color={color} /> },
+  { id: 4, name: "AI Assistant", icon: (color) => <Mic size={16} color={color} /> },
+  { id: 5, name: "Clipboard", icon: (color) => <List size={16} color={color} /> },
+  { id: 6, name: "Tasks", icon: (color) => <Check size={16} color={color} /> },
+  { id: 7, name: "Settings", icon: (color) => <Settings size={16} color={color} /> },
+];
+
 export default function Island() {
   const [time, setTime] = useState(null);
   const [mode, setMode] = useState("still");
-  const [[tab, direction], setTab] = useState([Number(localStorage.getItem("default-tab") || 2), 0]);
   const [tabOrder, setTabOrder] = useState(() => JSON.parse(localStorage.getItem("tab-order") || "[0,1,2,3,4,5,6,7]"));
-  const currentTab = tabOrder[tab];
+  const [hiddenTabs, setHiddenTabs] = useState(() => JSON.parse(localStorage.getItem("hidden-tabs") || "[]"));
+  const [defaultTabId, setDefaultTabId] = useState(() => Number(localStorage.getItem("default-tab") || 0));
+
+
   const moveTabOrder = (fromIdx, toIdx) => {
+    if (toIdx < 0 || toIdx >= tabOrder.length) return;
     setTabOrder((prev) => {
       const newOrder = [...prev];
       const [moved] = newOrder.splice(fromIdx, 1);
@@ -111,6 +125,21 @@ export default function Island() {
       return newOrder;
     });
   };
+
+  const toggleTabVisibility = (id) => {
+    setHiddenTabs(prev => {
+      const newHidden = prev.includes(id)
+        ? prev.filter(t => t !== id)
+        : [...prev, id];
+
+      // Don't allow hiding all tabs
+      if (newHidden.length >= TABS.length) return prev;
+
+      localStorage.setItem("hidden-tabs", JSON.stringify(newHidden));
+      return newHidden;
+    });
+  };
+
   const [asked, setAsked] = useState(false);
   const [aiAnswer, setAIAnswer] = useState(null);
   const [percent, setPercent] = useState(null);
@@ -122,7 +151,7 @@ export default function Island() {
   const [largeStandbyEnabled, setLargeStandbyEnabled] = useState(localStorage.getItem("large-standby-mode") === "true");
   const [hideNotActiveIslandEnabled, sethideNotActiveIslandEnabled] = useState(localStorage.getItem("hide-island-notactive") === "true");
   const [showInfoWhenIdleEnabled, setShowInfoWhenIdleEnabled] = useState(
-    localStorage.getItem("show-info-when-idle") === "true" || localStorage.getItem("still-mode-time-weather") === "true"
+    localStorage.getItem("show-info-when-idle") === "true"
   );
   const [hourFormat, setHourFormat] = useState((localStorage.getItem("hour-format") || "12-hr") === "12-hr");
   const [weather, setWeather] = useState({ temp: "", status: "" });
@@ -157,6 +186,44 @@ export default function Island() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [albumHovered, setAlbumHovered] = useState(false);
   const [albumRotation, setAlbumRotation] = useState({ x: 0, y: 0 });
+
+  // Tab calculations
+  const isMusicActive = !!spotifyTrack;
+  const visibleTabs = tabOrder.filter(id => {
+    if (hiddenTabs.includes(id)) return false;
+    if (id === 3 && !isMusicActive) return false;
+    return true;
+  });
+
+  const [[currentTabId, direction], setTabState] = useState(() => {
+    const id = visibleTabs.includes(defaultTabId) ? defaultTabId : (visibleTabs[0] ?? 0);
+    return [id, 0];
+  });
+
+  const currentTab = currentTabId;
+  const totalTabs = visibleTabs.length;
+
+  const [showPausedQuickView, setShowPausedQuickView] = useState(false);
+  const pausedTimeout = useRef(null);
+
+  useEffect(() => {
+    if (spotifyTrack?.state === 'paused') {
+      setShowPausedQuickView(true);
+      if (pausedTimeout.current) clearTimeout(pausedTimeout.current);
+      pausedTimeout.current = setTimeout(() => {
+        setShowPausedQuickView(false);
+      }, 3000);
+    } else {
+      setShowPausedQuickView(false);
+      if (pausedTimeout.current) clearTimeout(pausedTimeout.current);
+    }
+  }, [spotifyTrack?.state]);
+
+  useEffect(() => {
+    if (visibleTabs.length > 0 && !visibleTabs.includes(currentTabId)) {
+      setTabState([visibleTabs[0], 0]);
+    }
+  }, [hiddenTabs, visibleTabs, currentTabId]);
   const albumRef = useRef(null);
   const isDraggingRef = useRef(false);
 
@@ -212,13 +279,16 @@ export default function Island() {
   const swipeMoved = useRef(false);
   const suppressClick = useRef(false);
   const swipeThreshold = 60;
-  const totalTabs = 8;
-
   const moveTab = (direction) => {
+    const currentIndex = visibleTabs.indexOf(currentTabId);
     if (direction > 0) {
-      setTab(([prev]) => [Math.min(totalTabs - 1, prev + 1), 1]);
+      if (currentIndex < visibleTabs.length - 1) {
+        setTabState([visibleTabs[currentIndex + 1], 1]);
+      }
     } else if (direction < 0) {
-      setTab(([prev]) => [Math.max(0, prev - 1), -1]);
+      if (currentIndex > 0) {
+        setTabState([visibleTabs[currentIndex - 1], -1]);
+      }
     }
   };
 
@@ -314,11 +384,11 @@ export default function Island() {
     300,
     Math.max(
       122,
-      Math.ceil(textWidth + 24 + 6 + 13.5 + hoverExtraWidth)
+      Math.ceil(textWidth + 24 + 6 + 20)
     )
   );
   let width = mode === "large"
-    ? (currentTab === 7 ? 480 : currentTab === 1 ? 480 : currentTab === 3 ? 330 : currentTab === 0 ? 405 : 380)
+    ? (currentTab === 7 ? 495 : currentTab === 1 ? 480 : currentTab === 3 ? 330 : currentTab === 0 ? 405 : 380)
     : (mode === "quick" && isPlaying && !alert && !chargingAlert && !bluetoothAlert && !cameraAlert && !microphoneAlert)
       ? nowPlayingWidth
       : (mode === "quick" || alert || chargingAlert || bluetoothAlert || cameraAlert || microphoneAlert)
@@ -326,7 +396,7 @@ export default function Island() {
         : isPlaying
           ? nowPlayingWidth
           : 170;
-  let height = mode === "large" ? (currentTab === 7 ? (positionMode === "free" ? 410 : 330) : currentTab === 6 ? 250 : currentTab === 3 ? 150 : currentTab === 0 ? 120 : currentTab === 1 ? 210 : 190) : 43;
+  let height = mode === "large" ? (currentTab === 7 ? (positionMode === "free" ? 425 : 345) : currentTab === 6 ? 250 : currentTab === 3 ? 150 : currentTab === 0 ? 120 : currentTab === 1 ? 210 : 190) : 43;
 
   const normalizeApps = (arr) => arr.map(a => typeof a === 'string' ? { name: a, launch: a } : a);
   const [quickApps, setQuickApps] = useState(() =>
@@ -1011,9 +1081,12 @@ export default function Island() {
       } else if (e.key === "ArrowLeft") {
         moveTab(-1);
       } else if (e.ctrlKey && e.key >= "1" && e.key <= "8") {
-        const tabNum = parseInt(e.key) - 1;
-        setMode("large");
-        setTab(([prev]) => [tabNum, tabNum > prev ? 1 : -1]);
+        const idx = parseInt(e.key) - 1;
+        if (visibleTabs[idx] !== undefined) {
+          const targetId = visibleTabs[idx];
+          setMode("large");
+          setTabState([targetId, targetId > currentTabId ? 1 : -1]);
+        }
       }
     };
     document.addEventListener("keydown", handleKeyDown);
@@ -1202,9 +1275,9 @@ export default function Island() {
       }}
     >
       {/*Quickview*/}
-      {mode !== "large" && (mode === "quick" || (mode === "still" && showInfoWhenIdleEnabled) || (mode === "still" && isPlaying) || alert || chargingAlert || bluetoothAlert || cameraAlert || microphoneAlert) ? (
+      {mode !== "large" && (mode === "quick" || (mode === "still" && showInfoWhenIdleEnabled) || (mode === "still" && (isPlaying || showPausedQuickView)) || alert || chargingAlert || bluetoothAlert || cameraAlert || microphoneAlert) ? (
         <AnimatePresence mode="wait">
-          {isPlaying && !alert && !chargingAlert && !bluetoothAlert && !cameraAlert && !microphoneAlert ? (
+          {(isPlaying || showPausedQuickView) && !alert && !chargingAlert && !bluetoothAlert && !cameraAlert && !microphoneAlert ? (
             <motion.div
               key={spotifyTrack?.name ? `playing-${spotifyTrack.name}-${spotifyTrack.artist}` : "playing"}
               initial={{ opacity: 0, filter: 'blur(4px)', scale: 0.98 }}
@@ -1218,7 +1291,8 @@ export default function Island() {
                 width: '100%',
                 minWidth: 0,
                 boxSizing: 'border-box',
-                opacity: hideNotActiveIslandEnabled ? .6 : 1,
+                opacity: showPausedQuickView ? 0.5 : (hideNotActiveIslandEnabled ? .6 : 1),
+                filter: showPausedQuickView ? 'grayscale(1)' : 'none',
                 padding: '0 9px'
               }}
             >
@@ -1258,51 +1332,65 @@ export default function Island() {
                     <Music size={14} color={textColor} />
                   </div>
                 )}
-                <motion.div
-                  style={{
-                    flex: 1,
-                    minWidth: 0,
-                    overflow: 'hidden',
-                    whiteSpace: 'nowrap',
-                    textOverflow: 'ellipsis',
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: textColor,
-                  }}>
-                  {spotifyTrack?.name} <span style={{ opacity: 0.7, fontWeight: 400 }}> • {spotifyTrack?.artist}</span>
-                </motion.div>
-              </div>
-              <AnimatePresence>
-                {isHovered && (
+                <div style={{ flex: 1, minWidth: 0, overflow: 'hidden', position: 'relative' }}>
                   <motion.div
-                    key="media-controls"
-                    initial={{ opacity: 0, width: 0, marginLeft: 0, marginRight: 0 }}
-                    animate={{ opacity: 1, width: 'auto', marginLeft: 6, marginRight: 6 }}
-                    exit={{ opacity: 0, width: 0, marginLeft: 0, marginRight: 0 }}
-                    transition={{
-                      animate: { delay: 0.1, duration: 0.25 },
-                      exit: { duration: 0.2 },
-                      ease: [0.4, 0, 0.2, 1]
-                    }}
-                    className="media-btn"
+                    animate={textWidth > (nowPlayingWidth - (isHovered ? 80 : 45)) ? { x: [0, -(textWidth + 30)] } : { x: 0 }}
+                    transition={textWidth > (nowPlayingWidth - (isHovered ? 80 : 45)) 
+                      ? { duration: 12, repeat: Infinity, ease: "linear" }
+                      : { duration: 0.4, ease: "easeOut" }
+                    }
                     style={{
-                      overflow: 'hidden',
-                      userSelect: 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                      cursor: 'pointer'
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      window.electronAPI.controlSystemMedia('playpause');
-                    }}
-                  >
-                    {spotifyTrack.state === 'playing' ? <Pause size={16} color={textColor} fill={textColor} /> : <Play size={16} color={textColor} fill={textColor} />}
+                      display: 'inline-block',
+                      whiteSpace: 'nowrap',
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: textColor,
+                    }}>
+                    <span style={{ paddingRight: textWidth > (nowPlayingWidth - (isHovered ? 80 : 45)) ? 30 : 0 }}>
+                      {spotifyTrack?.name} <span style={{ opacity: 0.7, fontWeight: 400 }}> • {spotifyTrack?.artist}</span>
+                    </span>
+                    {textWidth > (nowPlayingWidth - (isHovered ? 80 : 45)) && (
+                      <span style={{ paddingRight: 30 }}>
+                        {spotifyTrack?.name} <span style={{ opacity: 0.7, fontWeight: 400 }}> • {spotifyTrack?.artist}</span>
+                      </span>
+                    )}
                   </motion.div>
-                )}
-              </AnimatePresence>
+                </div>
+                <AnimatePresence>
+                  {isHovered && (
+                    <motion.button
+                      key="play-pause-hover"
+                      initial={{ opacity: 0, width: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, width: 30, scale: 1 }}
+                      exit={{ opacity: 0, width: 0, scale: 0.5 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.electronAPI.controlSystemMedia('playpause');
+                      }}
+                      onMouseEnter={() => {
+                        if (window.electronAPI) window.electronAPI.setIgnoreMouseEvents(false, false);
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#FFFFFF',
+                        cursor: 'pointer',
+                        padding: 0,
+                        marginLeft: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        overflow: 'hidden',
+                        zIndex: 100
+                      }}
+                    >
+                      {spotifyTrack?.state === 'playing' ? <Pause size={15} color="#FFFFFF" fill="#FFFFFF" /> : <Play size={15} color="#FFFFFF" fill="#FFFFFF" />}
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+              </div>
             </motion.div>
           ) : (
             <motion.div
@@ -1380,7 +1468,7 @@ export default function Island() {
       <AnimatePresence custom={direction} mode="popLayout">
         {mode === "large" && (
           <motion.div
-            key={tab}
+            key={currentTabId}
             custom={direction}
             variants={tabVariants}
             initial="enter"
@@ -1591,7 +1679,10 @@ export default function Island() {
                         width: '100%',
                         height: '100%',
                         gap: '8px',
-                        paddingLeft: '17px'
+                        paddingLeft: '17px',
+                        opacity: spotifyTrack.state === 'playing' ? 1 : 0.5,
+                        filter: spotifyTrack.state === 'playing' ? 'none' : 'grayscale(1)',
+                        transition: 'opacity 0.3s ease, filter 0.3s ease'
                       }}
                     >
                       {spotifyTrack.artwork_url ? (
@@ -1648,32 +1739,45 @@ export default function Island() {
                         justifyContent: 'center',
                         textAlign: 'left',
                         minWidth: 0,
-                        maxWidth: '175px'
                       }}>
-                        <h2 style={{
-                          margin: '0 10px 0 5px',
-                          fontSize: 18,
-                          fontWeight: 600,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          color: textColor,
-                          fontFamily: theme === "win95" ? "w95" : "OpenRunde"
-                        }}>
-                          {spotifyTrack.name || "Unknown Title"}
-                        </h2>
-                        <p style={{
-                          margin: '4px 0 0 5px',
-                          fontSize: 13,
-                          opacity: 0.8,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          color: textColor,
-                          fontFamily: theme === "win95" ? "w95" : "OpenRunde"
-                        }}>
-                          {spotifyTrack.artist || "Unknown Artist"}
-                        </p>
+                        <div style={{ width: '175px', overflow: 'hidden' }}>
+                          <motion.h2
+                            animate={measureTextWidth(spotifyTrack.name, 18) > 175 ? { x: [0, -(measureTextWidth(spotifyTrack.name, 18) + 30)] } : {}}
+                            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                            style={{
+                              margin: '0 0 0 5px',
+                              fontSize: 18,
+                              fontWeight: 600,
+                              whiteSpace: 'nowrap',
+                              display: 'inline-block',
+                              color: textColor,
+                              fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+                            }}>
+                            <span style={{ paddingRight: measureTextWidth(spotifyTrack.name, 18) > 175 ? 30 : 0 }}>{spotifyTrack.name || "Unknown Title"}</span>
+                            {measureTextWidth(spotifyTrack.name, 18) > 175 && (
+                              <span style={{ paddingRight: 30 }}>{spotifyTrack.name || "Unknown Title"}</span>
+                            )}
+                          </motion.h2>
+                        </div>
+                        <div style={{ width: '175px', overflow: 'hidden' }}>
+                          <motion.p
+                            animate={measureTextWidth(spotifyTrack.artist, 13) > 175 ? { x: [0, -(measureTextWidth(spotifyTrack.artist, 13) + 30)] } : {}}
+                            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                            style={{
+                              margin: '4px 0 0 5px',
+                              fontSize: 13,
+                              opacity: 0.8,
+                              whiteSpace: 'nowrap',
+                              display: 'inline-block',
+                              color: textColor,
+                              fontFamily: theme === "win95" ? "w95" : "OpenRunde"
+                            }}>
+                            <span style={{ paddingRight: measureTextWidth(spotifyTrack.artist, 13) > 175 ? 30 : 0 }}>{spotifyTrack.artist || "Unknown Artist"}</span>
+                            {measureTextWidth(spotifyTrack.artist, 13) > 175 && (
+                              <span style={{ paddingRight: 30 }}>{spotifyTrack.artist || "Unknown Artist"}</span>
+                            )}
+                          </motion.p>
+                        </div>
                         <div style={{ display: 'flex', gap: 15, marginTop: 15, alignItems: 'center', marginLeft: 5 }}>
                           <button
                             className="media-btn"
@@ -2067,15 +2171,6 @@ export default function Island() {
                       </select>
                     </div>
                   )}
-                  <div className="settings-row">
-                    <span className="settings-label">Default Tab (1-8)</span>
-                    <input
-                      className="select-input"
-                      style={{ width: '60px', padding: '6px' }}
-                      placeholder="2"
-                      onChange={(e) => localStorage.setItem("default-tab", e.target.value - 1)}
-                    />
-                  </div>
                   {displays.length > 0 && (
                     <div className="settings-row">
                       <span className="settings-label">Target Display</span>
@@ -2088,25 +2183,89 @@ export default function Island() {
                   )}
                 </div>
                 <div className="settings-section">
-                  <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Tab Order</h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    {tabOrder.map((t, i) => (
-                      <div key={t} className="settings-row" style={{ padding: '8px 0', borderBottom: `1px solid color-mix(in srgb, ${textColor}, transparent 95%)` }}>
-                        <span style={{ flex: 1 }}>{["Browser Search", "Workflows & QA", "Overview", "Now Playing", "AI Assistant", "Clipboard", "Tasks", "Settings"][t]}</span>
-                        <div style={{ display: 'flex', gap: 10 }}>
-                          <button
-                            disabled={i === 0}
-                            onClick={() => moveTabOrder(i, i - 1)}
-                            style={{ background: 'none', border: 'none', color: textColor, cursor: i === 0 ? 'default' : 'pointer', opacity: i === 0 ? 0.3 : 1 }}
-                          >▲</button>
-                          <button
-                            disabled={i === tabOrder.length - 1}
-                            onClick={() => moveTabOrder(i, i + 1)}
-                            style={{ background: 'none', border: 'none', color: textColor, cursor: i === tabOrder.length - 1 ? 'default' : 'pointer', opacity: i === tabOrder.length - 1 ? 0.3 : 1 }}
-                          >▼</button>
+                  <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em', marginBottom: '4px' }}>Tab Management</h3>
+                  <p style={{ fontSize: 11, opacity: 0.4, marginTop: -8, marginBottom: 8 }}>Drag to reorder, click eye to hide.</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {tabOrder.map((id, i) => {
+                      const tabDef = TABS.find(t => t.id === id);
+                      const isHidden = hiddenTabs.includes(id);
+                      return (
+                        <div
+                          key={id}
+                          className={`tab-order-item ${isHidden ? 'hidden' : ''}`}
+                          style={{ cursor: 'grab' }}
+                          draggable
+                          onDragStart={(e) => {
+                            e.dataTransfer.setData("text/plain", i);
+                            e.currentTarget.style.opacity = '0.4';
+                            e.currentTarget.style.borderStyle = 'dashed';
+                          }}
+                          onDragEnd={(e) => {
+                            e.currentTarget.style.opacity = isHidden ? '0.45' : '1';
+                            e.currentTarget.style.borderStyle = isHidden ? 'dashed' : 'solid';
+                          }}
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            e.currentTarget.style.background = `color-mix(in srgb, ${textColor}, transparent 90%)`;
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                          }}
+                          onDragLeave={(e) => {
+                            e.currentTarget.style.background = '';
+                            e.currentTarget.style.transform = '';
+                          }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            e.currentTarget.style.background = '';
+                            e.currentTarget.style.transform = '';
+                            const fromIdx = parseInt(e.dataTransfer.getData("text/plain"));
+                            moveTabOrder(fromIdx, i);
+                          }}
+                        >
+                          <GripVertical size={16} style={{ opacity: 0.3, cursor: 'grab' }} />
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1 }}>
+                            {tabDef.icon(textColor)}
+                            <span style={{ fontSize: 14, fontWeight: 500 }}>{tabDef.name}</span>
+                          </div>
+                          <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                            <button
+                              className="tab-order-btn"
+                              onClick={() => {
+                                setDefaultTabId(id);
+                                localStorage.setItem("default-tab", id);
+                              }}
+                              title="Set as default"
+                              style={{ opacity: defaultTabId === id ? 1 : 0.3, color: defaultTabId === id ? '#FFD700' : textColor }}
+                            >
+                              <Star size={16} fill={defaultTabId === id ? '#FFD700' : 'none'} />
+                            </button>
+                            <div style={{ width: 1, height: 16, background: textColor, opacity: 0.1, margin: '0 4px' }} />
+                            <button
+                              className="tab-order-btn"
+                              onClick={() => toggleTabVisibility(id)}
+                              title={isHidden ? "Show" : "Hide"}
+                              style={{ opacity: isHidden ? 1 : 0.6 }}
+                            >
+                              {isHidden ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                            <div style={{ width: 1, height: 16, background: textColor, opacity: 0.1, margin: '0 4px' }} />
+                            <button
+                              className="tab-order-btn"
+                              disabled={i === 0}
+                              onClick={() => moveTabOrder(i, i - 1)}
+                            >
+                              <ChevronLeft size={16} style={{ transform: 'rotate(90deg)' }} />
+                            </button>
+                            <button
+                              className="tab-order-btn"
+                              disabled={i === tabOrder.length - 1}
+                              onClick={() => moveTabOrder(i, i + 1)}
+                            >
+                              <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -2116,7 +2275,6 @@ export default function Island() {
                     <span className="settings-label">Theme</span>
                     <select value={theme} onChange={(e) => setTheme(e.target.value)}>
                       <option value="none">Default</option>
-                      <option value="invisible">Invisible</option>
                       <option value="sleek-black">Sleek Black</option>
                       <option value="win95">Windows 95</option>
                     </select>
