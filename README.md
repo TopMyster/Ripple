@@ -1,6 +1,6 @@
 # Ripple
 
-**"Dynamic Island, but for everyone."**
+**Dynamic Island, but for everyone**
 
 Ripple is a cross-platform desktop application that recreates Apple's Dynamic Island experience on Windows, Linux, and macOS. It's a notification hub, widget system, and smart assistant that stays out of your way until you need it.
 
