@@ -1333,7 +1333,19 @@ export default function Island() {
                     <Music size={14} color={textColor} />
                   </div>
                 )}
-                <div style={{ flex: 1, minWidth: 0, overflow: 'hidden', position: 'relative', transform: 'translateZ(0)' }}>
+                <div style={{ 
+                  flex: 1, 
+                  minWidth: 0, 
+                  overflow: 'hidden', 
+                  position: 'relative', 
+                  transform: 'translateZ(0)',
+                  WebkitMaskImage: textWidth > (nowPlayingWidth - (isHovered ? 80 : 45)) 
+                    ? 'linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)' 
+                    : 'none',
+                  maskImage: textWidth > (nowPlayingWidth - (isHovered ? 80 : 45)) 
+                    ? 'linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)' 
+                    : 'none'
+                }}>
                   <motion.div
                     animate={textWidth > (nowPlayingWidth - (isHovered ? 80 : 45)) ? { x: [0, -(textWidth + 30)] } : { x: 0 }}
                     transition={textWidth > (nowPlayingWidth - (isHovered ? 80 : 45))
