@@ -8,7 +8,7 @@ Ripple is a cross-platform desktop application that recreates Apple's Dynamic Is
 
 [![Discord](https://img.shields.io/badge/Discord-Join%20Us-5865F2)](https://discord.gg/a2xzVkxFVg)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-3.2.3-blue)](package.json)
+[![Version](https://img.shields.io/badge/Version-3.3.0-blue)](package.json)
 
 https://github.com/user-attachments/assets/a7b9ed8a-97b5-4603-bad7-6f4c4bef1f5d
 
