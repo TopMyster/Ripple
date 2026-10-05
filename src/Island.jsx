@@ -108,6 +108,8 @@ const TABS = [
 ];
 
 export default function Island() {
+  const islandElementRef = useRef(null);
+  const lastWindowShapeRef = useRef(null);
   const [time, setTime] = useState(null);
   const [mode, setMode] = useState("still");
   const [tabOrder, setTabOrder] = useState(() => JSON.parse(localStorage.getItem("tab-order") || "[0,1,2,3,4,5,6,7]"));
@@ -183,7 +185,6 @@ export default function Island() {
   const [aiModel, setAiModel] = useState(localStorage.getItem("ai-model") || "llama-3.3-70b-versatile");
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
   const [albumHovered, setAlbumHovered] = useState(false);
   const [albumRotation, setAlbumRotation] = useState({ x: 0, y: 0 });
 
@@ -1155,9 +1156,45 @@ export default function Island() {
   };
   const sideStyles = getSideStyles();
 
+  const syncLinuxWindowShape = () => {
+    if (window.electronAPI?.platform !== "linux") return;
+
+    const element = islandElementRef.current;
+    if (!element) return;
+
+    const bounds = element.getBoundingClientRect();
+    const padding = 28;
+    const x = Math.max(0, Math.floor(bounds.left - padding));
+    const y = Math.max(0, Math.floor(bounds.top - padding));
+    const right = Math.min(window.innerWidth, Math.ceil(bounds.right + padding));
+    const bottom = Math.min(window.innerHeight, Math.ceil(bounds.bottom + padding));
+    const rect = {
+      x,
+      y,
+      width: right - x,
+      height: bottom - y,
+      scaleFactor: window.devicePixelRatio || 1,
+    };
+
+    if (rect.width <= 0 || rect.height <= 0) return;
+    const previous = lastWindowShapeRef.current;
+    if (previous && previous.x === rect.x && previous.y === rect.y &&
+        previous.width === rect.width && previous.height === rect.height) return;
+
+    lastWindowShapeRef.current = rect;
+    window.electronAPI.setWindowInputShape(rect);
+  };
+
+  useEffect(() => {
+    syncLinuxWindowShape();
+    window.addEventListener("resize", syncLinuxWindowShape);
+    return () => window.removeEventListener("resize", syncLinuxWindowShape);
+  }, []);
+
   return (
     <motion.div
       id="Island"
+      ref={islandElementRef}
       onMouseEnter={() => {
         setIsHovered(true);
         if (mode === "still" && showInfoWhenIdleEnabled && !isPlaying) {
@@ -1234,14 +1271,8 @@ export default function Island() {
                 ? 0
                 : 14,
       }}
-      onUpdate={(latest) => {
-        if (latest.width || latest.height) {
-          setIsTransitioning(true);
-        }
-      }}
-      onAnimationComplete={() => {
-        setIsTransitioning(false);
-      }}
+      onUpdate={syncLinuxWindowShape}
+      onAnimationComplete={syncLinuxWindowShape}
       transition={{
         type: "spring",
         stiffness: 400,
@@ -1271,7 +1302,7 @@ export default function Island() {
         position: 'fixed',
         margin: 0,
         transition: 'box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        pointerEvents: isTransitioning ? 'auto' : (window.electronAPI?.platform === 'linux' && mode === 'still' && !isHovered) ? 'none' : 'auto'
+        pointerEvents: 'auto'
       }}
     >
       {/*Quickview*/}

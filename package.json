@@ -5,7 +5,7 @@
   "description": "A Dynamic Island for All",
   "main": ".vite/build/main.js",
   "scripts": {
-    "start": "electron-forge start",
+    "start": "node scripts/start.js",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
@@ -42,6 +42,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
-    "spotify-node-applescript": "^1.1.1"
+    "spotify-node-applescript": "^1.1.1",
+    "x11": "^4.3.0"
   }
 }

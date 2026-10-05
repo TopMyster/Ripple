@@ -1,4 +1,6 @@
 "use strict";
+import x11Module from "x11";
+
 const {
   app,
   BrowserWindow,
@@ -14,11 +16,108 @@ const fs = require("fs");
 
 if (process.platform === "linux") {
   app.commandLine.appendSwitch("enable-transparent-visuals");
-  app.commandLine.appendSwitch("disable-gpu-compositing");
-  app.disableHardwareAcceleration();
 }
+const x11 = process.platform === "linux" ? x11Module : null;
 let tray = null;
 let mainWindow = null;
+let mainWindowReady = false;
+let mainWindowInputShapeReady = false;
+let x11Display = null;
+let x11Shape = null;
+let pendingInputShape = null;
+let inputShapeCheckPending = false;
+
+const showMainWindow = () => {
+  if (!mainWindow || !mainWindowReady) return;
+  if (process.platform === "linux" && !mainWindowInputShapeReady) return;
+
+  mainWindow.show();
+  mainWindow.setAlwaysOnTop(
+    true,
+    process.platform === "linux" ? "screen-saver" : "pop-up-menu",
+  );
+  mainWindow.focus();
+};
+
+const applyLinuxInputShape = (rect) => {
+  if (!mainWindow || process.platform !== "linux") return;
+
+  pendingInputShape = rect;
+  const { x, y, width, height } = rect;
+  // Keep the visual window rectangular and transparent. Changing ShapeBounding
+  // on every animation frame races the compositor and can flash a black edge;
+  // only ShapeInput is needed to let clicks pass through outside the Island.
+  if (!x11Display || !x11Shape) return;
+
+  const windowId = mainWindow.getNativeWindowHandle().readUInt32LE(0);
+  const scaleFactor = Number.isFinite(rect.scaleFactor) && rect.scaleFactor > 0
+    ? rect.scaleFactor
+    : 1;
+  const inputRect = [
+    Math.floor(x * scaleFactor),
+    Math.floor(y * scaleFactor),
+    Math.ceil(width * scaleFactor),
+    Math.ceil(height * scaleFactor),
+  ];
+
+  x11Shape.Rectangles(
+    x11Shape.Op.Set,
+    x11Shape.Kind.Input,
+    windowId,
+    0,
+    0,
+    [inputRect],
+    x11Shape.Ordering.Unsorted,
+  );
+
+  if (mainWindowInputShapeReady || inputShapeCheckPending) return;
+  inputShapeCheckPending = true;
+  x11Shape.GetRectangles(windowId, x11Shape.Kind.Input, (error, result) => {
+    inputShapeCheckPending = false;
+    if (error) {
+      console.error("Failed to read Linux window input shape:", error);
+      return;
+    }
+
+    const actual = result.rectangles?.[0];
+    const bounds = mainWindow?.getBounds();
+    const scale = rect.scaleFactor || 1;
+    if (!actual || !bounds ||
+        actual[2] >= bounds.width * scale || actual[3] >= bounds.height * scale) {
+      console.error("Linux window input shape still covers the full window:", result.rectangles);
+      return;
+    }
+
+    mainWindowInputShapeReady = true;
+    showMainWindow();
+  });
+};
+
+const initializeLinuxInputShape = () => {
+  if (process.platform !== "linux") return;
+
+  x11.createClient((error, display) => {
+    if (error) {
+      console.error("Failed to connect to X11 for input shaping:", error);
+      return;
+    }
+
+    display.client.on("error", (clientError) => {
+      console.error("X11 input-shape connection error:", clientError);
+    });
+    display.client.require("shape", (shapeError, shape) => {
+      if (shapeError) {
+        console.error("X11 Shape extension is unavailable:", shapeError);
+        display.client.terminate();
+        return;
+      }
+
+      x11Display = display;
+      x11Shape = shape;
+      if (pendingInputShape) applyLinuxInputShape(pendingInputShape);
+    });
+  });
+};
 
 const { exec, spawn } = require('child_process');
 
@@ -263,11 +362,25 @@ function launchWindows(input) {
 
 ipcMain.handle("set-ignore-mouse-events", (event, ignore, forward) => {
   if (mainWindow) {
-    if (process.platform !== "linux") {
-      mainWindow.setIgnoreMouseEvents(ignore, { forward: forward || false });
-    } else {
-      mainWindow.setIgnoreMouseEvents(ignore);
-    }
+    // Linux cannot forward mouse movement while events are ignored. Keep the
+    // window interactive there and use its native shape for click-through.
+    if (process.platform === "linux") return;
+    mainWindow.setIgnoreMouseEvents(ignore, { forward: forward || false });
+  }
+});
+
+ipcMain.on("set-window-input-shape", (event, rect) => {
+  if (process.platform !== "linux" || !mainWindow) return;
+
+  const { x, y, width, height } = rect || {};
+  if (![x, y, width, height].every(Number.isFinite) || width <= 0 || height <= 0) {
+    return;
+  }
+
+  try {
+    applyLinuxInputShape(rect);
+  } catch (error) {
+    console.error("Failed to set Linux window input shape:", error);
   }
 });
 
@@ -355,7 +468,7 @@ ipcMain.handle("set-display", (event, displayId) => {
       // mainWindow.setFullScreen(true);
     }
 
-    mainWindow.show();
+    showMainWindow();
   }
 });
 
@@ -422,6 +535,8 @@ const getIconPath = () => {
 };
 
 const createWindow = () => {
+  mainWindowReady = false;
+  mainWindowInputShapeReady = false;
   const primaryDisplay = screen.getPrimaryDisplay();
   const { x, y, width, height } = primaryDisplay.bounds;
   const isLinux = process.platform === "linux";
@@ -458,37 +573,28 @@ const createWindow = () => {
       preload: path.join(__dirname, "preload.js"),
       devTools: false,
     },
-    show: true,
+    show: !isLinux,
   });
 
   if (!isLinux) {
     mainWindow.setIgnoreMouseEvents(true, { forward: true });
   } else {
-    mainWindow.setIgnoreMouseEvents(true);
+    mainWindow.setIgnoreMouseEvents(false);
   }
 
   const showDelay = isLinux ? 500 : 0;
 
   mainWindow.once("ready-to-show", () => {
     setTimeout(() => {
-      if (mainWindow) {
-        mainWindow.show();
-        if (isLinux) {
-          mainWindow.setAlwaysOnTop(true, "screen-saver");
-        } else if (isMac) {
-          mainWindow.setAlwaysOnTop(true, "pop-up-menu");
-        } else {
-          mainWindow.setAlwaysOnTop(true, "pop-up-menu");
-        }
-        mainWindow.focus();
-      }
+      mainWindowReady = true;
+      showMainWindow();
     }, showDelay);
   });
 
   setTimeout(() => {
     if (mainWindow && !mainWindow.isVisible()) {
-      mainWindow.show();
-      mainWindow.focus();
+      mainWindowReady = true;
+      showMainWindow();
     }
   }, 5000);
 
@@ -515,6 +621,7 @@ app.whenReady().then(() => {
   if (process.platform === "darwin") {
     app.dock.hide();
   }
+  initializeLinuxInputShape();
   createWindow();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -535,7 +642,7 @@ app.whenReady().then(() => {
             if (mainWindow.isVisible()) {
               mainWindow.hide();
             } else {
-              mainWindow.show();
+              showMainWindow();
             }
           }
         },
@@ -553,6 +660,10 @@ app.whenReady().then(() => {
   } catch (e) {
     console.error("Failed to create tray:", e);
   }
+});
+
+app.on("before-quit", () => {
+  if (x11Display?.client) x11Display.client.terminate();
 });
 
 ipcMain.handle("get-system-media", async () => {

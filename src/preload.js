@@ -4,6 +4,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setIgnoreMouseEvents: (ignore, forward) => {
     ipcRenderer.invoke('set-ignore-mouse-events', ignore, forward);
   },
+  setWindowInputShape: (rect) => ipcRenderer.send('set-window-input-shape', rect),
   getSystemMedia: () => ipcRenderer.invoke('get-system-media'),
   debugGetSystemMediaRaw: () => ipcRenderer.invoke('debug-get-system-media-raw'),
   getBluetoothStatus: () => ipcRenderer.invoke('get-bluetooth-status'),

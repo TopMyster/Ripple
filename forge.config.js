@@ -115,6 +115,7 @@ module.exports = {
           icon: path.join(__dirname, 'src/assets/icons/icon.png'),
           executableName: 'ripple',
           name: 'ripple',
+          desktopTemplate: path.join(__dirname, 'scripts/ripple.desktop.ejs'),
         }
       },
     },
@@ -124,6 +125,7 @@ module.exports = {
         options: {
           icon: path.join(__dirname, 'src/assets/icons/icon.png'),
           name: 'ripple',
+          execArguments: ['--ozone-platform=x11'],
         }
       },
     },
