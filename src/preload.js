@@ -17,6 +17,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   searchApps: (query) => ipcRenderer.invoke('search-apps', query),
   getDisplays: () => ipcRenderer.invoke('get-displays'),
   setDisplay: (displayId) => ipcRenderer.invoke('set-display', displayId),
+  setNotchMode: (enabled) => ipcRenderer.invoke('set-notch-mode', enabled),
   updateWindowPosition: (xPerc, yPx) => ipcRenderer.invoke('update-window-position', xPerc, yPx),
   setAutoLaunch: (enable) => process.platform !== 'darwin' ? ipcRenderer.invoke('set-auto-launch', enable) : Promise.resolve(),
   focusWindow: () => ipcRenderer.invoke('focus-window'),

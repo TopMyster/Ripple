@@ -11,6 +11,8 @@ node_modules
 dist
 dist-ssr
 *.local
+native/mac-notch/build/
+native/mac-notch/prebuilds/
 
 # Editor directories and files
 .vscode/*

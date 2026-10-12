@@ -237,6 +237,7 @@ export default function Island() {
   const [weatherLocation, setWeatherLocation] = useState(localStorage.getItem("location") || "");
   const [autoLaunchEnabled, setAutoLaunchEnabled] = useState(localStorage.getItem("auto-launch") === "true");
   const [positionMode, setPositionMode] = useState(localStorage.getItem("position-mode") || localStorage.getItem("side-mode") || "free");
+  const [notchModeEnabled, setNotchModeEnabled] = useState(localStorage.getItem("notch-mode") === "true");
 
   const [islandX, setIslandX] = useState(() => {
     const saved = localStorage.getItem("island-x");
@@ -397,7 +398,15 @@ export default function Island() {
         : isPlaying
           ? nowPlayingWidth
           : 170;
-  let height = mode === "large" ? (currentTab === 7 ? (positionMode === "free" ? 425 : 345) : currentTab === 6 ? 250 : currentTab === 3 ? 150 : currentTab === 0 ? 120 : currentTab === 1 ? 210 : 190) : 40;
+  if (notchModeEnabled && mode !== "large") width = Math.max(isPlaying ? 300 : 0, width + 40);
+  const quickTextViewportWidth = notchModeEnabled
+    ? Math.min(100, Math.max(80, Math.floor(width * 0.3)))
+    : nowPlayingWidth - (isHovered ? 80 : 4);
+  const quickTextFadeWidth = notchModeEnabled ? 5 : 15;
+  const notchContentInset = notchModeEnabled ? 34 : 0;
+  let height = mode === "large"
+    ? (currentTab === 7 ? (positionMode === "free" ? 425 : 345) : currentTab === 6 ? 250 : currentTab === 3 ? 150 : currentTab === 0 ? 120 : currentTab === 1 ? 210 : 190) + notchContentInset
+    : notchModeEnabled ? 34 : 40;
 
   const normalizeApps = (arr) => arr.map(a => typeof a === 'string' ? { name: a, launch: a } : a);
   const [quickApps, setQuickApps] = useState(() =>
@@ -420,6 +429,7 @@ export default function Island() {
     if (savedDisplayId && window.electronAPI?.setDisplay) {
       window.electronAPI.setDisplay(savedDisplayId);
     }
+    window.electronAPI?.setNotchMode?.(notchModeEnabled);
 
     if (window.electronAPI?.updateWindowPosition) {
       window.electronAPI.updateWindowPosition(islandX, islandY);
@@ -1144,6 +1154,8 @@ export default function Island() {
 
   const isFree = positionMode === "free";
   const getSideStyles = () => {
+    if (notchModeEnabled) return { left: '50%', top: '0px', x: '-50%' };
+
     switch (positionMode) {
       case 'top-left': return { left: '15px', top: '15px', x: '0%' };
       case 'top-right': return { left: 'calc(100% - 15px)', top: '15px', x: '-100%' };
@@ -1263,7 +1275,9 @@ export default function Island() {
         scale: isHovered ? 1.05 : 1,
         x: sideStyles.x,
         borderRadius:
-          mode === "large" && theme === "win95"
+          notchModeEnabled
+            ? mode === "large" ? "0px 0px 30px 30px" : "0px 0px 14px 14px"
+            : mode === "large" && theme === "win95"
             ? 0
             : mode === "large"
               ? (currentTab === 0 ? 28 : 30)
@@ -1327,7 +1341,7 @@ export default function Island() {
                 padding: '0 9px'
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'visible', flex: 1, minWidth: 0, userSelect: 'none', perspective: '1200px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'visible', flex: 1, minWidth: 0, userSelect: 'none', perspective: '1200px', position: notchModeEnabled ? 'relative' : undefined }}>
                 {spotifyTrack?.artwork_url ? (
                   <div style={{ perspective: '1200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <img
@@ -1365,21 +1379,24 @@ export default function Island() {
                   </div>
                 )}
                 <div style={{
-                  flex: 1,
+                  flex: notchModeEnabled ? '0 1 auto' : 1,
+                  width: notchModeEnabled ? `${quickTextViewportWidth}px` : undefined,
+                  maxWidth: notchModeEnabled ? `${quickTextViewportWidth}px` : undefined,
+                  marginLeft: notchModeEnabled ? 'auto' : undefined,
                   minWidth: 0,
                   overflow: 'hidden',
                   position: 'relative',
                   transform: 'translateZ(0)',
-                  WebkitMaskImage: textWidth > (nowPlayingWidth - (isHovered ? 80 : 45))
-                    ? 'linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)'
+                  WebkitMaskImage: textWidth > quickTextViewportWidth
+                    ? `linear-gradient(to right, transparent, black ${quickTextFadeWidth}px, black calc(100% - ${quickTextFadeWidth}px), transparent)`
                     : 'none',
-                  maskImage: textWidth > (nowPlayingWidth - (isHovered ? 80 : 45))
-                    ? 'linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)'
+                  maskImage: textWidth > quickTextViewportWidth
+                    ? `linear-gradient(to right, transparent, black ${quickTextFadeWidth}px, black calc(100% - ${quickTextFadeWidth}px), transparent)`
                     : 'none'
                 }}>
                   <motion.div
-                    animate={textWidth > (nowPlayingWidth - (isHovered ? 80 : 45)) ? { x: [0, -(textWidth + 30)] } : { x: 0 }}
-                    transition={textWidth > (nowPlayingWidth - (isHovered ? 80 : 45))
+                    animate={textWidth > quickTextViewportWidth ? { x: [0, -(textWidth + 30)] } : { x: 0 }}
+                    transition={textWidth > quickTextViewportWidth
                       ? { duration: 12, repeat: Infinity, ease: "linear" }
                       : { duration: 0.3, ease: "easeInOut" }
                     }
@@ -1391,10 +1408,10 @@ export default function Island() {
                       color: textColor,
                       willChange: 'transform'
                     }}>
-                    <span style={{ paddingRight: textWidth > (nowPlayingWidth - (isHovered ? 80 : 45)) ? 30 : 0 }}>
+                    <span style={{ paddingRight: textWidth > quickTextViewportWidth ? 30 : 0 }}>
                       {spotifyTrack?.name} <span style={{ opacity: 0.7, fontWeight: 400 }}> • {spotifyTrack?.artist}</span>
                     </span>
-                    {textWidth > (nowPlayingWidth - (isHovered ? 80 : 45)) && (
+                    {textWidth > quickTextViewportWidth && (
                       <span style={{ paddingRight: 30 }}>
                         {spotifyTrack?.name} <span style={{ opacity: 0.7, fontWeight: 400 }}> • {spotifyTrack?.artist}</span>
                       </span>
@@ -1429,10 +1446,13 @@ export default function Island() {
                         flexShrink: 0,
                         overflow: 'hidden',
                         zIndex: 100,
+                        position: notchModeEnabled ? 'absolute' : undefined,
+                        left: notchModeEnabled ? '30px' : undefined,
+                        top: notchModeEnabled ? '50%' : undefined,
+                        transform: notchModeEnabled ? 'translateY(-50%)' : 'translateZ(0)',
                         willChange: 'opacity, width',
                         WebkitBackfaceVisibility: 'hidden',
-                        backfaceVisibility: 'hidden',
-                        transform: 'translateZ(0)'
+                        backfaceVisibility: 'hidden'
                       }}
                     >
                       {spotifyTrack?.state === 'playing' ? <Pause size={15} color="#FFFFFF" fill="#FFFFFF" /> : <Play size={15} color="#FFFFFF" fill="#FFFFFF" />}
@@ -1455,7 +1475,7 @@ export default function Island() {
                 style={{
                   position: "absolute",
                   top: "50%",
-                  left: "15px",
+                  left: notchModeEnabled ? "10px" : "15px",
                   transform: "translateY(-50%)",
                   fontSize: 16,
                   fontWeight: 600,
@@ -1483,7 +1503,7 @@ export default function Island() {
                 style={{
                   position: "absolute",
                   top: "50%",
-                  right: "15px",
+                  right: notchModeEnabled ? "10px" : "15px",
                   transform: "translateY(-50%)",
                   fontSize: 16,
                   fontWeight: 600,
@@ -1529,7 +1549,8 @@ export default function Island() {
             }}
             style={{
               width: "100%",
-              height: "100%",
+              height: notchContentInset ? `calc(100% - ${notchContentInset}px)` : "100%",
+              top: notchContentInset || undefined,
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
@@ -2338,6 +2359,21 @@ export default function Island() {
 
                 <div className="settings-section">
                   <h3 style={{ fontSize: 13, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.05em' }}>Island Style</h3>
+                  <div className="settings-row">
+                    <span className="settings-label">Notch Mode</span>
+                    <select
+                      value={notchModeEnabled ? "true" : "false"}
+                      onChange={(e) => {
+                        const enabled = e.target.value === "true";
+                        setNotchModeEnabled(enabled);
+                        localStorage.setItem("notch-mode", enabled ? "true" : "false");
+                        window.electronAPI?.setNotchMode?.(enabled);
+                      }}
+                    >
+                      <option value="true">Enabled</option>
+                      <option value="false">Disabled</option>
+                    </select>
+                  </div>
                   <div className="settings-row">
                     <span className="settings-label">Theme</span>
                     <select value={theme} onChange={(e) => setTheme(e.target.value)}>

@@ -4,7 +4,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   setIgnoreMouseEvents: (ignore, forward) => {
     ipcRenderer.invoke("set-ignore-mouse-events", ignore, forward);
   },
+  setWindowInputShape: (rect) => ipcRenderer.send("set-window-input-shape", rect),
   getSystemMedia: () => ipcRenderer.invoke("get-system-media"),
+  debugGetSystemMediaRaw: () => ipcRenderer.invoke("debug-get-system-media-raw"),
   getBluetoothStatus: () => ipcRenderer.invoke("get-bluetooth-status"),
   getCameraStatus: () => ipcRenderer.invoke("get-camera-status"),
   getMicrophoneStatus: () => ipcRenderer.invoke("get-microphone-status"),
@@ -15,6 +17,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   searchApps: (query) => ipcRenderer.invoke("search-apps", query),
   getDisplays: () => ipcRenderer.invoke("get-displays"),
   setDisplay: (displayId) => ipcRenderer.invoke("set-display", displayId),
+  setNotchMode: (enabled) => ipcRenderer.invoke("set-notch-mode", enabled),
   updateWindowPosition: (xPerc, yPx) => ipcRenderer.invoke("update-window-position", xPerc, yPx),
   setAutoLaunch: (enable) => process.platform !== "darwin" ? ipcRenderer.invoke("set-auto-launch", enable) : Promise.resolve(),
   focusWindow: () => ipcRenderer.invoke("focus-window"),

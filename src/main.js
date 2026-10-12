@@ -12,6 +12,7 @@ const {
   nativeImage,
 } = require("electron");
 const path = require("node:path");
+const { createRequire } = require("node:module");
 const fs = require("fs");
 
 if (process.platform === "linux") {
@@ -26,6 +27,38 @@ let x11Display = null;
 let x11Shape = null;
 let pendingInputShape = null;
 let inputShapeCheckPending = false;
+let activeDisplayId = null;
+let notchModeEnabled = false;
+let macNotchBridge;
+
+const getMacNotchBridge = () => {
+  if (process.platform !== "darwin") return null;
+  if (macNotchBridge !== undefined) return macNotchBridge;
+
+  try {
+    const appRequire = createRequire(path.join(app.getAppPath(), "package.json"));
+    const addonPath = app.isPackaged
+      ? path.join(process.resourcesPath, `mac_notch-${process.arch}.node`)
+      : path.join(app.getAppPath(), "native/mac-notch/prebuilds", `mac_notch-${process.arch}.node`);
+    macNotchBridge = appRequire(addonPath);
+  } catch (error) {
+    macNotchBridge = null;
+    console.error("macOS Notch Mode native bridge is unavailable:", error);
+  }
+
+  return macNotchBridge;
+};
+
+const moveWindowToNotch = () => {
+  if (!mainWindow || !notchModeEnabled || process.platform !== "darwin") return;
+  const bridge = getMacNotchBridge();
+  if (bridge) {
+    const topGap = bridge.setWindowTopEdge(mainWindow.getNativeWindowHandle(), true);
+    if (Math.abs(topGap) > 0.5) {
+      console.warn(`Notch Mode native screen-top gap is ${topGap.toFixed(1)} pt`);
+    }
+  }
+};
 
 const showMainWindow = () => {
   if (!mainWindow || !mainWindowReady) return;
@@ -37,6 +70,7 @@ const showMainWindow = () => {
     process.platform === "linux" ? "screen-saver" : "pop-up-menu",
   );
   mainWindow.focus();
+  moveWindowToNotch();
 };
 
 const applyLinuxInputShape = (rect) => {
@@ -459,6 +493,7 @@ ipcMain.handle("set-display", (event, displayId) => {
       displays.find((d) => d.id.toString() === displayId.toString()) ||
       screen.getPrimaryDisplay();
 
+    activeDisplayId = targetDisplay.id;
     const { x, y, width, height } = targetDisplay.bounds;
     const isLinux = process.platform === "linux";
 
@@ -470,6 +505,30 @@ ipcMain.handle("set-display", (event, displayId) => {
 
     showMainWindow();
   }
+});
+
+ipcMain.handle("set-notch-mode", (event, enabled) => {
+  if (process.platform !== "darwin") return;
+  notchModeEnabled = Boolean(enabled);
+
+  if (!mainWindow) return;
+  if (notchModeEnabled) {
+    if (!mainWindowReady) mainWindow.show();
+    mainWindow.setAlwaysOnTop(true, "pop-up-menu");
+    mainWindow.focus();
+    moveWindowToNotch();
+    return;
+  }
+
+  const bridge = getMacNotchBridge();
+  if (bridge) bridge.setWindowTopEdge(mainWindow.getNativeWindowHandle(), false);
+  mainWindow.setAlwaysOnTop(true, "pop-up-menu");
+
+  const targetDisplay = screen.getAllDisplays().find(
+    (display) => display.id === activeDisplayId,
+  ) || screen.getPrimaryDisplay();
+  mainWindow.setBounds(targetDisplay.bounds);
+  showMainWindow();
 });
 
 ipcMain.handle("update-window-position", (event, xPerc, yPx) => {});
@@ -538,6 +597,7 @@ const createWindow = () => {
   mainWindowReady = false;
   mainWindowInputShapeReady = false;
   const primaryDisplay = screen.getPrimaryDisplay();
+  activeDisplayId = primaryDisplay.id;
   const { x, y, width, height } = primaryDisplay.bounds;
   const isLinux = process.platform === "linux";
   const isWindows = process.platform === "win32";
@@ -597,6 +657,13 @@ const createWindow = () => {
       showMainWindow();
     }
   }, 5000);
+
+  mainWindow.on("close", () => {
+    if (process.platform === "darwin" && notchModeEnabled) {
+      const bridge = getMacNotchBridge();
+      if (bridge) bridge.setWindowTopEdge(mainWindow.getNativeWindowHandle(), false);
+    }
+  });
 
   mainWindow.on("closed", () => {
     mainWindow = null;

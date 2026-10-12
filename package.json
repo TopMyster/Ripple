@@ -6,6 +6,7 @@
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "node scripts/start.js",
+    "postinstall": "node scripts/build-mac-notch.js",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
@@ -30,6 +31,8 @@
     "@electron/fuses": "^1.8.0",
     "@electron/notarize": "^2.5.0",
     "electron": "^38.7.2",
+    "node-addon-api": "^8.9.2",
+    "node-gyp": "^10.3.1",
     "vite": "^5.4.19"
   },
   "dependencies": {

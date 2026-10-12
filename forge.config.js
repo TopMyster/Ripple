@@ -17,6 +17,21 @@ module.exports = {
     } : {}),
   },
   hooks: {
+    prePackage: async (_forgeConfig, options) => {
+      if (options.platform !== 'darwin') return;
+      const { spawnSync } = require('child_process');
+      const buildScript = path.join(__dirname, 'scripts/build-mac-notch.js');
+      const arch = options.arch || process.arch;
+      const result = spawnSync(process.execPath, [buildScript, `--arch=${arch}`], {
+        stdio: 'inherit',
+      });
+      if (result.error) throw result.error;
+      if (result.status !== 0) throw new Error(`macOS native bridge build failed for ${arch}`);
+      _forgeConfig.packagerConfig.extraResource.push(
+        path.join(__dirname, 'native/mac-notch/prebuilds', `mac_notch-${arch}.node`),
+      );
+    },
+
     postPackage: async (forgeConfig, options) => {
       if (options.platform !== 'darwin') return;
       console.log('Signing application with entitlements...');
